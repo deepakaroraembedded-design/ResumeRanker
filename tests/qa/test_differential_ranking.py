@@ -23,6 +23,7 @@ def _c(
 
 
 @pytest.mark.slow
+@pytest.mark.covers("FR-801")
 def test_oracle_ranking_is_deterministic() -> None:
     """Ranking oracle follows the TRD §5.6 tie-break chain."""
     candidates = [

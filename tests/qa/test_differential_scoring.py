@@ -10,7 +10,13 @@ from tests.fakes import FakeEmbeddingClient, FakeOntology, FakeTitleTaxonomy
 from tests.qa.strategies import skill_case
 
 from ats_scan.models.common import IntegrityFinding, StageResult
-from ats_scan.models.config import IntegrityConfig, OverqualificationConfig, ScoringConfig
+from ats_scan.models.config import (
+    IntegrityConfig,
+    OverqualificationConfig,
+    RecencyFactors,
+    ScoringConfig,
+    SelectionConfig,
+)
 from ats_scan.models.jobspec import (
     DomainRequirement,
     EducationRequirement,
@@ -42,6 +48,7 @@ from ats_scan.models.scoring import (
     MatchDetail,
     MatchRoute,
     PoolStatistics,
+    ScoreCard,
     SubScore,
 )
 from ats_scan.scoring.aggregate import aggregate
@@ -184,6 +191,7 @@ from ats_scan.scoring.evidence import (
     score_skill_coverage,
     years_since,
 )
+from ats_scan.scoring.selection import select
 
 DIMENSIONS: dict[str, Any] = {
     "S1": S1RequiredSkills,
@@ -201,6 +209,7 @@ DIMENSIONS: dict[str, Any] = {
 
 @pytest.mark.slow
 @pytest.mark.parametrize("dim", list(DIMENSIONS))
+@pytest.mark.covers("FR-701")
 def test_dimension_agrees_with_oracle(dim: str) -> None:
     """Differential oracle check for a single scoring dimension."""
     cls = DIMENSIONS[dim]
@@ -438,6 +447,7 @@ def _full_spec() -> JobSpec:
     )
 
 
+@pytest.mark.covers("FR-701")
 def test_full_dimension_smoke() -> None:
     """End-to-end regression on a resume that exercises every dimension."""
     resume = _full_resume()
@@ -551,6 +561,7 @@ def test_s3_calibrate() -> None:
     assert s3_calibrate(0.50, pool_with_stats) == pytest.approx(0.5, abs=1e-6)
 
 
+@pytest.mark.covers("FR-705")
 def test_s3_evidence_from_best_match() -> None:
     """Best-match evidence must return the span of the most similar resume chunk."""
     jd_chunk = s3_from_skill(RequiredSkill(canonical="python", weight=5), "required")
@@ -761,6 +772,7 @@ def test_proficiency_from_mention() -> None:
     assert _proficiency_from_mention(incidental) == ProficiencyKind.INCIDENTAL
 
 
+@pytest.mark.covers("FR-705")
 def test_evidence_from_mention() -> None:
     """A matching SkillMention must be converted to structured evidence."""
     skill = SkillMention(
@@ -778,6 +790,7 @@ def test_evidence_from_mention() -> None:
     assert ev.last_used == date(2026, 8, 1)
 
 
+@pytest.mark.covers("FR-705")
 def test_evidence_from_entry() -> None:
     """Skills evidenced on an experience entry must use the entry's end date."""
     entry = ExperienceEntry(
@@ -814,6 +827,7 @@ def test_evidence_from_entry() -> None:
     assert _evidence_from_entry("python", no_match, "java", FakeOntology()) is None
 
 
+@pytest.mark.covers("FR-705")
 def test_collect_skill_evidence() -> None:
     """Evidence collection must aggregate skills from all resume sections."""
     resume = _full_resume()
@@ -883,6 +897,7 @@ def test_score_skill_coverage_gaps() -> None:
     assert len(matches) == 0
 
 
+@pytest.mark.covers("FR-705")
 def test_score_skill_coverage_match_details() -> None:
     """Matched skills must produce match details with the expected criterion."""
     resume = _full_resume()
@@ -1317,6 +1332,34 @@ def test_f_match_and_f_recency() -> None:
     assert f_recency(0.0, 0.0, 0.5) == pytest.approx(1.0, abs=1e-6)
 
 
+@pytest.mark.covers("FR-703")
+def test_recency_factors_are_configurable() -> None:
+    """Recency half-life and floor must be read from configuration, not hard-coded."""
+    resume = CanonicalResume(
+        candidate_id="c_cfg",
+        extraction=ExtractionMetadata(method="unit"),
+        parse_completeness=1.0,
+        skills=(
+            SkillMention(
+                raw="Spark",
+                canonical="apache-spark",
+                last_used="2023-01",
+                sections=("skills",),
+                mentions=1,
+                evidence_spans=((0, 5),),
+            ),
+        ),
+    )
+    now = date(2026, 8, 29)
+    default = RecencyFactors(half_life_years=4.0, half_life_timeless_years=12.0, floor=0.1)
+    short = RecencyFactors(half_life_years=1.0, half_life_timeless_years=12.0, floor=0.1)
+    default_rec, _ = recency_for_skill(resume, "apache-spark", now, default, FakeOntology())
+    short_rec, _ = recency_for_skill(resume, "apache-spark", now, short, FakeOntology())
+    assert 0.0 <= default_rec <= 1.0
+    assert 0.0 <= short_rec <= 1.0
+    assert short_rec < default_rec
+
+
 # --- Additional S3 semantic helpers ------------------------------------------
 
 
@@ -1367,6 +1410,7 @@ def test_s3_run_in_event_loop() -> None:
 # --- Aggregate and confidence ------------------------------------------------
 
 
+@pytest.mark.covers("FR-702", "FR-706")
 def test_aggregate_branches() -> None:
     """Aggregation must weight, penalise, drop zero weights and handle no active dims."""
     cfg = ScoringConfig()
@@ -1388,6 +1432,7 @@ def test_aggregate_branches() -> None:
     assert empty_agg.composite == pytest.approx(0.0, abs=1e-6)
 
 
+@pytest.mark.covers("FR-704", "FR-707")
 def test_confidence_modes() -> None:
     """Confidence must differ between deterministic and hybrid modes."""
     resume = _full_resume()
@@ -1491,6 +1536,7 @@ def test_s5_s6_recency_weight_old_and_floor() -> None:
     assert s6_recency_weight(old, now, 2.0, 0.2) == pytest.approx(0.2, abs=1e-6)
 
 
+@pytest.mark.covers("FR-703")
 def test_s4_from_years_more_branches() -> None:
     """S4 from_years must cover the full branch set."""
     disabled = OverqualificationConfig(enabled=False)
@@ -1627,6 +1673,7 @@ def test_evidence_helpers_more() -> None:
     assert ev_rec is None
 
 
+@pytest.mark.covers("FR-702", "FR-706")
 def test_aggregate_penalty_cap_and_zero_weights() -> None:
     """Aggregation must cap penalties and ignore unavailable/zero-weighted dims."""
     cfg = ScoringConfig()
@@ -2203,3 +2250,84 @@ def test_s6_domain_match_and_recency() -> None:
     now = date(2026, 8, 29)
     present = ExperienceEntry(end=DateValue(value=None, precision=DatePrecision.PRESENT))
     assert s6_recency_weight(present, now, 6.0, 0.55) == pytest.approx(1.0, abs=1e-6)
+
+
+# --- Selection (FR-802) -------------------------------------------------------
+
+
+def _score_card(
+    candidate_id: str,
+    composite: float | None,
+    rank: int | None,
+    eligible: bool = True,
+) -> ScoreCard:
+    return ScoreCard(
+        candidate_id=candidate_id,
+        job_id="jd",
+        run_id="run",
+        composite=composite,
+        rank=rank,
+        eligible=eligible,
+    )
+
+
+@pytest.mark.covers("FR-802")
+def test_selection_threshold_only() -> None:
+    """Candidates with composite >= threshold are selected."""
+    cards = [
+        _score_card("above", 85.0, 1),
+        _score_card("at", 70.0, 2),
+        _score_card("below", 69.99, 3),
+    ]
+    selected = select(cards, SelectionConfig())
+    assert selected[0].selected is True
+    assert selected[1].selected is True
+    assert selected[2].selected is False
+
+
+@pytest.mark.covers("FR-802")
+def test_selection_top_n_only() -> None:
+    """Only the top N ranked candidates are selected when threshold is disabled."""
+    cards = [
+        _score_card("first", 90.0, 1),
+        _score_card("second", 80.0, 2),
+        _score_card("third", 70.0, 3),
+    ]
+    selected = select(cards, SelectionConfig(threshold=0.0, top_n=2))
+    assert selected[0].selected is True
+    assert selected[1].selected is True
+    assert selected[2].selected is False
+
+
+@pytest.mark.covers("FR-802")
+def test_selection_threshold_and_top_n() -> None:
+    """Both threshold and top-N must be satisfied."""
+    cards = [
+        _score_card("high_rank1", 85.0, 1),
+        _score_card("high_rank3", 75.0, 3),
+        _score_card("low_rank2", 65.0, 2),
+    ]
+    selected = select(cards, SelectionConfig(top_n=2))
+    assert selected[0].selected is True
+    assert selected[1].selected is False
+    assert selected[2].selected is False
+
+
+@pytest.mark.covers("FR-802")
+def test_selection_ignores_ineligible() -> None:
+    """Ineligible candidates are never selected."""
+    cards = [
+        _score_card("eligible", 80.0, 1),
+        _score_card("ineligible", 80.0, 2, eligible=False),
+    ]
+    selected = select(cards, SelectionConfig())
+    assert selected[0].selected is True
+    assert selected[1].selected is False
+
+
+@pytest.mark.covers("FR-802")
+def test_selection_no_composite_is_not_selected() -> None:
+    """A candidate without a composite score cannot be selected."""
+    cards = [_score_card("none", None, 1)]
+    selected = select(cards, SelectionConfig())
+    assert selected[0].selected is False

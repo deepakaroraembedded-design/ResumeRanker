@@ -16,27 +16,34 @@ TEST_ROOTS = (Path("tests"),)
 OUTPUT = Path("docs/qa/traceability.md")
 
 
-REQUIREMENT_RE = re.compile(r"\b(FR-\d+|NFR-\d+)\b")
+REQUIREMENT_RE = re.compile(r"^(FR|NFR)-\d+\b")
+MOSCOW = frozenset({"M", "S", "C", "W"})
 COVERS_RE = re.compile(r"@pytest\.mark\.covers\(([^)]+)\)")
 
 
 def _parse_requirements() -> dict[str, str]:
-    """Extract requirement IDs and their MoSCoW priority from the TRD."""
+    """Extract requirement IDs and their MoSCoW priority from the TRD tables.
+
+    The TRD lists functional requirements in whitespace-aligned tables.  Each
+    requirement row begins with an ``FR-xxx`` identifier and ends with the
+    single-letter MoSCoW priority in the right-most column.  Group headers such
+    as ``FR-700 Scoring`` and appendix cross-references are not requirement rows
+    and are ignored because their last token is not a valid priority.
+    """
     if not TRD.exists():
         return {}
     requirements: dict[str, str] = {}
-    text = TRD.read_text()
-    for match in REQUIREMENT_RE.finditer(text):
-        req_id = match.group(1)
-        # Search nearby lines for a priority column value (M/S/C/W).
-        start = max(0, match.start() - 500)
-        snippet = text[start : match.start() + 500]
-        priority = "unknown"
-        for candidate in ("M", "S", "C", "W"):
-            if re.search(rf"\| *{candidate} *\|", snippet):
-                priority = candidate
-                break
-        requirements[req_id] = priority
+    for line in TRD.read_text().splitlines():
+        stripped = line.strip()
+        match = REQUIREMENT_RE.match(stripped)
+        if not match:
+            continue
+        tokens = stripped.split()
+        if not tokens:
+            continue
+        req_id, priority = tokens[0], tokens[-1]
+        if priority in MOSCOW:
+            requirements[req_id] = priority
     return requirements
 
 
@@ -76,7 +83,7 @@ def main() -> int:
     ]
     for req_id in sorted(requirements):
         priority = requirements[req_id]
-        files = covered.get(req_id, [])
+        files = sorted(set(covered.get(req_id, [])))
         status = "covered" if files else "uncovered"
         files_str = "; ".join(files) if files else "—"
         lines.append(f"| {req_id} | {priority} | {files_str} | {status} |\n")

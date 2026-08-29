@@ -5,24 +5,22 @@ Module prefix: `ats_scan.scoring`
 
 ## Global mutmut run
 
-- Total mutants: 1788
-- Killed: 1623
-- Survived: 161
+- Total mutants: 1811
+- Killed: 1645
+- Survived: 162
 - No tests: 4
 - Mutation score: 90.8%
 - Threshold: 90%
 - Verdict: PASS
 
-## Package survivors in `ats_scan.scoring` (161)
+## Package survivors in `ats_scan.scoring` (162)
 
 - `ats_scan.scoring.evidence.x_years_since__mutmut_1: survived`
 - `ats_scan.scoring.evidence.x_f_match__mutmut_16: survived`
-- `ats_scan.scoring.evidence.x_f_recency__mutmut_2: survived`
 - `ats_scan.scoring.evidence.x_f_recency__mutmut_19: survived`
 - `ats_scan.scoring.evidence.x__route_for__mutmut_2: survived`
 - `ats_scan.scoring.evidence.x__route_for__mutmut_4: survived`
 - `ats_scan.scoring.evidence.x__proficiency_from_mention__mutmut_14: survived`
-- `ats_scan.scoring.evidence.x__evidence_from_mention__mutmut_1: survived`
 - `ats_scan.scoring.evidence.x__evidence_from_mention__mutmut_18: survived`
 - `ats_scan.scoring.evidence.x__evidence_from_entry__mutmut_24: survived`
 - `ats_scan.scoring.evidence.x__evidence_from_entry__mutmut_25: survived`
@@ -39,7 +37,6 @@ Module prefix: `ats_scan.scoring`
 - `ats_scan.scoring.evidence.x_score_skill_coverage__mutmut_37: survived`
 - `ats_scan.scoring.evidence.x_score_skill_coverage__mutmut_39: survived`
 - `ats_scan.scoring.evidence.x_score_skill_coverage__mutmut_46: survived`
-- `ats_scan.scoring.evidence.x_recency_for_skill__mutmut_12: survived`
 - `ats_scan.scoring.evidence.x_recency_for_skill__mutmut_21: survived`
 - `ats_scan.scoring.evidence.x_recency_for_skill__mutmut_22: survived`
 - `ats_scan.scoring.evidence.x_recency_for_skill__mutmut_30: survived`
@@ -52,6 +49,10 @@ Module prefix: `ats_scan.scoring`
 - `ats_scan.scoring.aggregate.x_aggregate__mutmut_67: survived`
 - `ats_scan.scoring.aggregate.x_aggregate__mutmut_78: survived`
 - `ats_scan.scoring.aggregate.x_aggregate__mutmut_84: survived`
+- `ats_scan.scoring.selection.x_select__mutmut_5: survived`
+- `ats_scan.scoring.selection.x_select__mutmut_6: survived`
+- `ats_scan.scoring.selection.x_select__mutmut_7: survived`
+- `ats_scan.scoring.selection.x_select__mutmut_9: survived`
 - `ats_scan.scoring.confidence.x_confidence__mutmut_11: survived`
 - `ats_scan.scoring.confidence.x_confidence__mutmut_48: survived`
 - `ats_scan.scoring.dimensions.s9_trajectory.x__trajectory_component__mutmut_4: survived`

@@ -1,112 +1,160 @@
 # Traceability audit
 | Requirement | Priority | Covered by | Status |
 |-------------|----------|------------|--------|
-| FR-100 | unknown | — | uncovered |
-| FR-1000 | unknown | — | uncovered |
-| FR-1001 | unknown | — | uncovered |
-| FR-1002 | unknown | — | uncovered |
-| FR-1003 | unknown | — | uncovered |
-| FR-1004 | unknown | — | uncovered |
-| FR-1005 | unknown | — | uncovered |
-| FR-1006 | unknown | — | uncovered |
-| FR-1007 | unknown | — | uncovered |
-| FR-101 | unknown | — | uncovered |
-| FR-102 | unknown | — | uncovered |
-| FR-103 | unknown | — | uncovered |
-| FR-104 | unknown | — | uncovered |
-| FR-105 | unknown | — | uncovered |
-| FR-106 | unknown | — | uncovered |
-| FR-107 | unknown | — | uncovered |
-| FR-108 | unknown | — | uncovered |
-| FR-109 | unknown | — | uncovered |
-| FR-110 | unknown | — | uncovered |
-| FR-1100 | unknown | — | uncovered |
-| FR-1101 | unknown | — | uncovered |
-| FR-1102 | unknown | — | uncovered |
-| FR-1103 | unknown | — | uncovered |
-| FR-1104 | unknown | — | uncovered |
-| FR-1105 | unknown | — | uncovered |
-| FR-1106 | unknown | — | uncovered |
-| FR-1107 | unknown | — | uncovered |
-| FR-1140 | unknown | — | uncovered |
-| FR-1141 | unknown | — | uncovered |
-| FR-1142 | unknown | — | uncovered |
-| FR-1143 | unknown | — | uncovered |
-| FR-200 | unknown | — | uncovered |
-| FR-201 | unknown | — | uncovered |
-| FR-202 | unknown | — | uncovered |
-| FR-203 | unknown | — | uncovered |
-| FR-204 | unknown | — | uncovered |
-| FR-205 | unknown | — | uncovered |
-| FR-206 | unknown | — | uncovered |
-| FR-207 | unknown | — | uncovered |
-| FR-208 | unknown | — | uncovered |
-| FR-209 | unknown | — | uncovered |
-| FR-210 | unknown | — | uncovered |
-| FR-300 | unknown | — | uncovered |
-| FR-301 | unknown | — | uncovered |
-| FR-302 | unknown | — | uncovered |
-| FR-303 | unknown | — | uncovered |
-| FR-304 | unknown | — | uncovered |
-| FR-305 | unknown | — | uncovered |
-| FR-306 | unknown | — | uncovered |
-| FR-307 | unknown | — | uncovered |
-| FR-308 | unknown | — | uncovered |
-| FR-309 | unknown | — | uncovered |
-| FR-310 | unknown | — | uncovered |
-| FR-400 | unknown | — | uncovered |
-| FR-401 | unknown | — | uncovered |
-| FR-402 | unknown | — | uncovered |
-| FR-403 | unknown | — | uncovered |
-| FR-404 | unknown | — | uncovered |
-| FR-405 | unknown | — | uncovered |
-| FR-406 | unknown | — | uncovered |
-| FR-407 | unknown | — | uncovered |
-| FR-500 | unknown | — | uncovered |
-| FR-501 | unknown | — | uncovered |
-| FR-502 | unknown | — | uncovered |
-| FR-503 | unknown | — | uncovered |
-| FR-504 | unknown | — | uncovered |
-| FR-505 | unknown | — | uncovered |
-| FR-506 | unknown | — | uncovered |
-| FR-507 | unknown | — | uncovered |
-| FR-600 | unknown | — | uncovered |
-| FR-601 | unknown | — | uncovered |
-| FR-602 | unknown | — | uncovered |
-| FR-603 | unknown | — | uncovered |
-| FR-604 | unknown | — | uncovered |
-| FR-605 | unknown | — | uncovered |
-| FR-700 | unknown | — | uncovered |
-| FR-701 | unknown | tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py; tests/qa/test_oracle_smoke.py | covered |
-| FR-702 | unknown | tests/qa/test_oracle_smoke.py | covered |
-| FR-703 | unknown | — | uncovered |
-| FR-704 | unknown | tests/qa/test_oracle_smoke.py | covered |
-| FR-705 | unknown | — | uncovered |
-| FR-706 | unknown | — | uncovered |
-| FR-707 | unknown | — | uncovered |
-| FR-708 | unknown | — | uncovered |
-| FR-800 | unknown | — | uncovered |
-| FR-801 | unknown | tests/qa/test_oracle_smoke.py | covered |
-| FR-802 | unknown | — | uncovered |
-| FR-803 | unknown | tests/qa/test_oracle_smoke.py | covered |
-| FR-804 | unknown | — | uncovered |
-| FR-805 | unknown | — | uncovered |
-| FR-900 | unknown | — | uncovered |
-| FR-901 | unknown | — | uncovered |
-| FR-902 | unknown | — | uncovered |
-| FR-903 | unknown | — | uncovered |
-| FR-904 | unknown | — | uncovered |
-| FR-905 | unknown | — | uncovered |
-| FR-906 | unknown | — | uncovered |
-| FR-907 | unknown | — | uncovered |
-| FR-908 | unknown | — | uncovered |
-| FR-909 | unknown | — | uncovered |
-| FR-910 | unknown | — | uncovered |
-| NFR-101 | unknown | — | uncovered |
-| NFR-102 | unknown | — | uncovered |
-| NFR-103 | unknown | — | uncovered |
-| NFR-104 | unknown | — | uncovered |
-| NFR-105 | unknown | — | uncovered |
-| NFR-106 | unknown | — | uncovered |
-| NFR-107 | unknown | — | uncovered |
-| NFR-108 | unknown | — | uncovered |
+| FR-1001 | M | — | uncovered |
+| FR-1002 | M | — | uncovered |
+| FR-1003 | M | — | uncovered |
+| FR-1004 | S | — | uncovered |
+| FR-1005 | M | — | uncovered |
+| FR-1006 | S | — | uncovered |
+| FR-1007 | M | — | uncovered |
+| FR-101 | M | — | uncovered |
+| FR-102 | M | — | uncovered |
+| FR-103 | M | — | uncovered |
+| FR-104 | M | — | uncovered |
+| FR-105 | M | — | uncovered |
+| FR-106 | M | — | uncovered |
+| FR-107 | M | — | uncovered |
+| FR-108 | M | — | uncovered |
+| FR-109 | S | — | uncovered |
+| FR-110 | W | — | uncovered |
+| FR-1101 | M | — | uncovered |
+| FR-1102 | M | — | uncovered |
+| FR-1103 | M | — | uncovered |
+| FR-1104 | M | — | uncovered |
+| FR-1105 | M | — | uncovered |
+| FR-1106 | M | — | uncovered |
+| FR-1107 | M | — | uncovered |
+| FR-1141 | M | — | uncovered |
+| FR-1142 | M | — | uncovered |
+| FR-1143 | M | — | uncovered |
+| FR-201 | M | — | uncovered |
+| FR-202 | M | — | uncovered |
+| FR-203 | M | — | uncovered |
+| FR-204 | S | — | uncovered |
+| FR-205 | M | — | uncovered |
+| FR-206 | M | — | uncovered |
+| FR-207 | M | — | uncovered |
+| FR-208 | M | — | uncovered |
+| FR-209 | S | — | uncovered |
+| FR-210 | M | — | uncovered |
+| FR-301 | M | — | uncovered |
+| FR-302 | M | — | uncovered |
+| FR-303 | M | — | uncovered |
+| FR-304 | M | — | uncovered |
+| FR-305 | M | — | uncovered |
+| FR-306 | M | — | uncovered |
+| FR-307 | M | — | uncovered |
+| FR-308 | M | — | uncovered |
+| FR-309 | M | — | uncovered |
+| FR-310 | M | — | uncovered |
+| FR-401 | M | — | uncovered |
+| FR-402 | M | — | uncovered |
+| FR-403 | S | — | uncovered |
+| FR-404 | M | — | uncovered |
+| FR-405 | M | — | uncovered |
+| FR-406 | S | — | uncovered |
+| FR-407 | M | — | uncovered |
+| FR-501 | M | — | uncovered |
+| FR-502 | M | — | uncovered |
+| FR-503 | M | — | uncovered |
+| FR-504 | M | — | uncovered |
+| FR-505 | S | — | uncovered |
+| FR-506 | M | — | uncovered |
+| FR-507 | M | — | uncovered |
+| FR-601 | M | — | uncovered |
+| FR-602 | M | — | uncovered |
+| FR-603 | M | — | uncovered |
+| FR-604 | S | — | uncovered |
+| FR-605 | M | — | uncovered |
+| FR-701 | M | tests/qa/test_differential_scoring.py; tests/qa/test_mutation_regression.py; tests/qa/test_oracle_smoke.py | covered |
+| FR-702 | M | tests/qa/test_differential_scoring.py; tests/qa/test_oracle_smoke.py | covered |
+| FR-703 | M | tests/qa/test_differential_scoring.py | covered |
+| FR-704 | M | tests/qa/test_differential_scoring.py; tests/qa/test_oracle_smoke.py | covered |
+| FR-705 | M | tests/qa/test_differential_scoring.py | covered |
+| FR-706 | M | tests/qa/test_differential_scoring.py | covered |
+| FR-707 | M | tests/qa/test_differential_scoring.py | covered |
+| FR-708 | C | — | uncovered |
+| FR-801 | M | tests/qa/test_differential_ranking.py; tests/qa/test_oracle_smoke.py | covered |
+| FR-802 | M | tests/qa/test_differential_scoring.py | covered |
+| FR-803 | M | tests/qa/test_oracle_smoke.py | covered |
+| FR-804 | S | — | uncovered |
+| FR-805 | S | — | uncovered |
+| FR-901 | M | — | uncovered |
+| FR-902 | M | — | uncovered |
+| FR-903 | M | — | uncovered |
+| FR-904 | M | — | uncovered |
+| FR-905 | M | — | uncovered |
+| FR-906 | M | — | uncovered |
+| FR-907 | M | — | uncovered |
+| FR-908 | M | — | uncovered |
+| FR-909 | M | — | uncovered |
+| FR-910 | M | — | uncovered |
+
+## Uncovered Must-have requirements
+- FR-101
+- FR-102
+- FR-103
+- FR-104
+- FR-105
+- FR-106
+- FR-107
+- FR-108
+- FR-201
+- FR-202
+- FR-203
+- FR-205
+- FR-206
+- FR-207
+- FR-208
+- FR-210
+- FR-301
+- FR-302
+- FR-303
+- FR-304
+- FR-305
+- FR-306
+- FR-307
+- FR-308
+- FR-309
+- FR-310
+- FR-401
+- FR-402
+- FR-404
+- FR-405
+- FR-407
+- FR-501
+- FR-502
+- FR-503
+- FR-504
+- FR-506
+- FR-507
+- FR-601
+- FR-602
+- FR-603
+- FR-605
+- FR-901
+- FR-902
+- FR-903
+- FR-904
+- FR-905
+- FR-906
+- FR-907
+- FR-908
+- FR-909
+- FR-910
+- FR-1001
+- FR-1002
+- FR-1003
+- FR-1005
+- FR-1007
+- FR-1101
+- FR-1102
+- FR-1103
+- FR-1104
+- FR-1105
+- FR-1106
+- FR-1107
+- FR-1141
+- FR-1142
+- FR-1143
