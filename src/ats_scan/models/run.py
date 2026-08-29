@@ -16,6 +16,7 @@ class RunContext(BaseModel):
 
     run_id: str
     config: IngestConfig | None = None
+    now: str | None = None  # ISO-8601 date used by date-resolution stages
     output_dir: Path | None = None
     cache_dir: Path | None = None
     diagnostics: tuple[Diagnostic, ...] = ()
