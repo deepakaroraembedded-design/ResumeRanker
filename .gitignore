@@ -34,3 +34,6 @@ htmlcov/
 # Build outputs
 build/
 dist/
+
+# Mutation testing workspace
+mutants/

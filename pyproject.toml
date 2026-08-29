@@ -54,6 +54,7 @@ dev = [
     "ruff>=0.6.0",
     "mypy>=1.11.0",
     "import-linter>=2.0.0",
+    "mutmut>=3.7.0",
 ]
 
 [project.scripts]
@@ -100,6 +101,7 @@ mypy_path = ["src"]
 minversion = "8.0"
 testpaths = ["tests"]
 addopts = "-ra -q"
+pythonpath = ["src"]
 markers = [
     "slow: tests that are slow or require heavy models",
     "e2e: end-to-end tests",
@@ -120,3 +122,18 @@ skip_empty = true
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.mutmut]
+source_paths = ["src/ats_scan"]
+only_mutate = ["src/ats_scan/scoring/*"]
+also_copy = ["data/"]
+pytest_add_cli_args = [
+    "-m", "not slow",
+    "-q",
+    "tests/unit/scoring_evidence",
+    "tests/unit/scoring_aggregate",
+    "tests/unit/scoring_semantic",
+    "tests/unit/scoring_profile",
+    "tests/qa/test_oracle_smoke.py",
+    "tests/qa/test_differential_scoring.py",
+]

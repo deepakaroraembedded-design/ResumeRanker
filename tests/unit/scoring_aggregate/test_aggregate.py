@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from types import SimpleNamespace
 
 import pytest
 
@@ -17,9 +18,14 @@ from ats_scan.models.resume import CanonicalResume, ExtractionMetadata
 from ats_scan.models.scoring import Band, Evidence, KnockoutResult, ScoreCard, SubScore
 from ats_scan.scoring.aggregate import Aggregation, aggregate
 from ats_scan.scoring.bands import band
-from ats_scan.scoring.confidence import confidence
+from ats_scan.scoring.confidence import (
+    _evidence_density,
+    _extraction_quality,
+    _model_agreement,
+    confidence,
+)
 from ats_scan.scoring.filters import evaluate_knockouts
-from ats_scan.scoring.tiebreak import rank
+from ats_scan.scoring.tiebreak import _sub_score_value, rank
 
 
 @pytest.fixture
@@ -191,6 +197,64 @@ class TestAggregate:
         assert result.base_score == pytest.approx(87.06, abs=0.005)
         assert result.band is Band.STRONG
 
+    def test_no_active_dimensions_all_zero_fields(
+        self, base_cfg: ScoringConfig, integrity_cfg: IntegrityConfig
+    ) -> None:
+        sub_scores = {dim: SubScore(dimension=dim, value=None) for dim in base_cfg.weights}
+        result = aggregate(sub_scores, base_cfg.weights, (), base_cfg, integrity_cfg)
+        assert result.base_score == 0.0
+        assert result.integrity_penalty == 0.0
+        assert result.composite == 0.0
+        assert result.band is Band.NOT_A_MATCH
+        assert result.flags == ()
+        assert result.reason_codes == ()
+
+    def test_unknown_dimension_weight_defaults_to_zero(
+        self, base_cfg: ScoringConfig, integrity_cfg: IntegrityConfig
+    ) -> None:
+        sub_scores = {"S_UNKNOWN": SubScore(dimension="S_UNKNOWN", value=80.0)}
+        result = aggregate(sub_scores, base_cfg.weights, (), base_cfg, integrity_cfg)
+        assert result.base_score == 0.0
+        assert result.composite == 0.0
+        assert result.band is Band.NOT_A_MATCH
+
+    def test_weight_zero_excludes_dimension(
+        self, base_cfg: ScoringConfig, integrity_cfg: IntegrityConfig
+    ) -> None:
+        sub_scores = {"S1": SubScore(dimension="S1", value=80.0)}
+        weights = {"S1": 0.0}
+        result = aggregate(sub_scores, weights, (), base_cfg, integrity_cfg)
+        assert result.base_score == 0.0
+        assert result.composite == 0.0
+
+    def test_weight_one_includes_dimension(
+        self, base_cfg: ScoringConfig, integrity_cfg: IntegrityConfig
+    ) -> None:
+        sub_scores = {"S1": SubScore(dimension="S1", value=100.0)}
+        weights = {"S1": 1.0}
+        result = aggregate(sub_scores, weights, (), base_cfg, integrity_cfg)
+        assert result.base_score == 100.0
+        assert result.composite == 100.0
+
+    def test_no_penalty_empty_flags_and_reason_codes(
+        self, base_cfg: ScoringConfig, integrity_cfg: IntegrityConfig
+    ) -> None:
+        sub_scores = self._sub_scores()
+        result = aggregate(sub_scores, base_cfg.weights, (), base_cfg, integrity_cfg)
+        assert result.integrity_penalty == 0.0
+        assert result.flags == ()
+        assert result.reason_codes == ()
+
+    def test_small_penalty_emits_total_flag(self, base_cfg: ScoringConfig) -> None:
+        sub_scores = {"S1": SubScore(dimension="S1", value=100.0)}
+        weights = {"S1": 100.0}
+        integrity_cfg = IntegrityConfig(penalties={"HIDDEN_TEXT": 1}, penalty_total_cap=1)
+        findings = (IntegrityFinding(detector="x", code="HIDDEN_TEXT", message="hidden"),)
+        result = aggregate(sub_scores, weights, findings, base_cfg, integrity_cfg)
+        assert result.integrity_penalty == 1.0
+        assert "PENALTY_TOTAL:1.0" in result.flags
+        assert result.reason_codes == ("HIDDEN_TEXT",)
+
 
 class TestConfidence:
     """Confidence formula per TRD §5.5."""
@@ -256,6 +320,89 @@ class TestConfidence:
         # With no evidence the density term is 0; model_agreement falls back to 1.0.
         expected = 0.30 + 0.25 + 0.25 * 0.0 + 0.20 * 1.0
         assert c == pytest.approx(expected, abs=0.01)
+
+
+class TestConfidenceHelpers:
+    """Direct tests for the confidence helper functions."""
+
+    def test_extraction_quality_defaults_to_one_when_extraction_missing(self) -> None:
+        resume = CanonicalResume(candidate_id="c_test")
+        assert _extraction_quality(resume) == 1.0
+
+    def test_extraction_quality_ocr_is_clipped(self) -> None:
+        meta = ExtractionMetadata(method="ocr", ocr_confidence=0.5)
+        resume = CanonicalResume(candidate_id="c_test", extraction=meta)
+        assert _extraction_quality(resume) == 0.5
+
+        # Direct helper calls bypass model validation to test the clipping logic.
+        resume = SimpleNamespace(extraction=SimpleNamespace(ocr_confidence=1.5, quality=None))
+        assert _extraction_quality(resume) == 1.0
+
+        resume = SimpleNamespace(extraction=SimpleNamespace(ocr_confidence=-0.5, quality=None))
+        assert _extraction_quality(resume) == 0.0
+
+    def test_extraction_quality_quality_is_clipped(self) -> None:
+        meta = ExtractionMetadata(method="plain", quality=0.75)
+        resume = CanonicalResume(candidate_id="c_test", extraction=meta)
+        assert _extraction_quality(resume) == 0.75
+
+        # Direct helper call with an out-of-range quality to verify the upper clip.
+        resume = SimpleNamespace(extraction=SimpleNamespace(ocr_confidence=None, quality=2.0))
+        assert _extraction_quality(resume) == 1.0
+
+    def test_evidence_density_counts_distinct_spans(self) -> None:
+        s1 = SubScore(
+            dimension="S1",
+            value=80.0,
+            evidence=(Evidence(span=(0, 5), quote="a"),),
+        )
+        s2 = SubScore(
+            dimension="S2",
+            value=70.0,
+            evidence=(Evidence(span=(10, 15), quote="b"),),
+        )
+        assert _evidence_density({"S1": s1, "S2": s2}) == pytest.approx(1.0, abs=0.01)
+
+    def test_evidence_density_invalid_span_is_ignored(self) -> None:
+        ev = SimpleNamespace(span=(0, 5, 7), source="resume")
+        sub = SimpleNamespace(evidence=[ev], dimension="S1", value=80.0)
+        assert _evidence_density({"S1": sub}) == 0.0
+
+    def test_evidence_density_none_span_is_ignored(self) -> None:
+        ev = SimpleNamespace(span=None, source="resume")
+        sub = SimpleNamespace(evidence=[ev], dimension="S1", value=80.0)
+        assert _evidence_density({"S1": sub}) == 0.0
+
+    def test_evidence_density_ratio_is_capped(self) -> None:
+        ev1 = SimpleNamespace(span=(0, 1), source="resume")
+        ev2 = SimpleNamespace(span=(2, 3), source="resume")
+        ev3 = SimpleNamespace(span=(4, 5), source="resume")
+        sub = SimpleNamespace(evidence=[ev1, ev2, ev3], dimension="S1", value=80.0)
+        assert _evidence_density({"S1": sub}) == 1.0
+
+    def test_evidence_density_spans_with_same_end_are_distinct(self) -> None:
+        ev1 = SimpleNamespace(span=(0, 5), source="resume")
+        ev2 = SimpleNamespace(span=(2, 5), source="resume")
+        sub1 = SimpleNamespace(evidence=[ev1, ev2], dimension="S1", value=80.0)
+        sub2 = SimpleNamespace(evidence=[], dimension="S2", value=80.0)
+        assert _evidence_density({"S1": sub1, "S2": sub2}) == 1.0
+
+    def test_evidence_density_multiply_ratio_not_capped(self) -> None:
+        ev1 = SimpleNamespace(span=(0, 5), source="resume")
+        sub1 = SimpleNamespace(evidence=[ev1], dimension="S1", value=80.0)
+        sub2 = SimpleNamespace(evidence=[], dimension="S2", value=80.0)
+        assert _evidence_density({"S1": sub1, "S2": sub2}) == 0.5
+
+    def test_model_agreement_from_rubric_stdev(self) -> None:
+        assert _model_agreement({}, 12.5) == pytest.approx(0.5, abs=0.001)
+        assert _model_agreement({}, 50.0) == 0.0
+
+    def test_model_agreement_from_s3_detail(self) -> None:
+        s3 = SubScore(dimension="S3", value=70.0, detail={"rubric_stdev": 2.5})
+        assert _model_agreement({"S3": s3}, None) == pytest.approx(0.9, abs=0.001)
+
+    def test_model_agreement_defaults_to_one(self) -> None:
+        assert _model_agreement({}, None) == 1.0
 
 
 class TestTieBreak:
@@ -337,6 +484,37 @@ class TestTieBreak:
         for o in orderings:
             assert [c.candidate_id for c in o] == ["c_c", "c_a", "c_b"]
 
+    def test_sub_score_value_missing_returns_zero(self) -> None:
+        card = self._card("c_a", 80.0)
+        assert _sub_score_value(card, "S_MISSING") == 0.0
+
+    def test_sub_score_value_none_returns_zero(self) -> None:
+        card = ScoreCard(
+            candidate_id="c_a",
+            job_id="jd",
+            run_id="r",
+            sub_scores={"S1": SubScore(dimension="S1", value=None)},
+        )
+        assert _sub_score_value(card, "S1") == 0.0
+
+    def test_rank_with_none_composite(self) -> None:
+        card_none = self._card("c_none", None)  # type: ignore[arg-type]
+        card_half = self._card("c_half", 0.5)
+        ranked = rank([card_none, card_half])
+        assert [c.candidate_id for c in ranked] == ["c_half", "c_none"]
+
+    def test_rank_with_none_confidence(self) -> None:
+        card_none = self._card(
+            "c_none",
+            80.0,
+            s1=70.0,
+            s4=60.0,
+            confidence_value=None,  # type: ignore[arg-type]
+        )
+        card_half = self._card("c_half", 80.0, s1=70.0, s4=60.0, confidence_value=0.5)
+        ranked = rank([card_none, card_half])
+        assert [c.candidate_id for c in ranked] == ["c_half", "c_none"]
+
 
 class TestKnockouts:
     """Hard filter evaluation per TRD §5.2."""
@@ -396,3 +574,29 @@ class TestKnockouts:
         )
         assert result[0] is True
         assert result[1][0].verdict == "PASS"
+
+    def test_forbidden_attribute_error_names_rule(self, fairness_cfg: FairnessConfig) -> None:
+        resume = self._resume()
+        spec = self._spec([KnockoutRule(id="KO_AGE", rule="age under 30")])
+        with pytest.raises(ConfigurationError, match="KO_AGE"):
+            evaluate_knockouts(resume, spec, fairness_cfg)
+
+    def test_evaluator_receives_resume_and_spec(self, fairness_cfg: FairnessConfig) -> None:
+        resume = self._resume()
+        spec = self._spec([KnockoutRule(id="KO_AUTH", rule="has work authorisation")])
+        received: dict[str, object] = {}
+
+        def capturing_evaluator(
+            rule: KnockoutRule, resume_arg: CanonicalResume, spec_arg: JobSpec
+        ) -> KnockoutResult:
+            received["rule"] = rule
+            received["resume"] = resume_arg
+            received["spec"] = spec_arg
+            return KnockoutResult(id=rule.id, verdict="PASS")
+
+        result = evaluate_knockouts(
+            resume, spec, fairness_cfg, evaluators={"KO_AUTH": capturing_evaluator}
+        )
+        assert result[0] is True
+        assert received["resume"] is resume
+        assert received["spec"] is spec
