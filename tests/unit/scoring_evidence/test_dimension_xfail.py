@@ -77,7 +77,6 @@ def scoring_context() -> ScoringContext:
     )
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s1_required_skills(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
@@ -87,13 +86,13 @@ def test_s1_required_skills(
     assert score.value == pytest.approx(80.0, abs=0.1)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s2_preferred_skills(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
     """TRD §5.3.2 — preferred skills coverage."""
     score = S2PreferredSkills().score(minimal_resume, minimal_spec, scoring_context)
     assert isinstance(score, SubScore)
+    assert score.value == pytest.approx(0.0, abs=0.1)
 
 
 @pytest.mark.xfail(strict=True, raises=NotImplementedError)
@@ -141,13 +140,13 @@ def test_s7_education(
     assert isinstance(score, SubScore)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s8_skill_recency(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
     """TRD §5.3.8 — skill recency."""
     score = S8SkillRecency().score(minimal_resume, minimal_spec, scoring_context)
     assert isinstance(score, SubScore)
+    assert score.value == pytest.approx(66.7, abs=0.1)
 
 
 @pytest.mark.xfail(strict=True, raises=NotImplementedError)
