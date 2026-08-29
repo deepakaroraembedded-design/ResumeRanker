@@ -1,0 +1,122 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ats-scan"
+version = "0.1.0"
+description = "Resume screening and scoring engine"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+authors = [
+    { name = "Deepak Arora", email = "deepak.arora@swiftradellc.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    # Core runtime
+    "pydantic>=2.9.0",
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0.1",
+    # Document extraction
+    "pymupdf>=1.24.0",
+    "pdfplumber>=0.11.0",
+    "python-docx>=1.1.0",
+    "ocrmypdf>=16.0.0",
+    # NLP and parsing
+    "spacy>=3.7.0",
+    "dateparser>=1.2.0",
+    "phonenumbers>=8.13.0",
+    "rapidfuzz>=3.9.0",
+    # Embeddings and semantic scoring
+    "sentence-transformers>=3.0.0",
+    "numpy>=1.26.0",
+    # Output
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
+    "jinja2>=3.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-cov>=5.0.0",
+    "hypothesis>=6.100.0",
+    "jsonschema>=4.22.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+    "import-linter>=2.0.0",
+]
+
+[project.scripts]
+ats-scan = "ats_scan.cli.main:app"
+
+[project.urls]
+Homepage = "https://swiftrade.com"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ats_scan"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # Pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "W",   # pycodestyle warnings
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+show_error_codes = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra -q"
+markers = [
+    "slow: tests that are slow or require heavy models",
+    "e2e: end-to-end tests",
+    "property: Hypothesis property tests",
+    "golden: golden-file tests",
+    "adversarial: adversarial corpus tests",
+    "fairness: fairness and bias tests",
+    "benchmark: performance benchmarks",
+]
+
+[tool.coverage.run]
+source = ["src/ats_scan"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 85
+skip_empty = true
+
+[tool.hatch.metadata]
+allow-direct-references = true

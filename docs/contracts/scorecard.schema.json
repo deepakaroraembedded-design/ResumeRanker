@@ -1,0 +1,454 @@
+{
+  "$defs": {
+    "Band": {
+      "description": "Composite score band.",
+      "enum": [
+        "strong",
+        "good",
+        "borderline",
+        "weak",
+        "not_a_match"
+      ],
+      "title": "Band",
+      "type": "string"
+    },
+    "Evidence": {
+      "description": "Citation that supports a scoring claim.\n\nspan: character offsets into the source text.\nquote: MUST equal text[span[0]:span[1]].\npage: optional source page number.\nsource: which document the span indexes into.",
+      "properties": {
+        "span": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Span",
+          "type": "array"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "source": {
+          "default": "resume",
+          "enum": [
+            "resume",
+            "jobspec"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "span",
+        "quote"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "GapDetail": {
+      "description": "A single unmet requirement.",
+      "properties": {
+        "criterion": {
+          "title": "Criterion",
+          "type": "string"
+        },
+        "weight": {
+          "title": "Weight",
+          "type": "integer"
+        },
+        "match": {
+          "default": 0.0,
+          "title": "Match",
+          "type": "number"
+        },
+        "searched": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Searched",
+          "type": "array"
+        },
+        "note": {
+          "default": "no evidence found",
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "criterion",
+        "weight"
+      ],
+      "title": "GapDetail",
+      "type": "object"
+    },
+    "KnockoutResult": {
+      "description": "The outcome of one knockout rule.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "UNVERIFIED"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Evidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "verdict"
+      ],
+      "title": "KnockoutResult",
+      "type": "object"
+    },
+    "MatchDetail": {
+      "description": "A single matched requirement with its supporting evidence.",
+      "properties": {
+        "criterion": {
+          "title": "Criterion",
+          "type": "string"
+        },
+        "weight": {
+          "title": "Weight",
+          "type": "integer"
+        },
+        "match": {
+          "title": "Match",
+          "type": "number"
+        },
+        "route": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MatchRoute"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "criterion",
+        "weight",
+        "match"
+      ],
+      "title": "MatchDetail",
+      "type": "object"
+    },
+    "MatchRoute": {
+      "description": "How a skill was matched to the ontology.",
+      "enum": [
+        "exact",
+        "alias",
+        "case",
+        "fuzzy",
+        "embedding",
+        "child",
+        "parent",
+        "transferable",
+        "none"
+      ],
+      "title": "MatchRoute",
+      "type": "string"
+    },
+    "Provenance": {
+      "description": "Provenance recorded in a ScoreCard.",
+      "properties": {
+        "config_sha256": {
+          "title": "Config Sha256",
+          "type": "string"
+        },
+        "ontology_version": {
+          "title": "Ontology Version",
+          "type": "string"
+        },
+        "code_version": {
+          "title": "Code Version",
+          "type": "string"
+        },
+        "models": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Models",
+          "type": "object"
+        },
+        "scored_at": {
+          "title": "Scored At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "config_sha256",
+        "ontology_version",
+        "code_version",
+        "models",
+        "scored_at"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "SubScore": {
+      "description": "A single dimension score.\n\nvalue: None means the dimension was unavailable and its weight should be\n    redistributed by the aggregation stage.",
+      "properties": {
+        "dimension": {
+          "title": "Dimension",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "detail": {
+          "additionalProperties": true,
+          "title": "Detail",
+          "type": "object"
+        },
+        "notes": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dimension",
+        "value"
+      ],
+      "title": "SubScore",
+      "type": "object"
+    }
+  },
+  "description": "The full per-candidate scoring output.",
+  "properties": {
+    "schema_version": {
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "candidate_id": {
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "job_id": {
+      "title": "Job Id",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "eligible": {
+      "default": true,
+      "title": "Eligible",
+      "type": "boolean"
+    },
+    "knockout_results": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/KnockoutResult"
+      },
+      "title": "Knockout Results",
+      "type": "array"
+    },
+    "sub_scores": {
+      "additionalProperties": {
+        "$ref": "#/$defs/SubScore"
+      },
+      "title": "Sub Scores",
+      "type": "object"
+    },
+    "base_score": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Base Score"
+    },
+    "integrity_penalty": {
+      "default": 0.0,
+      "title": "Integrity Penalty",
+      "type": "number"
+    },
+    "composite": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Composite"
+    },
+    "band": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Band"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "rank": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rank"
+    },
+    "selected": {
+      "default": false,
+      "title": "Selected",
+      "type": "boolean"
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confidence"
+    },
+    "matched": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/MatchDetail"
+      },
+      "title": "Matched",
+      "type": "array"
+    },
+    "gaps": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/GapDetail"
+      },
+      "title": "Gaps",
+      "type": "array"
+    },
+    "flags": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Flags",
+      "type": "array"
+    },
+    "reason_codes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "explanation": {
+      "default": "",
+      "title": "Explanation",
+      "type": "string"
+    },
+    "provenance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Provenance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "candidate_id",
+    "job_id",
+    "run_id"
+  ],
+  "title": "ScoreCard",
+  "type": "object"
+}

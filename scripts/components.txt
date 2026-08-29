@@ -1,0 +1,15 @@
+C-01:ingest
+C-02:extract-pdf
+C-03:extract-office
+C-04:ontology
+C-05:llm
+C-06:integrity
+C-07:report
+C-08:structure
+C-09:jobspec
+C-10:scoring-evidence
+C-11:scoring-semantic
+C-12:scoring-profile
+C-13:aggregate
+C-14:fairness
+C-QA:qa

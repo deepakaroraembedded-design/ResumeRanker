@@ -1,0 +1,48 @@
+{
+  "description": "A candidate file as discovered by the ingest stage.",
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "content_sha256": {
+      "title": "Content Sha256",
+      "type": "string"
+    },
+    "bytes": {
+      "minimum": 0,
+      "title": "Bytes",
+      "type": "integer"
+    },
+    "pages": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pages"
+    },
+    "mtime": {
+      "title": "Mtime",
+      "type": "string"
+    },
+    "media_type": {
+      "title": "Media Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path",
+    "content_sha256",
+    "bytes",
+    "mtime",
+    "media_type"
+  ],
+  "title": "SourceDocument",
+  "type": "object"
+}

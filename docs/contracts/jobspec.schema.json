@@ -1,0 +1,354 @@
+{
+  "$defs": {
+    "DomainRequirement": {
+      "description": "Domain/industry requirement.",
+      "properties": {
+        "industry": {
+          "title": "Industry",
+          "type": "string"
+        },
+        "naics": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Naics"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "industry"
+      ],
+      "title": "DomainRequirement",
+      "type": "object"
+    },
+    "EducationRequirement": {
+      "description": "Education requirements.",
+      "properties": {
+        "min_level": {
+          "title": "Min Level",
+          "type": "string"
+        },
+        "fields": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "equivalent_experience_allowed": {
+          "default": true,
+          "title": "Equivalent Experience Allowed",
+          "type": "boolean"
+        },
+        "knockout": {
+          "default": false,
+          "title": "Knockout",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "min_level"
+      ],
+      "title": "EducationRequirement",
+      "type": "object"
+    },
+    "ExperienceRequirement": {
+      "description": "Experience requirements.",
+      "properties": {
+        "min_years": {
+          "minimum": 0,
+          "title": "Min Years",
+          "type": "integer"
+        },
+        "target_years": {
+          "minimum": 0,
+          "title": "Target Years",
+          "type": "integer"
+        },
+        "count_internships": {
+          "default": false,
+          "title": "Count Internships",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "min_years",
+        "target_years"
+      ],
+      "title": "ExperienceRequirement",
+      "type": "object"
+    },
+    "KnockoutRule": {
+      "description": "A binary eligibility rule in a JobSpec.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "evidence_required": {
+          "default": true,
+          "title": "Evidence Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "rule"
+      ],
+      "title": "KnockoutRule",
+      "type": "object"
+    },
+    "PreferredSkill": {
+      "description": "A preferred skill in a JobSpec.",
+      "properties": {
+        "canonical": {
+          "title": "Canonical",
+          "type": "string"
+        },
+        "weight": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Weight",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "canonical",
+        "weight"
+      ],
+      "title": "PreferredSkill",
+      "type": "object"
+    },
+    "RequiredSkill": {
+      "description": "A required skill in a JobSpec with weight and optional knockout.",
+      "properties": {
+        "canonical": {
+          "title": "Canonical",
+          "type": "string"
+        },
+        "weight": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Weight",
+          "type": "integer"
+        },
+        "knockout": {
+          "default": false,
+          "title": "Knockout",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "canonical",
+        "weight"
+      ],
+      "title": "RequiredSkill",
+      "type": "object"
+    },
+    "ResponsibilityChunk": {
+      "description": "A weighted responsibility chunk for semantic similarity.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "weight": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Weight",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "weight"
+      ],
+      "title": "ResponsibilityChunk",
+      "type": "object"
+    }
+  },
+  "description": "The compiled machine-readable form of a job description.",
+  "properties": {
+    "schema_version": {
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "job_id": {
+      "title": "Job Id",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "title_family": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Title Family"
+    },
+    "target_seniority": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target Seniority"
+    },
+    "domain": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DomainRequirement"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "experience": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExperienceRequirement"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "education": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EducationRequirement"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "required_skills": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RequiredSkill"
+      },
+      "title": "Required Skills",
+      "type": "array"
+    },
+    "preferred_skills": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PreferredSkill"
+      },
+      "title": "Preferred Skills",
+      "type": "array"
+    },
+    "certifications": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Certifications",
+      "type": "array"
+    },
+    "knockouts": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/KnockoutRule"
+      },
+      "title": "Knockouts",
+      "type": "array"
+    },
+    "responsibility_chunks": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResponsibilityChunk"
+      },
+      "title": "Responsibility Chunks",
+      "type": "array"
+    },
+    "compiled_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Compiled By"
+    },
+    "reviewed_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reviewed By"
+    },
+    "review_state": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Review State"
+    },
+    "warnings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "job_id",
+    "title"
+  ],
+  "title": "JobSpec",
+  "type": "object"
+}

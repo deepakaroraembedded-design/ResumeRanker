@@ -1,0 +1,61 @@
+[importlinter]
+root_package = ats_scan
+include_external_packages = true
+
+[importlinter:contract:layers]
+name = Layered architecture
+type = layers
+layers =
+    ats_scan.cli
+    ats_scan.config
+    ats_scan.pipeline
+    ats_scan.report
+    ats_scan.scoring
+    ats_scan.fairness : ats_scan.integrity
+    ats_scan.structure : ats_scan.jobspec
+    ats_scan.extract : ats_scan.ingest
+    ats_scan.ontology : ats_scan.embeddings : ats_scan.llm
+    ats_scan.cache : ats_scan.telemetry
+    ats_scan.models : ats_scan.protocols : ats_scan.errors : ats_scan.codes
+
+[importlinter:contract:dimension-independence]
+name = Scoring dimensions never import one another
+type = independence
+modules =
+    ats_scan.scoring.dimensions.s1_required_skills
+    ats_scan.scoring.dimensions.s2_preferred_skills
+    ats_scan.scoring.dimensions.s3_semantic
+    ats_scan.scoring.dimensions.s4_experience
+    ats_scan.scoring.dimensions.s5_title
+    ats_scan.scoring.dimensions.s6_domain
+    ats_scan.scoring.dimensions.s7_education
+    ats_scan.scoring.dimensions.s8_skill_recency
+    ats_scan.scoring.dimensions.s9_trajectory
+    ats_scan.scoring.dimensions.s10_parseability
+
+[importlinter:contract:no-clock-in-scoring]
+name = Scoring must take time from ScoringContext
+type = forbidden
+source_modules = ats_scan.scoring
+forbidden_modules = time
+
+[importlinter:contract:models-are-base]
+name = Domain models do not import implementation layers
+type = forbidden
+source_modules =
+    ats_scan.models
+forbidden_modules =
+    ats_scan.extract
+    ats_scan.ingest
+    ats_scan.structure
+    ats_scan.jobspec
+    ats_scan.ontology
+    ats_scan.embeddings
+    ats_scan.llm
+    ats_scan.integrity
+    ats_scan.fairness
+    ats_scan.scoring
+    ats_scan.report
+    ats_scan.pipeline
+    ats_scan.cli
+    ats_scan.config

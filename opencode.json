@@ -1,0 +1,93 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md", "docs/IMPLEMENTATION_PLAN.md", "docs/QA_PLAN.md"],
+  "permission": {
+    "read": "allow",
+    "edit": "ask",
+    "bash": "ask",
+    "task": "allow"
+  },
+  "agent": {
+    "component-builder": {
+      "description": "Implements one ATS-Scan component inside its own git worktree, against frozen contracts.",
+      "mode": "primary",
+      "temperature": 0.1,
+      "prompt": "{file:./.opencode/prompts/component-builder.md}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "deny"
+      }
+    },
+    "contract-guard": {
+      "description": "Read-only reviewer. Verifies a branch touched only its owned paths, left frozen files untouched, and satisfies its Definition of Done.",
+      "mode": "subagent",
+      "temperature": 0,
+      "permission": {
+        "edit": "deny",
+        "bash": "ask",
+        "webfetch": "deny"
+      }
+    },
+    "qa-engineer": {
+      "description": "Independent verification. Maintains the reference oracle and QA suites, audits test adequacy and requirement coverage, runs the quality gates, files defects. Never edits implementation code and never fixes defects.",
+      "mode": "primary",
+      "temperature": 0,
+      "prompt": "{file:./.opencode/prompts/qa-engineer.md}",
+      "permission": {
+        "edit": {
+          "*": "deny",
+          "tests/qa/**": "allow",
+          "docs/qa/**": "allow",
+          "scripts/qa/**": "allow"
+        },
+        "bash": "allow",
+        "webfetch": "deny"
+      }
+    },
+    "integrator": {
+      "description": "Merges component branches in dependency order, wires the pipeline, and runs end-to-end acceptance.",
+      "mode": "primary",
+      "temperature": 0,
+      "prompt": "{file:./.opencode/prompts/integrator.md}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "deny"
+      }
+    }
+  },
+  "command": {
+    "build-component": {
+      "description": "Implement one ATS-Scan component end to end",
+      "agent": "component-builder",
+      "template": "Implement component $1.\n\nRead docs/IMPLEMENTATION_PLAN.md — §2.2 for your owned paths and §4 for your component block. Read src/ats_scan/protocols.py and src/ats_scan/models/ for the frozen contracts, and tests/fakes/ for the doubles you must test against.\n\nWork in this order:\n1. Restate your owned paths and your Definition of Done checklist. If anything is ambiguous, say so before writing code.\n2. Find every test in the repository that covers your component, including xfail-marked ones. These are your acceptance criteria — read them first.\n3. Implement. Small commits. Never touch a file outside your owned paths.\n4. Run `make gate` until green, then `make own` to confirm you stayed in your lane.\n5. Post a summary: what you implemented, which DoD boxes are ticked, which are not and why, and any contract-change requests you filed.\n\nStop and report rather than guessing if a frozen contract appears wrong."
+    },
+    "review-branch": {
+      "description": "Contract-guard review of a component branch",
+      "agent": "contract-guard",
+      "subtask": true,
+      "template": "Review branch feat/$1 against docs/IMPLEMENTATION_PLAN.md.\n\nCheck and report, as a pass/fail list:\n1. `git diff --name-only contracts-frozen...HEAD` — every path is owned by $1 per §2.2.\n2. No frozen file (models/, protocols.py, errors.py, codes.py, pyproject.toml, uv.lock, Makefile, tests/fakes/) was modified.\n3. Every Definition of Done checkbox in §4 for $1 is genuinely satisfied by code you can point at.\n4. No xfail-strict test covering $1 was deleted or weakened rather than made to pass.\n5. No `date.today()`, no `import time` in scoring, no network calls in tests.\n6. `make gate` passes.\n\nDo not fix anything. Report only."
+    },
+    "qa-freeze-audit": {
+      "description": "QG0 — audit the contract freeze before fan-out",
+      "agent": "qa-engineer",
+      "template": "Run QG0 contract-freeze audit per docs/QA_PLAN.md §10.\n\nEntry criteria: Wave 0 tagged `contracts-frozen` and all paths reconciled.\n\nChecks:\n1. Model completeness vs TRD §4.1–4.3.\n2. Protocol completeness — every component can be implemented against protocols.py.\n3. Fake fidelity and runtime protocol satisfaction.\n4. Independently recompute every Wave-0 xfail expected value from the TRD, including the 87.06 worked example.\n5. Ownership map disjoint and exhaustive; check-ownership.py agrees.\n6. No file two components would need to edit.\n7. StageResult expresses every TRD §12 failure mode.\n\nFile a defect for every S1/S2 finding. Write docs/qa/report-QG0.md and end with SIGNED OFF or BLOCKED."
+    },
+    "qa-accept": {
+      "description": "QG1 component acceptance for one branch",
+      "agent": "qa-engineer",
+      "template": "Run QG1 acceptance for component $1 on branch feat/$1-*.\n\nFollow docs/QA_PLAN.md §10 QG1. In order:\n1. Confirm entry criteria: make gate and make own are green, contract-guard passed.\n2. Re-verify EVERY Definition of Done checkbox in IDP §4 for $1 against actual code. Do not trust the agent's report. List each box with the file and line that satisfies it, or mark it unmet.\n3. Confirm no Wave-0 xfail test covering $1 was deleted, weakened, or left marked while passing.\n4. If $1 is a scoring component, run the differential oracle over 2000 generated cases.\n5. Run mutation testing on its package; triage survivors per §4.4.\n6. Run the traceability audit for requirements attributed to $1.\n7. Run its suite three times; any non-uniform outcome is a flake defect.\n8. Check boundaries: no date.today(), no import time in scoring, no network in tests, no added dependency.\n\nFile a defect record for every failure. Write docs/qa/report-QG1-$1.md and end with SIGNED OFF or BLOCKED, listing blocking defect IDs.\n\nYou may not edit any file outside tests/qa/, docs/qa/ and scripts/qa/."
+    },
+    "qa-integrate": {
+      "description": "QG2 — integration acceptance on merged main",
+      "agent": "qa-engineer",
+      "template": "Run QG2 integration acceptance per docs/QA_PLAN.md §10.\n\nFull QA suite on merged main, Q-EDGE 22/22, Q-ADV recall targets, Q-FAIR counterfactuals and impact ratios, operational checks, evidence-span resolution, and ≤3 quarantined tests.\n\nWrite docs/qa/report-QG2.md and end with SIGNED OFF or BLOCKED."
+    },
+    "qa-release": {
+      "description": "QG3 — full release acceptance and dossiers",
+      "agent": "qa-engineer",
+      "template": "Run QG3 release acceptance per docs/QA_PLAN.md §10.\n\nVerify QG2 green, 100% Must-have coverage, zero open S1/S2, fairness/determinism/performance dossiers, runbook executed, FR-1141–1143 verified.\n\nWrite docs/qa/report-QG3.md and end with SIGNED OFF or BLOCKED."
+    }
+  }
+}

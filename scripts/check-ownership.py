@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Verify that a branch only touches files owned by the calling component."""
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+
+OWNERSHIP: dict[str, tuple[str, ...]] = {
+    "W0": (
+        "src/ats_scan/models/",
+        "src/ats_scan/protocols.py",
+        "src/ats_scan/errors.py",
+        "src/ats_scan/codes.py",
+        "src/ats_scan/cache.py",
+        "src/ats_scan/telemetry.py",
+        "src/ats_scan/extract/__init__.py",
+        "src/ats_scan/extract/registry.py",
+        "src/ats_scan/scoring/__init__.py",
+        "src/ats_scan/scoring/registry.py",
+        "src/ats_scan/scoring/dimensions/__init__.py",
+        "tests/conftest.py",
+        "tests/fakes/",
+        "tests/corpus/",
+        "pyproject.toml",
+        "uv.lock",
+        "Makefile",
+        ".importlinter",
+        ".github/",
+        "AGENTS.md",
+        "opencode.json",
+        ".opencode/",
+        "scripts/",
+        "docs/IMPLEMENTATION_PLAN.md",
+        "docs/QA_PLAN.md",
+        "docs/TRD.md",
+        "docs/contracts/",
+        "docs/contract-change/",
+        "README.md",
+        "Dockerfile",
+        "changelog.d/",
+        "docs/dep-requests/",
+    ),
+    "C-QA": (
+        "tests/qa/",
+        "docs/qa/",
+        "scripts/qa/",
+        "changelog.d/C-QA.",
+        "docs/dep-requests/C-QA.md",
+    ),
+    "C-01": ("src/ats_scan/ingest/", "tests/unit/ingest/", "changelog.d/C-01.", "docs/dep-requests/C-01.md"),
+    "C-02": ("src/ats_scan/extract/pdf/", "src/ats_scan/extract/ocr/", "tests/unit/extract_pdf/", "tests/adversarial/test_pdf_", "changelog.d/C-02.", "docs/dep-requests/C-02.md"),
+    "C-03": ("src/ats_scan/extract/office/", "src/ats_scan/extract/plain/", "tests/unit/extract_office/", "changelog.d/C-03.", "docs/dep-requests/C-03.md"),
+    "C-04": ("src/ats_scan/ontology/", "data/ontology/", "data/titles/", "tests/unit/ontology/", "tests/property/test_ontology_", "changelog.d/C-04.", "docs/dep-requests/C-04.md"),
+    "C-05": ("src/ats_scan/llm/", "tests/unit/llm/", "changelog.d/C-05.", "docs/dep-requests/C-05.md"),
+    "C-06": ("src/ats_scan/integrity/", "tests/unit/integrity/", "tests/adversarial/test_integrity_", "changelog.d/C-06.", "docs/dep-requests/C-06.md"),
+    "C-07": ("src/ats_scan/report/", "tests/unit/report/", "changelog.d/C-07.", "docs/dep-requests/C-07.md"),
+    "C-08": ("src/ats_scan/structure/", "tests/unit/structure/", "tests/golden/structure/", "changelog.d/C-08.", "docs/dep-requests/C-08.md"),
+    "C-09": ("src/ats_scan/jobspec/", "tests/unit/jobspec/", "changelog.d/C-09.", "docs/dep-requests/C-09.md"),
+    "C-10": ("src/ats_scan/scoring/evidence.py", "src/ats_scan/scoring/dimensions/s1_required_skills.py", "src/ats_scan/scoring/dimensions/s2_preferred_skills.py", "src/ats_scan/scoring/dimensions/s8_skill_recency.py", "tests/unit/scoring_evidence/", "changelog.d/C-10.", "docs/dep-requests/C-10.md"),
+    "C-11": ("src/ats_scan/embeddings/", "src/ats_scan/scoring/dimensions/s3_semantic.py", "tests/unit/scoring_semantic/", "changelog.d/C-11.", "docs/dep-requests/C-11.md"),
+    "C-12": ("src/ats_scan/scoring/dimensions/s4_experience.py", "src/ats_scan/scoring/dimensions/s5_title.py", "src/ats_scan/scoring/dimensions/s6_domain.py", "src/ats_scan/scoring/dimensions/s7_education.py", "src/ats_scan/scoring/dimensions/s9_trajectory.py", "src/ats_scan/scoring/dimensions/s10_parseability.py", "tests/unit/scoring_profile/", "changelog.d/C-12.", "docs/dep-requests/C-12.md"),
+    "C-13": ("src/ats_scan/scoring/aggregate.py", "src/ats_scan/scoring/confidence.py", "src/ats_scan/scoring/bands.py", "src/ats_scan/scoring/tiebreak.py", "src/ats_scan/scoring/filters.py", "tests/unit/scoring_aggregate/", "tests/property/test_aggregate_", "changelog.d/C-13.", "docs/dep-requests/C-13.md"),
+    "C-14": ("src/ats_scan/fairness/", "tests/fairness/", "changelog.d/C-14.", "docs/dep-requests/C-14.md"),
+    "C-15": ("src/ats_scan/cli/", "src/ats_scan/config/", "src/ats_scan/pipeline.py", "tests/integration/", "tests/e2e/", "tests/benchmark/", "changelog.d/C-15.", "docs/dep-requests/C-15.md"),
+}
+
+
+EXCLUDED_PATHS = {
+    ".gitignore",
+    ".python-version",
+    ".coverage",
+    "uv.lock",
+    "README.md",
+}
+
+
+def current_branch() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+def infer_component(branch: str) -> str | None:
+    if branch == "main" or branch == "master":
+        return "W0"
+    if branch.startswith("feat/"):
+        prefix = branch.split("/")[1]
+        if prefix.startswith("C-"):
+            return prefix.split("-")[0]
+    return None
+
+
+def changed_files(base: str | None) -> list[str]:
+    if base is None:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        files = []
+        for line in result.stdout.splitlines():
+            if not line:
+                continue
+            path = line[3:].strip()
+            # git status can list directories with a trailing slash when the
+            # directory contains only untracked files; expand them.
+            if path.endswith("/"):
+                files.extend(_expand_dir(path.rstrip("/")))
+            else:
+                files.append(path)
+        return files
+    result = subprocess.run(
+        ["git", "diff", "--name-only", f"{base}...HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return [line for line in result.stdout.splitlines() if line]
+
+
+def _expand_dir(path: str) -> list[str]:
+    root = Path(path)
+    if not root.exists():
+        return []
+    return [str(p.relative_to(Path.cwd())) for p in root.rglob("*") if p.is_file()]
+
+
+def matches(path: str, prefixes: tuple[str, ...]) -> bool:
+    for prefix in prefixes:
+        if prefix.endswith("/") and (path == prefix.rstrip("/") or path.startswith(prefix)):
+            return True
+        if path.startswith(prefix):
+            return True
+    return False
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Check that a branch only touches owned paths")
+    parser.add_argument("--base", default=None, help="git base ref to diff against")
+    parser.add_argument("--component", default=None, help="component ID (e.g., C-01)")
+    args = parser.parse_args()
+
+    component = args.component or infer_component(current_branch())
+    if component is None:
+        print("Could not infer component from branch; pass --component", file=sys.stderr)
+        return 1
+
+    if component not in OWNERSHIP:
+        print(f"Unknown component: {component}", file=sys.stderr)
+        return 1
+
+    allowed = OWNERSHIP[component]
+    # C-QA is allowed to read scripts/ but only write scripts/qa/; W0 owns the rest.
+    if component == "W0":
+        allowed = tuple(p for p in allowed if p != "scripts/qa/")
+
+    violations = []
+    for path in changed_files(args.base):
+        if path in EXCLUDED_PATHS:
+            continue
+        if not matches(path, allowed):
+            violations.append(path)
+
+    if violations:
+        print(f"Ownership violations for {component}:")
+        for v in violations:
+            print(f"  {v}")
+        return 1
+
+    print(f"OK: all changes in {component} owned paths.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
