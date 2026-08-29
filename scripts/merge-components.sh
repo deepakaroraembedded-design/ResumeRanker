@@ -13,6 +13,10 @@ for id in $ORDER; do
   fi
   echo "=== merging $branch ==="
   git merge --no-ff --no-commit "$branch" || { echo "CONFLICT in $id"; exit 1; }
+  if git diff --cached --quiet && git diff --quiet; then
+    echo "=== $branch already merged, skipping gate ==="
+    continue
+  fi
   if make gate; then
     git commit -m "merge($id): integrate $branch"
   else
