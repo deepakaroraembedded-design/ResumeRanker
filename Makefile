@@ -29,7 +29,7 @@ e2e:
 	$(UV) pytest tests/e2e -m e2e -v
 
 bench:
-	$(UV) pytest tests/benchmark --benchmark-compare-fail=mean:20%
+	$(UV) pytest tests/benchmark --benchmark-compare=tests/benchmark/baseline.json --benchmark-compare-fail=mean:20%
 
 clean:
 	rm -rf .pytest_cache .mypy_cache .coverage htmlcov
