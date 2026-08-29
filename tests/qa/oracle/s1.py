@@ -65,10 +65,13 @@ def s1_required_skills(
     weight_total = 0.0
     for skill in required:
         weight = float(skill["weight"])
+        skill_key = skill["canonical"]
+        skill_evidence = evidence.get(skill_key, ())
+        if not skill_evidence:
+            continue
         weight_total += weight
         best_m = 0.0
-        skill_key = skill["canonical"]
-        for ev in evidence.get(skill_key, ()):
+        for ev in skill_evidence:
             f_match = _match_factor(ev)
             f_prof = _prof_factor(ev)
             h = half_life_timeless if skill.get("timeless") else half_life
