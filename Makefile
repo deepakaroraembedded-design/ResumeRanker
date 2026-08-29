@@ -23,7 +23,7 @@ schema:
 	$(UV) python scripts/validate_schemas.py docs/contracts src
 
 own:
-	$(UV) python scripts/check-ownership.py --base contracts-frozen
+	$(UV) python scripts/check-ownership.py --base main
 
 e2e:
 	$(UV) pytest tests/e2e -m e2e -v
