@@ -1,3 +1,4 @@
-# Dependency requests for C-QA
+# C-QA dependency request
 
-None.
+Requested: mutmut
+Reason: mutation testing per QA_PLAN §4.
