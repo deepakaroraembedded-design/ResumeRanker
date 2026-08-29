@@ -13,6 +13,7 @@ from ats_scan.models.source import ExtractedText, ExtractionMetadata
 from ats_scan.protocols import LLMClient
 from ats_scan.structure import HeuristicStructurer, HybridStructurer
 from ats_scan.structure.llm_parse import (
+    _LLMEducationEntry,
     _LLMExperienceEntry,
     _LLMResponse,
     _LLMResumeOutput,
@@ -149,6 +150,8 @@ Python, AWS, Docker
         email_pos = text.find("jane.doe@example.com")
         employer_pos = text.find("Acme Corp")
         title_pos = text.find("Senior Software Engineer")
+        edu_pos = text.find("University of Example")
+        skills_pos = text.find("Python, AWS, Docker")
         exp = _LLMExperienceEntry(
             employer="Acme Corp",
             employer_span=(employer_pos, employer_pos + len("Acme Corp")),
@@ -164,6 +167,16 @@ Python, AWS, Docker
             email="jane.doe@example.com",
             email_span=(email_pos, email_pos + len("jane.doe@example.com")),
             experience=[exp],
+            education=[
+                _LLMEducationEntry(
+                    institution="University of Example",
+                    institution_span=(edu_pos, edu_pos + len("University of Example")),
+                    degree_level="BS",
+                    graduation_date="2016",
+                )
+            ],
+            skills=["Python", "AWS", "Docker"],
+            skills_span=(skills_pos, skills_pos + len("Python, AWS, Docker")),
         )
         llm_response = _LLMResponse(resume=llm_resume)
 
@@ -179,3 +192,17 @@ Python, AWS, Docker
         assert resume.identity is not None
         assert resume.identity.full_name == "Jane Doe"
         assert resume.experience[0].employer == "Acme Corp"
+
+        expected = {
+            "name:Jane Doe",
+            "employer:Acme Corp",
+            "title:Senior Software Engineer",
+            "start:2020-01-01",
+            "institution:University of Example",
+            "skill:python",
+            "skill:aws",
+            "skill:docker",
+        }
+        actual = _field_set_for_resume(resume)
+        f1 = _f1_score(expected, actual)
+        assert f1 >= 0.92, f"hybrid F1 {f1} below threshold"
