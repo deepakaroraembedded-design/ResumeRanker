@@ -244,9 +244,7 @@ class TestConfidence:
 
     def test_extraction_quality_from_metadata_quality(self) -> None:
         meta = ExtractionMetadata(method="fake", quality=0.75)
-        resume = CanonicalResume(
-            candidate_id="c_test", parse_completeness=1.0, extraction=meta
-        )
+        resume = CanonicalResume(candidate_id="c_test", parse_completeness=1.0, extraction=meta)
         sub_scores: dict[str, SubScore] = {}
         c = confidence(resume, sub_scores, "deterministic")
         assert c == pytest.approx(0.30 + 0.25 * 0.75 + 0.25 * 0.0 + 0.20, abs=0.01)
