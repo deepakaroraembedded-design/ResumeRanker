@@ -27,7 +27,7 @@ uv run --group dev lint-imports
 Contracts
 ---------
 
-Analyzed 156 files, 683 dependencies.
+Analyzed 157 files, 699 dependencies.
 -------------------------------------
 
 Layered architecture KEPT
@@ -123,12 +123,12 @@ src/ats_scan/ontology/employer.py                           24      0      6    
 src/ats_scan/ontology/loader.py                             62      1      8      1    97%
 src/ats_scan/ontology/match.py                             138     16     54     11    86%
 src/ats_scan/ontology/titles.py                             70     11     26      6    82%
-src/ats_scan/pipeline.py                                   138      8     28      4    93%
+src/ats_scan/pipeline.py                                   255     85     68      6    61%
 src/ats_scan/protocols.py                                   44      0      0      0   100%
 src/ats_scan/report/__init__.py                             25      0      2      0   100%
 src/ats_scan/report/_helpers.py                             70     10     22      7    82%
 src/ats_scan/report/audit.py                                34      1      8      2    93%
-src/ats_scan/report/copies.py                               31      2      8      1    92%
+src/ats_scan/report/copies.py                               31      0      8      0   100%
 src/ats_scan/report/csv.py                                  27      0      2      0   100%
 src/ats_scan/report/diagnostics.py                          60      0     14      0   100%
 src/ats_scan/report/explain.py                              27      2     12      2    90%
@@ -162,19 +162,19 @@ src/ats_scan/structure/llm_parse.py                        186     16     52    
 src/ats_scan/structure/sections.py                         168     15     84     14    87%
 src/ats_scan/telemetry.py                                   17      4      0      0    76%
 ------------------------------------------------------------------------------------------
-TOTAL                                                     6174    523   1936    287    89%
-Required test coverage of 85% reached. Total coverage: 88.78%
+TOTAL                                                     6291    598   1976    288    88%
+Required test coverage of 85% reached. Total coverage: 87.66%
 
--------------------------------------------------------- benchmark: 1 tests -------------------------------------------------------
-Name (time in us)                    Min       Max      Mean   StdDev    Median     IQR  Outliers  OPS (Kops/s)  Rounds  Iterations
------------------------------------------------------------------------------------------------------------------------------------
-test_pipeline_run_benchmark     310.1320  580.2930  319.8186  21.9471  316.7025  2.8301     31;87        3.1268    1522           1
------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------- benchmark: 1 tests ---------------------------------------------------------
+Name (time in us)                    Min         Max      Mean   StdDev    Median      IQR  Outliers  OPS (Kops/s)  Rounds  Iterations
+--------------------------------------------------------------------------------------------------------------------------------------
+test_pipeline_run_benchmark     704.9449  1,115.3680  733.1338  69.9619  712.5949  10.9702    61;143        1.3640    1031           1
+--------------------------------------------------------------------------------------------------------------------------------------
 
 Legend:
   Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
   OPS: Operations Per Second, computed as 1 / Mean
-713 passed, 17 deselected in 14.62s
+713 passed, 17 deselected in 14.88s
 uv run --group dev python scripts/validate_schemas.py docs/contracts src
 wrote docs/contracts/source_document.schema.json
 wrote docs/contracts/extracted_text.schema.json

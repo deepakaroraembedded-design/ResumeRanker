@@ -65,7 +65,7 @@ def _load_source_documents(path: Path) -> list[SourceDocument]:
             stat = item.stat()
             docs.append(
                 SourceDocument(
-                    path=str(item.relative_to(path)),
+                    path=str(item.resolve()),
                     content_sha256="",
                     bytes=stat.st_size,
                     pages=None,

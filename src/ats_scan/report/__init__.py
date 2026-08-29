@@ -11,7 +11,7 @@ from ats_scan.report.csv import CsvWriter
 from ats_scan.report.diagnostics import DiagnosticsCsvWriter
 from ats_scan.report.explain import format_explanation_text, format_score_derivation
 from ats_scan.report.html import HtmlReportWriter
-from ats_scan.report.json import ScorecardJsonWriter
+from ats_scan.report.json import RunManifestJsonWriter, ScorecardJsonWriter
 from ats_scan.report.xlsx import XlsxWriter
 
 __all__ = [
@@ -19,6 +19,7 @@ __all__ = [
     "CsvWriter",
     "DiagnosticsCsvWriter",
     "HtmlReportWriter",
+    "RunManifestJsonWriter",
     "ScorecardJsonWriter",
     "XlsxWriter",
     "copy_selected_resumes",

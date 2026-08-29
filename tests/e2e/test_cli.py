@@ -213,3 +213,59 @@ def test_calibrate_command(
     result = runner.invoke(app, ["calibrate", "--resumes", str(tmp_path), "--out", str(out)])
     assert result.exit_code == 0, result.output
     assert out.exists()
+
+
+def test_run_command_with_real_pipeline(tmp_path: Path) -> None:
+    """Run the full CLI against the real, unmonkey-patched build_pipeline."""
+    import json
+
+    resumes_dir = tmp_path / "resumes"
+    resumes_dir.mkdir()
+    (resumes_dir / "alice.txt").write_text(
+        "Alice\nPython developer with 5 years experience.\n", encoding="utf-8"
+    )
+    (resumes_dir / "bob.txt").write_text(
+        "Bob\nJava developer with 3 years experience.\n", encoding="utf-8"
+    )
+    jd_path = tmp_path / "jd.txt"
+    jd_path.write_text("Senior Software Engineer\nPython\n", encoding="utf-8")
+    out = tmp_path / "out"
+
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--resumes",
+            str(resumes_dir),
+            "--jd",
+            str(jd_path),
+            "--out",
+            str(out),
+            "--mode",
+            "offline",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "2 scorecard(s)" in result.output
+
+    assert out.exists()
+    assert (out / "scores.csv").exists()
+    assert (out / "report.html").exists()
+    assert (out / "scores.xlsx").exists()
+    assert (out / "audit.jsonl").exists()
+    assert (out / "candidates").is_dir()
+    assert (out / "diagnostics").is_dir()
+    assert (out / "selected").is_dir()
+
+    manifest = json.loads((out / "run_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["documents_in"] == 2
+    assert manifest["documents_failed"] == 0
+
+    scorecards_dir = out / "candidates"
+    scorecard_files = list(scorecards_dir.glob("*.scorecard.json"))
+    assert len(scorecard_files) == 2
+    for card_path in scorecard_files:
+        card = ScoreCard.model_validate_json(card_path.read_text(encoding="utf-8"))
+        assert card.composite is not None
+        assert card.band is not None
+        assert card.rank is not None

@@ -23,3 +23,14 @@ class ScorecardJsonWriter(ReportWriter):
             atomic_write_text(path, card.model_dump_json(indent=2))
 
         return StageResult(value=candidates_dir)
+
+
+class RunManifestJsonWriter(ReportWriter):
+    """Write the run manifest as ``run_manifest.json``."""
+
+    artefact: ClassVar[str] = "run_manifest.json"
+
+    def write(self, run: RunResult, out_dir: Path) -> StageResult[Path]:
+        path = out_dir / self.artefact
+        atomic_write_text(path, run.manifest.model_dump_json(indent=2))
+        return StageResult(value=path)
