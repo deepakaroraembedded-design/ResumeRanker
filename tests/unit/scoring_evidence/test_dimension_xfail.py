@@ -96,7 +96,6 @@ def test_s2_preferred_skills(
     assert isinstance(score, SubScore)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s3_semantic(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
