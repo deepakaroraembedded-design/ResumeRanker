@@ -1,19 +1,6 @@
 from __future__ import annotations
 
 import pytest
-from tests.fakes import (
-    FakeEmbeddingClient,
-    FakeIntegrityDetector,
-    FakeJobSpecCompiler,
-    FakeLLMClient,
-    FakeOntology,
-    FakeRedactor,
-    FakeReportWriter,
-    FakeStructurer,
-    FakeTextExtractor,
-    FakeTitleTaxonomy,
-    StubDimension,
-)
 
 from ats_scan.protocols import (
     Dimension,
@@ -27,6 +14,19 @@ from ats_scan.protocols import (
     Structurer,
     TextExtractor,
     TitleTaxonomy,
+)
+from tests.fakes import (
+    FakeEmbeddingClient,
+    FakeIntegrityDetector,
+    FakeJobSpecCompiler,
+    FakeLLMClient,
+    FakeOntology,
+    FakeRedactor,
+    FakeReportWriter,
+    FakeStructurer,
+    FakeTextExtractor,
+    FakeTitleTaxonomy,
+    StubDimension,
 )
 
 
