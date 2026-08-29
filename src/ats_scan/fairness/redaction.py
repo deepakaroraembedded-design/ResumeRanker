@@ -79,6 +79,7 @@ def redact_text(text: str, mapping: ReidentificationMap) -> str:
 def _redact_resume(resume: CanonicalResume, mapping: ReidentificationMap) -> CanonicalResume:
     """Build a redacted copy of *resume* and populate *mapping*."""
     updates: dict[str, Any] = {}
+    reference_year = _earliest_role_year(resume)
 
     if resume.identity is not None:
         updates["identity"] = _redact_identity(resume.identity, mapping)
@@ -87,7 +88,7 @@ def _redact_resume(resume: CanonicalResume, mapping: ReidentificationMap) -> Can
         updates["source"] = _redact_source(resume.source, resume.candidate_id, mapping)
 
     if resume.education:
-        updates["education"] = _redact_education(resume.education, mapping)
+        updates["education"] = _redact_education(resume.education, mapping, reference_year)
 
     if resume.experience:
         updates["experience"] = _redact_experience(resume.experience, mapping)
@@ -162,7 +163,9 @@ def _redact_source(
 
 
 def _redact_education(
-    entries: tuple[EducationEntry, ...], mapping: ReidentificationMap
+    entries: tuple[EducationEntry, ...],
+    mapping: ReidentificationMap,
+    reference_year: int | None,
 ) -> tuple[EducationEntry, ...]:
     """Redact institution names and graduation years from education entries."""
     redacted: list[EducationEntry] = []
@@ -175,7 +178,7 @@ def _redact_education(
 
         if entry.end is not None and entry.end.value:
             mapping[f"education.{index}.end"] = entry.end.value
-            interval = _graduation_interval(entry.end, entries)
+            interval = _graduation_interval(entry.end, reference_year)
             if interval is not None:
                 mapping[f"education.{index}.end_interval_to_first_role"] = interval
             updates["end"] = DateValue(value=None, precision=DatePrecision.UNKNOWN)
@@ -189,21 +192,43 @@ def _redact_education(
     return tuple(redacted)
 
 
-def _graduation_interval(grad: DateValue, entries: tuple[EducationEntry, ...]) -> str | None:
+def _earliest_role_year(resume: CanonicalResume) -> int | None:
+    """Return the earliest year found in experience or project start/end dates.
+
+    Education dates are deliberately excluded so that the graduation interval is
+    computed relative to other career dates, not to itself (TRD §11.1).
+    """
+    dated_entries: list[ExperienceEntry | ProjectEntry] = [
+        *resume.experience,
+        *resume.projects,
+    ]
+    years = [
+        _extract_year(date.value)
+        for entry in dated_entries
+        for date in (entry.start, entry.end)
+        if date is not None and date.value
+    ]
+    present = [year for year in years if year is not None]
+    if not present:
+        return None
+    return min(present)
+
+
+def _graduation_interval(grad: DateValue, reference_year: int | None) -> str | None:
     """Return the interval between the graduation date and the first role
-    start date as a string, e.g. '12 months before first role'.
+    start date as a string, e.g. '4 years before first role'.
 
     This preserves the experiential relationship without revealing the
     absolute graduation year (TRD §11.1).
     """
-    if not grad.value:
+    if not grad.value or reference_year is None:
         return None
 
     grad_year = _extract_year(grad.value)
     if grad_year is None:
         return None
 
-    return f"graduation year {grad_year}"
+    return f"{reference_year - grad_year} years before first role"
 
 
 def _extract_year(value: str) -> int | None:

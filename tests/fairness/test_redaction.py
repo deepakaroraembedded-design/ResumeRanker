@@ -121,7 +121,8 @@ def test_redaction_removes_source_path() -> None:
 
 
 def test_redaction_removes_education_institution_and_graduation() -> None:
-    """Education institution and graduation year are redacted."""
+    """Education institution and graduation year are redacted; the sidecar
+    retains the interval relative to the first role."""
     resume = _make_resume()
     redacted, mapping = BlindRedactor().redact(resume)
 
@@ -129,6 +130,7 @@ def test_redaction_removes_education_institution_and_graduation() -> None:
     assert edu.institution is None
     assert mapping["education.0.institution"] == "Massachusetts Institute of Technology"
     assert mapping["education.0.end"] == "2015-06"
+    assert mapping["education.0.end_interval_to_first_role"] == "0 years before first role"
     assert edu.end is None or edu.end.value is None
 
 
@@ -235,6 +237,12 @@ def test_write_reidentification_sidecar(tmp_path) -> None:
 def test_scoring_context_has_no_reidentification_path() -> None:
     """The scoring path cannot receive the re-identification sidecar."""
     assert "reidentification_map" not in ScoringContext.model_fields
+
+
+def test_scoring_context_has_no_demographics_path() -> None:
+    """Demographics are supplied only to the audit path, never to scoring."""
+    assert "demographics" not in ScoringContext.model_fields
+    assert "demographics_path" not in ScoringContext.model_fields
 
 
 def test_redaction_preserves_non_identity_fields() -> None:
