@@ -1,1 +1,570 @@
 from __future__ import annotations
+
+import re
+from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import date, datetime
+from typing import Final, TypedDict
+
+from ats_scan.models.resume import (
+    Bullet,
+    Certification,
+    DatePrecision,
+    DateValue,
+    EducationEntry,
+    ExperienceEntry,
+    Identity,
+    ProjectEntry,
+    SkillMention,
+    Timeline,
+)
+from ats_scan.models.source import ExtractedText
+from ats_scan.structure.dates import calendar_union, month_range, parse_date_range
+from ats_scan.structure.sections import Section, SectionType
+
+_EMAIL_RE: Final[re.Pattern[str]] = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+_PHONE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:\+?\d{1,3}[\s\-]?)?\(?\d{2,4}\)?[\s\-]?\d{3,5}[\s\-]?\d{3,5}"
+)
+
+
+# Curated token list used to recognise skill mentions in heuristic mode.
+# Heuristic structuring does not depend on the full ontology (C-04); it only
+# needs to demonstrate that skills can be harvested from all sections and tagged
+# with provenance. The list covers the skills appearing in the synthetic corpus.
+_HEURISTIC_SKILLS: Final[frozenset[str]] = frozenset(
+    {
+        "agile",
+        "airflow",
+        "aws",
+        "bash",
+        "confluence",
+        "cypress",
+        "dbt",
+        "docker",
+        "git",
+        "java",
+        "javascript",
+        "jenkins",
+        "jira",
+        "kafka",
+        "kubernetes",
+        "linux",
+        "node.js",
+        "nodejs",
+        "node",
+        "playwright",
+        "pytest",
+        "python",
+        "react",
+        "roadmapping",
+        "scrum",
+        "selenium",
+        "spark",
+        "sql",
+        "tableau",
+        "terraform",
+        "typescript",
+        "c++",
+        "go",
+        "rust",
+        "php",
+        "ruby",
+        "scala",
+    }
+)
+
+
+# Section labels that count toward parse completeness.
+_REQUIRED_SECTIONS: Final[frozenset[SectionType]] = frozenset(
+    {
+        SectionType.EXPERIENCE,
+        SectionType.EDUCATION,
+        SectionType.SKILLS,
+    }
+)
+
+
+def _now_from_iso(now_str: str | None) -> date:
+    """Convert an ISO-8601 date string (e.g. from RunContext.now) to a date."""
+    if not now_str:
+        return date.today()
+    try:
+        return date.fromisoformat(now_str)
+    except ValueError:
+        return datetime.fromisoformat(now_str).date()
+
+
+def extract_identity(text: str, section: Section | None) -> Identity:
+    """Extract a minimal Identity from the contact section.
+
+    No field is fabricated: fields that cannot be found are left as None.
+    """
+    source = section.text if section else text
+    emails = tuple(sorted(set(_EMAIL_RE.findall(source))))
+    phones = tuple(sorted(set(_PHONE_RE.findall(source))))
+    # Name is the first non-empty line, if the contact section is short.
+    lines = [line.strip() for line in source.splitlines() if line.strip()]
+    name: str | None = None
+    if (
+        section
+        and section.type == SectionType.CONTACT
+        and lines
+        and len(lines) <= 4
+        or not section
+        and lines
+        and len(lines) <= 2
+    ):
+        name = lines[0]
+    return Identity(full_name=name, emails=emails, phones=phones)
+
+
+_ROLE_HEADER_RE = re.compile(
+    r"^.*\|.*(?:19\d{2}|20\d{2}).*(?:[-\u2013\u2014\u2015]|to|through).*(?:19\d{2}|20\d{2}|present|current|now|till date)",
+    re.IGNORECASE,
+)
+
+
+def _looks_like_role_header(line: str) -> bool:
+    """Return True if a line looks like a role header with dates."""
+    stripped = line.strip()
+    if not stripped:
+        return False
+    if "|" in stripped and re.search(r"(?:19\d{2}|20\d{2})", stripped):
+        return True
+    return bool(
+        re.search(
+            r"(?:19\d{2}|20\d{2})\s*[-\u2013\u2014\u2015]\s*(?:19\d{2}|20\d{2}|present|current|now|till date)",
+            stripped,
+            re.IGNORECASE,
+        )
+    )
+
+
+def _extract_experience_lines(text: str) -> list[str]:
+    """Split an experience section into candidate role blocks.
+
+    Role headers are lines like "Employer | Title | 2020 – 2025" or lines that
+    contain a date range. Each header starts a new block; bullets following the
+    header belong to that role.
+    """
+    lines = text.splitlines()
+    blocks: list[str] = []
+    current: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if _looks_like_role_header(stripped):
+            if current:
+                blocks.append("\n".join(current))
+            current = [stripped]
+        else:
+            current.append(stripped)
+    if current:
+        blocks.append("\n".join(current))
+    return blocks
+
+
+def _parse_role_header(header: str) -> dict[str, str | None]:
+    """Parse a line like 'Employer | Title | 2020 – 2025'."""
+    parts = [part.strip() for part in re.split(r"\s*\|\s*", header)]
+    employer = parts[0] if len(parts) >= 1 else None
+    title = parts[1] if len(parts) >= 2 else None
+    dates = parts[2] if len(parts) >= 3 else None
+    return {"employer": employer, "title": title, "dates": dates}
+
+
+def _extract_bullets(text: str, parent_offset: int) -> tuple[Bullet, ...]:
+    """Extract bullet lines from a block of text with char offsets."""
+    bullets: list[Bullet] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        content = stripped[1:].strip() if stripped.startswith(("-", "•", "*")) else stripped
+        pos = text.find(line)
+        span: tuple[int, int] | None = None
+        if pos != -1:
+            start = parent_offset + pos + (len(line) - len(content))
+            end = start + len(content)
+            span = (start, end)
+        bullets.append(Bullet(text=content, span=span))
+    return tuple(bullets)
+
+
+def extract_experience(section: Section, now: date) -> tuple[ExperienceEntry, ...]:
+    """Extract experience entries from a section.
+
+    FR-302: employer, title, location, dates, employment type, bullets.
+    """
+    blocks = _extract_experience_lines(section.text)
+    entries: list[ExperienceEntry] = []
+    for block in blocks:
+        lines = [line.strip() for line in block.splitlines() if line.strip()]
+        if not lines:
+            continue
+        header = lines[0]
+        parsed = _parse_role_header(header)
+        employer = parsed.get("employer") or None
+        title = parsed.get("title") or None
+        dates_text = parsed.get("dates") or None
+        bullets = _extract_bullets("\n".join(lines[1:]), section.start + len(header) + 1)
+        start_date: DateValue | None = None
+        end_date: DateValue | None = None
+        months: int | None = None
+        if dates_text:
+            range_pair = parse_date_range(str(dates_text), now=now)
+            if range_pair:
+                start_date, end_date = range_pair
+                months = month_range(start_date, end_date, now)
+        entry = ExperienceEntry(
+            employer=employer,
+            title_raw=title,
+            start=start_date,
+            end=end_date,
+            months=months,
+            bullets=bullets,
+            span=(section.start, section.end),
+        )
+        entries.append(entry)
+    return tuple(entries)
+
+
+def extract_education(section: Section) -> tuple[EducationEntry, ...]:
+    """Extract education entries from a section.
+
+    FR-309: institution, degree level, field of study, graduation date, honours.
+    """
+    entries: list[EducationEntry] = []
+    for line in section.text.splitlines():
+        line = line.strip()
+        if not line or line.lower() == "education":
+            continue
+        # Match patterns like:
+        #   BS in Computer Science, University of Example, 2016
+        #   University of Example — BS Computer Science (2016)
+        institution: str | None = None
+        degree_level: str | None = None
+        field: str | None = None
+        grad_year: DateValue | None = None
+
+        match = re.match(
+            r"(?P<degree>[A-Z\.]+)\s+(?:in\s+)?(?P<field>[^,]+),\s+(?P<inst>[^,]+)(?:,\s+(?P<year>\d{4}))?",
+            line,
+        )
+        if match:
+            degree_level = match.group("degree").strip()
+            field = match.group("field").strip()
+            institution = match.group("inst").strip()
+            year_str = match.group("year")
+            if year_str:
+                grad_year = DateValue(value=f"{year_str}-01-01", precision=DatePrecision.YEAR)
+        else:
+            # Fallback: keep the whole line as the institution and look for a year.
+            institution = line
+            year_match = re.search(r"\b(19\d{2}|20\d{2})\b", line)
+            if year_match:
+                grad_year = DateValue(
+                    value=f"{year_match.group(1)}-01-01",
+                    precision=DatePrecision.YEAR,
+                )
+        entries.append(
+            EducationEntry(
+                institution=institution,
+                degree_level=degree_level,
+                field=field,
+                end=grad_year,
+                span=(section.start, section.end),
+            )
+        )
+    return tuple(entries)
+
+
+def extract_certifications(section: Section) -> tuple[Certification, ...]:
+    """Extract certifications from a section.
+
+    FR-309: name, issuer, issue date, expiry date, credential ID where present.
+    """
+    certs: list[Certification] = []
+    for line in section.text.splitlines():
+        line = line.strip()
+        if not line or line.lower() == "certifications":
+            continue
+        issued: str | None = None
+        expires: str | None = None
+        issuer: str | None = None
+        name = line
+        year_match = re.search(r"\b(19\d{2}|20\d{2})\b", line)
+        if year_match:
+            issued = f"{year_match.group(1)}-01-01"
+        # Heuristic expiry: look for "expires" or "valid until".
+        expiry_match = re.search(
+            r"(?:expires?|valid until|exp)\s*:?\s*(?P<year>\d{4})", line, re.IGNORECASE
+        )
+        if expiry_match:
+            expires = f"{expiry_match.group('year')}-01-01"
+        certs.append(
+            Certification(
+                name=name,
+                issuer=issuer,
+                issued=issued,
+                expires=expires,
+                span=(section.start, section.end),
+            )
+        )
+    return tuple(certs)
+
+
+def _skill_tokens(text: str) -> list[str]:
+    """Return candidate raw skill tokens from a sentence.
+
+    The heuristic skill set is used for recognition, but the raw token as it
+    appears in the source text is returned so that downstream ontology
+    canonicalisation can operate on the original form.
+    """
+    tokens: list[str] = []
+    for raw in re.split(r"[,;\s()]+", text):
+        raw = raw.strip()
+        normalized = raw.lower().rstrip(".")
+        if normalized in _HEURISTIC_SKILLS:
+            tokens.append(raw)
+    return tokens
+
+
+def _sentence_spans(text: str) -> list[tuple[int, int, str]]:
+    """Return (start, end, sentence) spans for a piece of text."""
+    sentences: list[tuple[int, int, str]] = []
+    cursor = 0
+    for match in re.finditer(r"[^.!?\n]+[.!?]?", text):
+        sentence = match.group(0).strip()
+        if not sentence:
+            continue
+        start = text.find(sentence, cursor)
+        if start == -1:
+            start = match.start()
+        end = start + len(sentence)
+        sentences.append((start, end, sentence))
+        cursor = end
+    return sentences
+
+
+@dataclass
+class _SkillHarvest:
+    """Accumulator for one skill mention across a resume."""
+
+    sections: set[str] = field(default_factory=set)
+    mentions: int = 0
+    evidence_spans: list[tuple[int, int]] = field(default_factory=list)
+    first_used: str | None = None
+    last_used: str | None = None
+
+
+def extract_skills(text: str, sections: list[Section]) -> tuple[SkillMention, ...]:
+    """Harvest skills from all sections, recording provenance and sentence context.
+
+    FR-308: skills are extracted from all sections, with section provenance and
+    the surrounding sentence stored for downstream evidence.
+    """
+    by_skill: dict[str, _SkillHarvest] = defaultdict(_SkillHarvest)
+    for section in sections:
+        for sent_start, sent_end, sentence in _sentence_spans(section.text):
+            for token in _skill_tokens(sentence):
+                entry = by_skill[token]
+                entry.sections.add(section.type.value)
+                entry.mentions += 1
+                abs_start = section.start + sent_start
+                abs_end = section.start + sent_end
+                entry.evidence_spans.append((abs_start, abs_end))
+                if entry.first_used is None:
+                    entry.first_used = sentence
+                entry.last_used = sentence
+
+    mentions: list[SkillMention] = []
+    for raw, data in by_skill.items():
+        mentions.append(
+            SkillMention(
+                raw=raw,
+                sections=tuple(sorted(data.sections)),
+                mentions=data.mentions,
+                first_used=data.first_used,
+                last_used=data.last_used,
+                evidence_spans=tuple(data.evidence_spans),
+            )
+        )
+    return tuple(mentions)
+
+
+def build_timeline(experience: tuple[ExperienceEntry, ...]) -> Timeline:
+    """Build a calendar-union timeline from experience entries.
+
+    FR-304: total months covered never double counts overlapping roles. Contract
+    roles are retained but contribute to the union like any other role.
+    """
+    intervals: list[tuple[int, int]] = []
+    for entry in experience:
+        start_month = None
+        end_month = None
+        if entry.start and entry.start.value:
+            start_month = _month_from_iso(entry.start.value)
+        if entry.end and entry.end.value:
+            end_month = _month_from_iso(entry.end.value)
+        if start_month is not None and end_month is not None:
+            intervals.append((start_month, end_month))
+    total = calendar_union(intervals)
+    tenures: list[int] = []
+    for entry in experience:
+        if entry.months:
+            tenures.append(entry.months)
+    median_tenure = int(sorted(tenures)[len(tenures) // 2]) if tenures else None
+    return Timeline(
+        total_months_covered=total,
+        role_count=len(experience),
+        median_tenure_months=median_tenure,
+    )
+
+
+def _month_from_iso(value: str) -> int | None:
+    """Return months-since-epoch for an ISO date string."""
+    try:
+        dt = date.fromisoformat(value)
+    except ValueError:
+        try:
+            dt = datetime.fromisoformat(value).date()
+        except ValueError:
+            return None
+    return dt.year * 12 + (dt.month - 1)
+
+
+def detect_multi_resume(sections: list[Section]) -> bool:
+    """Return True if multiple distinct contact/identity blocks are detected."""
+    contact_count = sum(1 for section in sections if section.type == SectionType.CONTACT)
+    # A repeated name block in the middle of the document also counts.
+    name_like_blocks = 0
+    for section in sections:
+        if section.type in {SectionType.CONTACT, SectionType.SUMMARY}:
+            lines = [line.strip() for line in section.text.splitlines() if line.strip()]
+            if len(lines) <= 2 and any(" " in line for line in lines):
+                name_like_blocks += 1
+    return contact_count > 1 or name_like_blocks > 1
+
+
+def compute_parse_completeness(
+    resume: object,  # CanonicalResume not imported to avoid circularity
+) -> float:
+    """Compute a rough parse completeness score in [0, 1].
+
+    Completeness is based on the presence of major sections (experience,
+    education, skills) and the fraction of experience entries that have both
+    employer and dates resolved.
+    """
+    # Avoid importing CanonicalResume directly at module level to keep the
+    # import graph simple. Use attribute access.
+    sections_found: set[str] = set()
+    if getattr(resume, "experience", None):
+        sections_found.add("experience")
+    if getattr(resume, "education", None):
+        sections_found.add("education")
+    if getattr(resume, "skills", None):
+        sections_found.add("skills")
+
+    section_score = len(sections_found) / len(_REQUIRED_SECTIONS)
+
+    experience = getattr(resume, "experience", ())
+    if not experience:
+        return round(section_score * 0.7, 2)
+
+    complete_entries = 0
+    for entry in experience:
+        if entry.employer and entry.start and entry.start.value:
+            complete_entries += 1
+    entry_score = complete_entries / len(experience)
+    return round((section_score * 0.5) + (entry_score * 0.5), 2)
+
+
+class _ResumeFields(TypedDict, total=False):
+    """Typed result of heuristic field extraction."""
+
+    identity: Identity | None
+    experience: tuple[ExperienceEntry, ...]
+    education: tuple[EducationEntry, ...]
+    certifications: tuple[Certification, ...]
+    skills: tuple[SkillMention, ...]
+    projects: tuple[ProjectEntry, ...]
+    timeline: Timeline
+
+
+def structure_from_sections(
+    text: ExtractedText, sections: list[Section], now: date
+) -> _ResumeFields:
+    """Build the canonical fields from a list of sections.
+
+    Returns a dictionary of keyword arguments that can be passed to build a
+    CanonicalResume. This function is deterministic and does not fabricate fields.
+    """
+    contact_section = next((s for s in sections if s.type == SectionType.CONTACT), None)
+    identity = extract_identity(text.text, contact_section)
+
+    experience: list[ExperienceEntry] = []
+    education: list[EducationEntry] = []
+    certifications: list[Certification] = []
+    projects: list[ProjectEntry] = []
+    for section in sections:
+        if section.type == SectionType.EXPERIENCE:
+            experience.extend(extract_experience(section, now))
+        elif section.type == SectionType.EDUCATION:
+            education.extend(extract_education(section))
+        elif section.type == SectionType.CERTIFICATIONS:
+            certifications.extend(extract_certifications(section))
+        elif section.type == SectionType.PROJECTS:
+            projects.extend(_extract_projects(section, now))
+
+    skills = extract_skills(text.text, sections)
+    timeline = build_timeline(tuple(experience))
+    return {
+        "identity": identity,
+        "experience": tuple(experience),
+        "education": tuple(education),
+        "certifications": tuple(certifications),
+        "skills": skills,
+        "projects": tuple(projects),
+        "timeline": timeline,
+    }
+
+
+def _extract_projects(section: Section, now: date) -> tuple[ProjectEntry, ...]:
+    """Extract project entries from a projects section."""
+    projects: list[ProjectEntry] = []
+    for block in re.split(r"\n\s*\n", section.text):
+        block = block.strip()
+        if not block:
+            continue
+        lines = block.splitlines()
+        title = lines[0].strip() if lines else None
+        bullets = _extract_bullets("\n".join(lines[1:]), section.start + len(title or "") + 1)
+        # Try to find a date range in the title or first bullet.
+        dates_text = None
+        for line in lines:
+            match = re.search(r"\d{4}\s*[\-–]\s*(?:\d{4}|present|current)", line, re.IGNORECASE)
+            if match:
+                dates_text = match.group(0)
+                break
+        start: DateValue | None = None
+        end: DateValue | None = None
+        months: int | None = None
+        if dates_text:
+            range_pair = parse_date_range(dates_text, now=now)
+            if range_pair:
+                start, end = range_pair
+                months = month_range(start, end, now)
+        projects.append(
+            ProjectEntry(
+                title=title,
+                start=start,
+                end=end,
+                months=months,
+                bullets=bullets,
+                span=(section.start, section.end),
+            )
+        )
+    return tuple(projects)
