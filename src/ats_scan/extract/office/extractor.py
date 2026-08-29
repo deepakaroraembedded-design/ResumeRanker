@@ -1,4 +1,4 @@
-"""Office document extraction: ``.docx`` via python-docx, ``.doc``/``.rtf`` via headless converter."""
+"""Office document extraction: ``.docx`` via python-docx, ``.doc``/``.rtf`` via headless converter (C-03 / TRD §3.2 / FR-208)."""
 
 from __future__ import annotations
 
@@ -72,8 +72,9 @@ def _converter_command() -> list[str] | None:
 def _convert_legacy(path: str, ctx: RunContext) -> tuple[str | None, Diagnostic | None]:
     """Convert ``.doc`` or ``.rtf`` to text using a headless converter with timeout.
 
-    Runs with networking and macros disabled.  On failure returns ``None`` and a
-    diagnostic, never raises.
+    Implements TRD §3.2 / FR-208: headless office converter with networking and
+    macros disabled, under a wall-clock timeout (default 60 s).  On failure
+    returns ``None`` and a diagnostic, never raises.
     """
     command = _converter_command()
     if command is None:
@@ -137,7 +138,11 @@ def _convert_legacy(path: str, ctx: RunContext) -> tuple[str | None, Diagnostic 
 
 
 def _extract_docx(path: str) -> str:
-    """Extract text from a ``.docx`` file, preserving paragraph and table order."""
+    """Extract text from a ``.docx`` file, preserving paragraph and table order.
+
+    Implements TRD §3.2 / FR-208: .docx extraction including tables and heading
+    paragraphs.
+    """
     document = Document(path)
     paragraphs: list[str] = []
 
@@ -161,7 +166,12 @@ def _make_result(
     method: str,
     ctx: RunContext,
 ) -> StageResult[ExtractedText]:
-    """Normalise text, detect language, and package the extraction result."""
+    """Normalise text, detect language, and package the extraction result.
+
+    Implements TRD §3.2 / FR-209 (language detection) and FR-210 (Unicode
+    normalisation).  Returns a diagnostic when the detected language is outside
+    the configured accepted set.
+    """
     text = normalise_text(raw_text)
     supported = _supported_languages()
     language, language_confidence = detect_language(text, supported)
@@ -198,7 +208,7 @@ def _make_result(
 
 @extractor
 class DocxExtractor(TextExtractor):
-    """Extractor for modern Office Open XML ``.docx`` files."""
+    """Extractor for modern Office Open XML ``.docx`` files (TRD §3.2 / FR-208)."""
 
     media_types: ClassVar[frozenset[str]] = frozenset(
         {
@@ -228,7 +238,7 @@ class DocxExtractor(TextExtractor):
 
 @extractor
 class LegacyOfficeExtractor(TextExtractor):
-    """Extractor for legacy ``.doc`` and ``.rtf`` files via headless converter."""
+    """Extractor for legacy ``.doc`` and ``.rtf`` files via headless converter (TRD §3.2 / FR-208)."""
 
     media_types: ClassVar[frozenset[str]] = frozenset(
         {"application/msword", "application/rtf", "text/rtf"}

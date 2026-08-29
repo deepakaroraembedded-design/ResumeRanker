@@ -1,4 +1,4 @@
-"""Plain-text, Markdown and HTML text extractors (C-03)."""
+"""Plain-text, Markdown and HTML text extractors (C-03 / TRD §3.2 / FR-208)."""
 
 from __future__ import annotations
 
@@ -45,7 +45,12 @@ def _make_result(
     method: str,
     ctx: RunContext,
 ) -> StageResult[ExtractedText]:
-    """Normalise *raw_text*, detect language, and package the result."""
+    """Normalise *raw_text*, detect language, and package the result.
+
+    Implements TRD §3.2 / FR-209 (language detection) and FR-210 (Unicode
+    normalisation).  Returns a diagnostic when the detected language is outside
+    the configured accepted set.
+    """
     text = normalise_text(raw_text)
     supported = _supported_languages()
     language, language_confidence = detect_language(text, supported)
@@ -82,7 +87,7 @@ def _make_result(
 
 @extractor
 class PlainTextExtractor(TextExtractor):
-    """Extractor for ``.txt`` and ``.md`` files."""
+    """Extractor for ``.txt`` files (TRD §3.2 / FR-208)."""
 
     media_types: ClassVar[frozenset[str]] = frozenset({"text/plain"})
 
@@ -96,7 +101,7 @@ class PlainTextExtractor(TextExtractor):
 
 @extractor
 class MarkdownExtractor(TextExtractor):
-    """Extractor for Markdown files (treated as plain text with block structure)."""
+    """Extractor for Markdown files (TRD §3.2 / FR-208)."""
 
     media_types: ClassVar[frozenset[str]] = frozenset({"text/markdown"})
 
@@ -110,7 +115,7 @@ class MarkdownExtractor(TextExtractor):
 
 @extractor
 class HtmlExtractor(TextExtractor):
-    """Extractor for HTML files, stripping markup while preserving block structure."""
+    """Extractor for HTML files, stripping markup while preserving block structure (TRD §3.2 / FR-208)."""
 
     media_types: ClassVar[frozenset[str]] = frozenset(
         {"text/html", "application/xhtml+xml", "application/html"}

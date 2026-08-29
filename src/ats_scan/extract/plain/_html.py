@@ -1,4 +1,4 @@
-"""HTML-to-text conversion preserving block structure."""
+"""HTML-to-text conversion preserving block structure (TRD §3.2 / FR-208)."""
 
 from __future__ import annotations
 
