@@ -23,6 +23,8 @@ from ats_scan.pipeline import Pipeline
 
 runner = CliRunner()
 
+pytestmark = pytest.mark.e2e
+
 
 def _fake_scorecard(resume: CanonicalResume, spec: JobSpec, ctx: object) -> ScoreCard:
     return ScoreCard(
