@@ -1,0 +1,284 @@
+{
+  "families": {
+    "analytics": {
+      "adjacent": [
+        "data_science",
+        "data_engineering",
+        "product_management"
+      ],
+      "keywords": [
+        "business analyst",
+        "data analyst",
+        "analyst",
+        "analytics"
+      ]
+    },
+    "cloud_engineering": {
+      "adjacent": [
+        "devops",
+        "platform_engineering",
+        "security",
+        "data_engineering"
+      ],
+      "keywords": [
+        "cloud engineer",
+        "cloud architect",
+        "cloud computing"
+      ]
+    },
+    "data_engineering": {
+      "adjacent": [
+        "software_engineering",
+        "data_science",
+        "machine_learning",
+        "platform_engineering",
+        "analytics"
+      ],
+      "keywords": [
+        "data engineer",
+        "etl",
+        "pipeline",
+        "data pipelines"
+      ]
+    },
+    "data_science": {
+      "adjacent": [
+        "machine_learning",
+        "data_engineering",
+        "analytics",
+        "software_engineering"
+      ],
+      "keywords": [
+        "data scientist",
+        "data science"
+      ]
+    },
+    "devops": {
+      "adjacent": [
+        "software_engineering",
+        "platform_engineering",
+        "cloud_engineering",
+        "security"
+      ],
+      "keywords": [
+        "devops",
+        "devops engineer"
+      ]
+    },
+    "machine_learning": {
+      "adjacent": [
+        "data_science",
+        "data_engineering",
+        "software_engineering",
+        "platform_engineering"
+      ],
+      "keywords": [
+        "machine learning",
+        "ml engineer",
+        "ml scientist",
+        "deep learning"
+      ]
+    },
+    "management": {
+      "adjacent": [
+        "product_management",
+        "software_engineering",
+        "data_engineering"
+      ],
+      "keywords": [
+        "director",
+        "vice president",
+        "vp",
+        "chief",
+        "head",
+        "manager",
+        "executive",
+        "director"
+      ]
+    },
+    "platform_engineering": {
+      "adjacent": [
+        "software_engineering",
+        "devops",
+        "cloud_engineering",
+        "data_engineering"
+      ],
+      "keywords": [
+        "platform engineer",
+        "site reliability",
+        "sre",
+        "platform engineering"
+      ]
+    },
+    "product_management": {
+      "adjacent": [
+        "software_engineering",
+        "data_science",
+        "analytics"
+      ],
+      "keywords": [
+        "product manager",
+        "product owner",
+        "product management"
+      ]
+    },
+    "security": {
+      "adjacent": [
+        "software_engineering",
+        "devops",
+        "cloud_engineering"
+      ],
+      "keywords": [
+        "security engineer",
+        "cybersecurity",
+        "security analyst"
+      ]
+    },
+    "software_engineering": {
+      "adjacent": [
+        "data_engineering",
+        "devops",
+        "platform_engineering",
+        "security"
+      ],
+      "keywords": [
+        "software engineer",
+        "software developer",
+        "developer",
+        "coder",
+        "programmer",
+        "software engineering"
+      ]
+    }
+  },
+  "inflation": {
+    "10x": "software_engineering",
+    "genius": "software_engineering",
+    "guru": "software_engineering",
+    "hero": "software_engineering",
+    "ninja": "software_engineering",
+    "rockstar": "software_engineering",
+    "superstar": "software_engineering",
+    "unicorn": "product_management",
+    "wizard": "software_engineering"
+  },
+  "patterns": {
+    "associate director": {
+      "family": "management",
+      "seniority": "director"
+    },
+    "associate product manager": {
+      "family": "product_management",
+      "seniority": "associate"
+    },
+    "business analyst": {
+      "family": "analytics",
+      "seniority": "mid"
+    },
+    "chief technology officer": {
+      "family": "management",
+      "seniority": "chief"
+    },
+    "cloud engineer": {
+      "family": "cloud_engineering",
+      "seniority": "senior"
+    },
+    "data engineer": {
+      "family": "data_engineering",
+      "seniority": "mid"
+    },
+    "data scientist": {
+      "family": "data_science",
+      "seniority": "mid"
+    },
+    "devops engineer": {
+      "family": "devops",
+      "seniority": "senior"
+    },
+    "director": {
+      "family": "management",
+      "seniority": "director"
+    },
+    "junior software engineer": {
+      "family": "software_engineering",
+      "seniority": "junior"
+    },
+    "machine learning engineer": {
+      "family": "machine_learning",
+      "seniority": "senior"
+    },
+    "ninja coder": {
+      "family": "software_engineering",
+      "seniority": "senior"
+    },
+    "ninja developer": {
+      "family": "software_engineering",
+      "seniority": "senior"
+    },
+    "product manager": {
+      "family": "product_management",
+      "seniority": "mid"
+    },
+    "rockstar developer": {
+      "family": "software_engineering",
+      "seniority": "senior"
+    },
+    "security engineer": {
+      "family": "security",
+      "seniority": "senior"
+    },
+    "senior business analyst": {
+      "family": "analytics",
+      "seniority": "senior"
+    },
+    "senior data engineer": {
+      "family": "data_engineering",
+      "seniority": "senior"
+    },
+    "senior data scientist": {
+      "family": "data_science",
+      "seniority": "senior"
+    },
+    "senior machine learning engineer": {
+      "family": "machine_learning",
+      "seniority": "senior"
+    },
+    "senior product manager": {
+      "family": "product_management",
+      "seniority": "senior"
+    },
+    "senior software engineer": {
+      "family": "software_engineering",
+      "seniority": "senior"
+    },
+    "site reliability engineer": {
+      "family": "platform_engineering",
+      "seniority": "senior"
+    },
+    "software engineer": {
+      "family": "software_engineering",
+      "seniority": "mid"
+    },
+    "vice president": {
+      "family": "management",
+      "seniority": "vp"
+    }
+  },
+  "seniority_levels": [
+    "intern",
+    "junior",
+    "associate",
+    "mid",
+    "senior",
+    "staff",
+    "principal",
+    "lead",
+    "manager",
+    "director",
+    "vp",
+    "executive",
+    "head",
+    "chief"
+  ],
+  "version": "2026.07"
+}

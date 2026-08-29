@@ -1,0 +1,43 @@
+{
+  "aliases": {
+    "alphabet inc": "alphabet",
+    "amazon web services inc": "amazon web services",
+    "aws": "amazon web services",
+    "facebook": "meta",
+    "fb": "meta",
+    "google": "alphabet",
+    "ibm": "international business machines",
+    "international business machines corporation": "international business machines",
+    "microsoft corporation": "microsoft",
+    "ms": "microsoft",
+    "oracle corporation": "oracle",
+    "salesforce inc": "salesforce",
+    "sap se": "sap"
+  },
+  "legal_suffixes": [
+    "inc",
+    "incorporated",
+    "llc",
+    "ltd",
+    "limited",
+    "corp",
+    "corporation",
+    "plc",
+    "gmbh",
+    "s.a.",
+    "s.a",
+    "lp",
+    "llp",
+    "l.l.c.",
+    "l.l.p.",
+    "co",
+    "company",
+    "holdings",
+    "holding",
+    "group",
+    "corp.",
+    "inc.",
+    "ltd."
+  ],
+  "version": "2026.07"
+}
