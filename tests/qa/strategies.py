@@ -28,8 +28,30 @@ def skill_case() -> tuple[CanonicalResume, JobSpec, ScoringContext, dict[str, An
     resume = CanonicalResume(
         candidate_id="c_diff",
         skills=(
-            SkillMention(raw="Python", canonical="python", last_used="2026-08"),
-            SkillMention(raw="Spark", canonical="apache-spark", last_used="2026-08"),
+            SkillMention(
+                raw="Python",
+                canonical="python",
+                last_used="2026-08",
+                sections=("skills", "experience"),
+                mentions=1,
+                evidence_spans=((0, 6),),
+            ),
+            SkillMention(
+                raw="Spark",
+                canonical="apache-spark",
+                last_used="2026-08",
+                sections=("skills", "experience"),
+                mentions=1,
+                evidence_spans=((0, 5),),
+            ),
+            SkillMention(
+                raw="Kafka",
+                canonical="kafka",
+                last_used="2026-08",
+                sections=("skills", "experience"),
+                mentions=1,
+                evidence_spans=((0, 5),),
+            ),
         ),
     )
     spec = JobSpec(
@@ -49,7 +71,7 @@ def skill_case() -> tuple[CanonicalResume, JobSpec, ScoringContext, dict[str, An
         "apache-spark": [
             {"route": "exact", "proficiency": "listed_corroborated", "last_used": "2026-08"}
         ],
-        "kafka": [{"route": "exact", "proficiency": "listed_only", "last_used": "2026-08"}],
+        "kafka": [{"route": "exact", "proficiency": "listed_corroborated", "last_used": "2026-08"}],
     }
     cfg = scoring_context().config.model_dump()
     now_date = date.fromisoformat("2026-08-29")
