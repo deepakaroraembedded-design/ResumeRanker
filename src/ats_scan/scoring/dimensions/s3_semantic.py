@@ -62,7 +62,7 @@ class S3Semantic:
                 notes=("S3_EMBEDDING_CLIENT_INVALID",),
             )
 
-        jd_chunks = _jd_chunks(spec)
+        jd_chunks = sorted(_jd_chunks(spec), key=lambda chunk: chunk.text)
         if not jd_chunks:
             return SubScore(
                 dimension=self.id,
@@ -70,7 +70,7 @@ class S3Semantic:
                 notes=("S3_NO_JD_CHUNKS",),
             )
 
-        resume_chunks = _resume_chunks(resume)
+        resume_chunks = sorted(_resume_chunks(resume), key=lambda chunk: chunk.text)
         if not resume_chunks:
             raw = 0.0
             calibrated = _calibrate(raw, ctx.pool)
@@ -139,14 +139,14 @@ class S3Semantic:
         if not isinstance(client, EmbeddingClient):
             return PoolStatistics(size=len(resumes), anchor_low=0.25, anchor_high=0.70)
 
-        jd_chunks = _jd_chunks(spec)
+        jd_chunks = sorted(_jd_chunks(spec), key=lambda chunk: chunk.text)
         if not jd_chunks:
             return PoolStatistics(size=len(resumes), anchor_low=0.25, anchor_high=0.70)
 
         jd_vectors = _run(client.embed([chunk.text for chunk in jd_chunks]))
         raw_values: list[float] = []
         for resume in resumes:
-            resume_chunks = _resume_chunks(resume)
+            resume_chunks = sorted(_resume_chunks(resume), key=lambda chunk: chunk.text)
             if resume_chunks:
                 resume_vectors = _run(client.embed([chunk.text for chunk in resume_chunks]))
                 raw = _raw_similarity(jd_chunks, resume_chunks, jd_vectors, resume_vectors)
