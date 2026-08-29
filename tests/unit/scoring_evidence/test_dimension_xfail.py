@@ -103,7 +103,6 @@ def test_s3_semantic(
     assert isinstance(score, SubScore)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s4_experience(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
@@ -112,7 +111,6 @@ def test_s4_experience(
     assert isinstance(score, SubScore)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s5_title(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
@@ -121,7 +119,6 @@ def test_s5_title(
     assert isinstance(score, SubScore)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s6_domain(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
@@ -130,7 +127,6 @@ def test_s6_domain(
     assert isinstance(score, SubScore)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s7_education(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
@@ -148,7 +144,6 @@ def test_s8_skill_recency(
     assert score.value == pytest.approx(66.7, abs=0.1)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s9_trajectory(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
@@ -157,7 +152,6 @@ def test_s9_trajectory(
     assert isinstance(score, SubScore)
 
 
-@pytest.mark.xfail(strict=True, raises=NotImplementedError)
 def test_s10_parseability(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
