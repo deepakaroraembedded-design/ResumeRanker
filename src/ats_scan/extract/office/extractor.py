@@ -54,7 +54,18 @@ def _converter_command() -> list[str] | None:
     for binary in ("libreoffice", "soffice"):
         executable = shutil.which(binary)
         if executable:
-            return [executable, "--headless", "--convert-to", "txt:Text", "--outdir"]
+            return [
+                executable,
+                "--headless",
+                "--nologo",
+                "--nodefault",
+                "--norestore",
+                "--nolockcheck",
+                "--macro-security-level=4",
+                "--convert-to",
+                "txt:Text",
+                "--outdir",
+            ]
     return None
 
 
