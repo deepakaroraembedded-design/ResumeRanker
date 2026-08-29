@@ -1,0 +1,4 @@
+# This output is decision support only. A human reviewer must confirm every advance or reject decision before any candidate is contacted or excluded.
+rank,candidate_id,file,name,composite,band,selected,eligible,confidence,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,matched_required,missing_required,relevant_years,flags,reason_codes,explanation
+1,c_abc123,resumes/abc123.pdf,Alice Smith,87.06,strong,true,true,0.91,88.40,60.00,79.10,92.00,100.00,100.00,84.00,96.30,100.00,100.00,python=1.00,dbt(w=2),7.20,,,Strong match with deep Python experience and relevant data engineering background.
+2,c_def456,resumes/def456.pdf,Bob Jones,42.50,weak,false,false,0.55,45.00,30.00,50.00,40.00,60.00,20.00,70.00,80.00,90.00,95.00,,apache-spark(w=5),,LOW_CONFIDENCE,KO_WORK_AUTH,Weak match; missing key requirements and low confidence.
