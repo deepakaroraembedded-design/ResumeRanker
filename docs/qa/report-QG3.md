@@ -1,10 +1,8 @@
-# QA gate report — QG2
-*(incremental run)*
+# QA gate report — QG3
 ## make gate: PASS
 Command: make gate
 
 ```
-make[1]: Entering directory '/home/deepak7121/RESUMERANKER'
 uv run --group dev ruff format --check src tests
 273 files already formatted
 uv run --group dev ruff check src tests
@@ -169,13 +167,13 @@ Required test coverage of 85% reached. Total coverage: 89.90%
 --------------------------------------------------------- benchmark: 1 tests --------------------------------------------------------
 Name (time in us)                    Min         Max      Mean   StdDev    Median     IQR  Outliers  OPS (Kops/s)  Rounds  Iterations
 -------------------------------------------------------------------------------------------------------------------------------------
-test_pipeline_run_benchmark     751.4950  1,196.4489  769.7687  39.3240  760.7350  8.9050    29;146        1.2991     995           1
+test_pipeline_run_benchmark     762.2360  1,235.8780  784.6828  53.8348  771.3250  7.9001    54;139        1.2744     970           1
 -------------------------------------------------------------------------------------------------------------------------------------
 
 Legend:
   Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
   OPS: Operations Per Second, computed as 1 / Mean
-737 passed, 17 deselected in 15.31s
+737 passed, 17 deselected in 15.38s
 uv run --group dev python scripts/validate_schemas.py docs/contracts src
 wrote docs/contracts/source_document.schema.json
 wrote docs/contracts/extracted_text.schema.json
@@ -184,17 +182,14 @@ wrote docs/contracts/jobspec.schema.json
 wrote docs/contracts/scorecard.schema.json
 wrote docs/contracts/run_manifest.schema.json
 wrote docs/contracts/run_result.schema.json
-make[1]: Leaving directory '/home/deepak7121/RESUMERANKER'
 
 ```
 ## make own: PASS
 Command: make own
 
 ```
-make[1]: Entering directory '/home/deepak7121/RESUMERANKER'
 uv run --group dev python scripts/check-ownership.py --base main
 OK: all changes in W0 owned paths.
-make[1]: Leaving directory '/home/deepak7121/RESUMERANKER'
 
 ```
 ## blind-derivation check: PASS
@@ -221,6 +216,21 @@ Wrote docs/qa/mutants-QG2.md
 
 ```
 
+## Manual QG3 checks (per QAP §10 QG3)
+
+| Check | Method | Result |
+|---|---|---|
+| Open S1 / S2 defects | `docs/qa/defects/*.md` review | 0 open S1/S2 |
+| W-priority features present | `docs/qa/traceability.md` review | 0 W-priority features implemented |
+| FR-1141 no automated reject path | Inspection of `src/ats_scan/scoring/selection.py` and `src/ats_scan/pipeline.py` | PASS — selection only marks `selected`; knockouts keep candidates eligible and scored |
+| FR-1142 decision-support banner | Inspection of `src/ats_scan/report/{csv,html,xlsx,diagnostics,audit}.py` | PASS — banner appears on every artefact |
+| FR-1143 review queue above ranked list | Inspection of `src/ats_scan/report/html.py` template | PASS — review queue section renders before ranked candidates |
+| Determinism dossier (5 runs) | 5 offline runs on `tests/corpus/resumes/synthetic` with `--no-cache --force` | PASS — `scores.csv` and `report.html` byte-identical; `audit.jsonl`/`scores.xlsx` differ only in creation timestamps |
+| Fairness dossier (automatable portion) | `ats-scan audit --out <run> --demographics <csv>` | PASS — loads scorecards from `candidates/*.scorecard.json` and produces adverse-impact report per TRD §11.3 |
+| Performance dossier (TRD §10.1) | Not run — requires Q-PERF 1,000-resume reference corpus | BLOCKED — awaiting Q-PERF corpus and 6 min / 4 GB target run |
+| Runbook from clean machine | Not run — requires a clean environment and human execution | BLOCKED — awaiting runbook execution |
+| Legal review of fairness dossier | Not run — requires Legal sign-off | BLOCKED — awaiting Legal review |
+
 ## Verdict
 
-SIGNED OFF
+SIGNED OFF — with the three blocked manual items above pending external action.

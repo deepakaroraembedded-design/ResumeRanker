@@ -203,6 +203,49 @@ def test_audit_command(tmp_path: Path) -> None:
     assert "run_e2e" in cli_result.output
 
 
+def test_audit_command_with_scorecards_and_demographics(tmp_path: Path) -> None:
+    """Audit loads per-candidate scorecards and computes adverse impact."""
+    import csv
+
+    from ats_scan.models.run import RunManifest
+
+    manifest = RunManifest(
+        run_id="run_e2e",
+        config_hash="hash",
+        ontology_version="2026.07",
+        code_version="0.1.0",
+        started_at="2026-08-29T00:00:00Z",
+        finished_at="2026-08-29T00:01:00Z",
+        documents_in=2,
+        documents_failed=0,
+    )
+    (tmp_path / "run_manifest.json").write_text(manifest.model_dump_json(), encoding="utf-8")
+    candidates = tmp_path / "candidates"
+    candidates.mkdir()
+    for cid, group in [("c_alice", "A"), ("c_bob", "B")]:
+        card = ScoreCard(
+            candidate_id=cid,
+            job_id="jd_001",
+            run_id="run_e2e",
+            composite=80.0 if group == "A" else 75.0,
+            selected=group == "A",
+            confidence=0.8,
+        )
+        (candidates / f"{cid}.scorecard.json").write_text(card.model_dump_json(), encoding="utf-8")
+    demo = tmp_path / "demo.csv"
+    with demo.open("w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=["candidate_id", "group"])
+        writer.writeheader()
+        writer.writerow({"candidate_id": "c_alice", "group": "A"})
+        writer.writerow({"candidate_id": "c_bob", "group": "B"})
+
+    cli_result = runner.invoke(app, ["audit", "--out", str(tmp_path), "--demographics", str(demo)])
+    assert cli_result.exit_code == 0, cli_result.output
+    assert "adverse_impact" in cli_result.output
+    assert '"A"' in cli_result.output
+    assert '"B"' in cli_result.output
+
+
 def test_calibrate_command(
     tmp_path: Path,
     fake_pipeline: Pipeline,

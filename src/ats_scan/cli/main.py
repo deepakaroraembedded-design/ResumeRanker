@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 from typing import Annotated, Any
@@ -274,7 +275,9 @@ def calibrate(
 @app.command()
 def audit(
     out: Annotated[Path, typer.Option(..., help="Output directory from a run")],
-    demographics: Annotated[Path | None, typer.Option(help="Demographics CSV")] = None,
+    demographics: Annotated[
+        Path | None, typer.Option(help="Demographics CSV (candidate_id, group)")
+    ] = None,
 ) -> None:
     """Audit a completed run and produce an adverse-impact report."""
     manifest_path = out / "run_manifest.json"
@@ -286,13 +289,33 @@ def audit(
         typer.echo("Run manifest is incomplete; cannot audit.", err=True)
         raise typer.Exit(2)
 
+    scorecards: list[ScoreCard] = []
+    candidates_dir = out / "candidates"
+    if candidates_dir.exists():
+        for path in sorted(candidates_dir.glob("*.scorecard.json")):
+            try:
+                scorecards.append(ScoreCard.model_validate_json(path.read_text(encoding="utf-8")))
+            except Exception as exc:
+                typer.echo(f"Warning: could not load scorecard {path}: {exc}", err=True)
+
     demo_data: dict[str, Any] | None = None
     if demographics:
         demo_data = {"file": str(demographics)}
+        try:
+            with demographics.open(newline="", encoding="utf-8") as fh:
+                reader = csv.DictReader(fh)
+                demo_data["mapping"] = {
+                    row["candidate_id"]: row["group"]
+                    for row in reader
+                    if row.get("candidate_id") and row.get("group")
+                }
+        except OSError as exc:
+            typer.echo(f"Cannot read demographics file {demographics}: {exc}", err=True)
+            raise typer.Exit(2) from None
 
     result = RunResult(
         manifest=manifest_data,
-        scorecards=(),
+        scorecards=tuple(scorecards),
     )
     report = audit_run(result, demo_data)
     typer.echo(json.dumps(report, indent=2))

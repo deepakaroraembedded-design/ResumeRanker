@@ -11,6 +11,7 @@ from typing import Any, cast
 from ats_scan.embeddings import create_embedding_client
 from ats_scan.extract import load_extractors
 from ats_scan.fairness import BlindRedactor
+from ats_scan.fairness.impact import compute_adverse_impact_report
 from ats_scan.integrity import HiddenTextDetector, InjectionDetector, KeywordStuffingDetector
 from ats_scan.jobspec import JobSpecCompiler
 from ats_scan.llm import create_llm_adapter
@@ -430,16 +431,18 @@ class Pipeline:
         return text
 
     def audit(self, result: RunResult, demographics: Mapping[str, Any] | None) -> dict[str, Any]:
-        """Produce a lightweight audit report from a completed run.
+        """Produce an audit report from a completed run.
 
-        A full adverse-impact report requires the fairness component; this wiring
-        validates the manifest and returns counts by band and selection status.
+        Validates the manifest, returns counts by band and selection status, and,
+        when a candidate_id -> group mapping is supplied, computes an adverse-impact
+        report per TRD §11.3.
         """
         manifest = result.manifest
         by_band: dict[str, int] = {}
         for card in result.scorecards:
             by_band[card.band or "unknown"] = by_band.get(card.band or "unknown", 0) + 1
-        return {
+
+        report: dict[str, Any] = {
             "run_id": manifest.run_id,
             "valid": manifest.finished_at is not None,
             "documents_in": manifest.documents_in,
@@ -449,6 +452,16 @@ class Pipeline:
             "by_band": by_band,
             "demographics_groups": list(demographics.keys()) if demographics else [],
         }
+
+        if demographics and "mapping" in demographics:
+            mapping = demographics["mapping"]
+            impact = compute_adverse_impact_report(
+                result.scorecards,
+                mapping,
+            )
+            report["adverse_impact"] = impact.model_dump(mode="json")
+
+        return report
 
     def calibrate(
         self,
