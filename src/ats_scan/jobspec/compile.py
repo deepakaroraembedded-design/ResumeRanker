@@ -116,11 +116,15 @@ class JobSpecCompiler:
         acknowledged_proxies: tuple[str, ...] = (),
         review_mode: bool = False,
         compiled_by: str = "heuristic:rule",
+        weight_phrases: tuple[tuple[str, int], ...] | None = None,
     ) -> None:
         self._max_required_skills = max_required_skills
         self._acknowledged_proxies = tuple(p.lower() for p in acknowledged_proxies)
         self._review_mode = review_mode
         self._compiled_by = compiled_by
+        self._weight_phrases = (
+            weight_phrases if weight_phrases is not None else self._WEIGHT_PHRASES
+        )
 
     def compile(self, source: str, ctx: RunContext) -> StageResult[JobSpec]:
         """Compile *source* into a JobSpec.
@@ -322,8 +326,8 @@ class JobSpecCompiler:
             raw = _strip_bullet(line)
             if not raw:
                 continue
-            weight = _infer_weight(raw, self._WEIGHT_PHRASES)
-            canonical = _clean_skill(raw, self._WEIGHT_PHRASES).lower()
+            weight = _infer_weight(raw, self._weight_phrases)
+            canonical = _clean_skill(raw, self._weight_phrases).lower()
             if canonical:
                 skills.append(RequiredSkill(canonical=canonical, weight=weight, knockout=False))
         return skills
@@ -335,7 +339,7 @@ class JobSpecCompiler:
             raw = _strip_bullet(line)
             if not raw:
                 continue
-            canonical = _clean_skill(raw, self._WEIGHT_PHRASES).lower()
+            canonical = _clean_skill(raw, self._weight_phrases).lower()
             if canonical:
                 skills.append(PreferredSkill(canonical=canonical, weight=2))
         return skills
@@ -405,7 +409,7 @@ class JobSpecCompiler:
             raw = _strip_bullet(line)
             if not raw:
                 continue
-            cleaned = _clean_skill(raw, self._WEIGHT_PHRASES)
+            cleaned = _clean_skill(raw, self._weight_phrases)
             match = re.search(
                 r"(?i)(?:certification|certificate|license|licence)s?\s*(?::|in\s+)?(.+)",
                 cleaned,

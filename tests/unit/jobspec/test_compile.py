@@ -165,6 +165,17 @@ def test_ambiguous_requirements_default_to_weighted(
     assert any(s.canonical == "rust" for s in result.value.required_skills)
 
 
+def test_importance_weights_overridable(run_context: RunContext) -> None:
+    """FR-405: weight phrases can be overridden via configuration."""
+    custom_phrases = (("crucial", 5), ("helpful", 2))
+    compiler = JobSpecCompiler(weight_phrases=custom_phrases)
+    source = "Role\n\nRequired:\n- crucial Python\n- helpful Rust\n"
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    weights = {s.canonical: s.weight for s in result.value.required_skills}
+    assert weights == {"python": 5, "rust": 2}
+
+
 def test_importance_weights_from_language(
     compiler: JobSpecCompiler, run_context: RunContext
 ) -> None:
