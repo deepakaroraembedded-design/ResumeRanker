@@ -20,6 +20,7 @@ from ats_scan.models.resume import (
     EmploymentType,
     ExperienceEntry,
     ExtractionMetadata,
+    Identity,
     SkillMention,
 )
 from ats_scan.models.run import ScoringContext
@@ -83,12 +84,18 @@ def _spec(
     target_years: int = 8,
     title: str = "Senior Data Engineer",
     domain: str | None = None,
+    required_skills: tuple[str, ...] = (),
 ) -> JobSpec:
+    from ats_scan.models.jobspec import RequiredSkill
+
     return JobSpec(
         job_id="jd_test",
         title=title,
         domain=DomainRequirement(industry=domain) if domain else None,
         experience=ExperienceRequirement(min_years=min_years, target_years=target_years),
+        required_skills=tuple(
+            RequiredSkill(canonical=skill, weight=5) for skill in required_skills
+        ),
     )
 
 
@@ -404,3 +411,79 @@ class TestCoverageS10:
         )
         score = S10Parseability().score(resume, _spec(), _ctx())
         assert score.value is not None and 0 <= score.value <= 100
+
+
+class TestCounterfactual:
+    """TRD §13.4 — counterfactual checks for profile dimensions."""
+
+    def test_s7_no_institution_ranking(self) -> None:
+        """Institution name does not affect the education score."""
+        spec = JobSpec(
+            job_id="jd_test",
+            title="Engineer",
+            education=EducationRequirement(min_level="bachelors", fields=("computer science",)),
+        )
+        resume_a = CanonicalResume(
+            candidate_id="c_test",
+            education=(
+                EducationEntry(
+                    institution="Harvard",
+                    degree_level="bachelors",
+                    field="computer science",
+                ),
+            ),
+        )
+        resume_b = CanonicalResume(
+            candidate_id="c_test",
+            education=(
+                EducationEntry(
+                    institution="Community College",
+                    degree_level="bachelors",
+                    field="computer science",
+                ),
+            ),
+        )
+        score_a = S7Education().score(resume_a, spec, _ctx())
+        score_b = S7Education().score(resume_b, spec, _ctx())
+        assert score_a.value == score_b.value
+
+    def test_s7_graduation_year_shift(self) -> None:
+        """Shifting the graduation year does not change the level/field score."""
+        spec = JobSpec(
+            job_id="jd_test",
+            title="Engineer",
+            education=EducationRequirement(min_level="bachelors", fields=("computer science",)),
+        )
+        resume_a = CanonicalResume(
+            candidate_id="c_test",
+            education=(
+                EducationEntry(
+                    degree_level="bachelors",
+                    field="computer science",
+                    end=DateValue(value="2018-05", precision=DatePrecision.MONTH),
+                ),
+            ),
+        )
+        resume_b = CanonicalResume(
+            candidate_id="c_test",
+            education=(
+                EducationEntry(
+                    degree_level="bachelors",
+                    field="computer science",
+                    end=DateValue(value="2020-05", precision=DatePrecision.MONTH),
+                ),
+            ),
+        )
+        score_a = S7Education().score(resume_a, spec, _ctx())
+        score_b = S7Education().score(resume_b, spec, _ctx())
+        assert score_a.value == score_b.value
+
+    def test_s4_gender_pronoun_substitution(self) -> None:
+        """Changing the candidate name/pronoun proxy does not affect S4."""
+        resume_a = _resume(_role("2020-01", None, skills=("python",), title_family="logistics"))
+        resume_b = _resume(_role("2020-01", None, skills=("python",), title_family="logistics"))
+        resume_b = resume_b.model_copy(update={"identity": Identity(full_name="Jane Doe")})
+        spec = _spec(domain="logistics", required_skills=("python",))
+        score_a = S4Experience().score(resume_a, spec, _ctx())
+        score_b = S4Experience().score(resume_b, spec, _ctx())
+        assert score_a.value == score_b.value
