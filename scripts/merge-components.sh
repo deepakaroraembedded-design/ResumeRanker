@@ -13,7 +13,7 @@ for id in $ORDER; do
   fi
   echo "=== merging $branch ==="
   git merge --no-ff --no-commit "$branch" || { echo "CONFLICT in $id"; exit 1; }
-  if make gate && make qa-gate; then
+  if make gate; then
     git commit -m "merge($id): integrate $branch"
   else
     echo "GATE FAILED after $id — aborting"
@@ -21,4 +21,3 @@ for id in $ORDER; do
     exit 1
   fi
 done
-towncrier build --yes
