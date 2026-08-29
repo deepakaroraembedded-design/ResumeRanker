@@ -21,9 +21,12 @@ OWNERSHIP: dict[str, tuple[str, ...]] = {
         "src/ats_scan/scoring/__init__.py",
         "src/ats_scan/scoring/registry.py",
         "src/ats_scan/scoring/dimensions/__init__.py",
+        "tests/__init__.py",
         "tests/conftest.py",
         "tests/fakes/",
         "tests/corpus/",
+        "tests/test_fakes_",
+        "tests/test_import_all_modules.py",
         "pyproject.toml",
         "uv.lock",
         "Makefile",
@@ -40,8 +43,6 @@ OWNERSHIP: dict[str, tuple[str, ...]] = {
         "docs/contract-change/",
         "README.md",
         "Dockerfile",
-        "changelog.d/",
-        "docs/dep-requests/",
     ),
     "C-QA": (
         "tests/qa/",
@@ -49,22 +50,25 @@ OWNERSHIP: dict[str, tuple[str, ...]] = {
         "scripts/qa/",
         "changelog.d/C-QA.",
         "docs/dep-requests/C-QA.md",
+        "docs/contract-change/C-QA-",
     ),
-    "C-01": ("src/ats_scan/ingest/", "tests/unit/ingest/", "changelog.d/C-01.", "docs/dep-requests/C-01.md"),
-    "C-02": ("src/ats_scan/extract/pdf/", "src/ats_scan/extract/ocr/", "tests/unit/extract_pdf/", "tests/adversarial/test_pdf_", "changelog.d/C-02.", "docs/dep-requests/C-02.md"),
-    "C-03": ("src/ats_scan/extract/office/", "src/ats_scan/extract/plain/", "tests/unit/extract_office/", "changelog.d/C-03.", "docs/dep-requests/C-03.md"),
-    "C-04": ("src/ats_scan/ontology/", "data/ontology/", "data/titles/", "tests/unit/ontology/", "tests/property/test_ontology_", "changelog.d/C-04.", "docs/dep-requests/C-04.md"),
-    "C-05": ("src/ats_scan/llm/", "tests/unit/llm/", "changelog.d/C-05.", "docs/dep-requests/C-05.md"),
-    "C-06": ("src/ats_scan/integrity/", "tests/unit/integrity/", "tests/adversarial/test_integrity_", "changelog.d/C-06.", "docs/dep-requests/C-06.md"),
-    "C-07": ("src/ats_scan/report/", "tests/unit/report/", "changelog.d/C-07.", "docs/dep-requests/C-07.md"),
-    "C-08": ("src/ats_scan/structure/", "tests/unit/structure/", "tests/golden/structure/", "changelog.d/C-08.", "docs/dep-requests/C-08.md"),
-    "C-09": ("src/ats_scan/jobspec/", "tests/unit/jobspec/", "changelog.d/C-09.", "docs/dep-requests/C-09.md"),
-    "C-10": ("src/ats_scan/scoring/evidence.py", "src/ats_scan/scoring/dimensions/s1_required_skills.py", "src/ats_scan/scoring/dimensions/s2_preferred_skills.py", "src/ats_scan/scoring/dimensions/s8_skill_recency.py", "tests/unit/scoring_evidence/", "changelog.d/C-10.", "docs/dep-requests/C-10.md"),
-    "C-11": ("src/ats_scan/embeddings/", "src/ats_scan/scoring/dimensions/s3_semantic.py", "tests/unit/scoring_semantic/", "changelog.d/C-11.", "docs/dep-requests/C-11.md"),
-    "C-12": ("src/ats_scan/scoring/dimensions/s4_experience.py", "src/ats_scan/scoring/dimensions/s5_title.py", "src/ats_scan/scoring/dimensions/s6_domain.py", "src/ats_scan/scoring/dimensions/s7_education.py", "src/ats_scan/scoring/dimensions/s9_trajectory.py", "src/ats_scan/scoring/dimensions/s10_parseability.py", "tests/unit/scoring_profile/", "changelog.d/C-12.", "docs/dep-requests/C-12.md"),
-    "C-13": ("src/ats_scan/scoring/aggregate.py", "src/ats_scan/scoring/confidence.py", "src/ats_scan/scoring/bands.py", "src/ats_scan/scoring/tiebreak.py", "src/ats_scan/scoring/filters.py", "tests/unit/scoring_aggregate/", "tests/property/test_aggregate_", "changelog.d/C-13.", "docs/dep-requests/C-13.md"),
-    "C-14": ("src/ats_scan/fairness/", "tests/fairness/", "changelog.d/C-14.", "docs/dep-requests/C-14.md"),
-    "C-15": ("src/ats_scan/cli/", "src/ats_scan/config/", "src/ats_scan/pipeline.py", "tests/integration/", "tests/e2e/", "tests/benchmark/", "changelog.d/C-15.", "docs/dep-requests/C-15.md"),
+    "C-01": ("src/ats_scan/ingest/", "tests/unit/ingest/", "changelog.d/C-01.", "docs/dep-requests/C-01.md", "docs/contract-change/C-01-"),
+    "C-02": ("src/ats_scan/extract/pdf/", "src/ats_scan/extract/ocr/", "tests/unit/extract_pdf/", "tests/adversarial/test_pdf_", "changelog.d/C-02.", "docs/dep-requests/C-02.md", "docs/contract-change/C-02-"),
+    "C-03": ("src/ats_scan/extract/office/", "src/ats_scan/extract/plain/", "tests/unit/extract_office/", "changelog.d/C-03.", "docs/dep-requests/C-03.md", "docs/contract-change/C-03-"),
+    "C-04": ("src/ats_scan/ontology/", "data/ontology/", "data/titles/", "tests/unit/ontology/", "tests/property/test_ontology_", "changelog.d/C-04.", "docs/dep-requests/C-04.md", "docs/contract-change/C-04-"),
+    "C-05": ("src/ats_scan/llm/", "tests/unit/llm/", "changelog.d/C-05.", "docs/dep-requests/C-05.md", "docs/contract-change/C-05-"),
+    "C-06": ("src/ats_scan/integrity/", "tests/unit/integrity/", "tests/adversarial/test_integrity_", "changelog.d/C-06.", "docs/dep-requests/C-06.md", "docs/contract-change/C-06-"),
+    "C-07": ("src/ats_scan/report/", "tests/unit/report/", "changelog.d/C-07.", "docs/dep-requests/C-07.md", "docs/contract-change/C-07-"),
+    "C-08": ("src/ats_scan/structure/", "tests/unit/structure/", "tests/golden/structure/", "changelog.d/C-08.", "docs/dep-requests/C-08.md", "docs/contract-change/C-08-"),
+    "C-09": ("src/ats_scan/jobspec/", "tests/unit/jobspec/", "changelog.d/C-09.", "docs/dep-requests/C-09.md", "docs/contract-change/C-09-"),
+    "C-10": ("src/ats_scan/scoring/evidence.py", "src/ats_scan/scoring/dimensions/s1_required_skills.py", "src/ats_scan/scoring/dimensions/s2_preferred_skills.py", "src/ats_scan/scoring/dimensions/s8_skill_recency.py", "tests/unit/scoring_evidence/", "changelog.d/C-10.", "docs/dep-requests/C-10.md", "docs/contract-change/C-10-"),
+    # The shared Wave-0 xfail test file spans all three scoring components; each
+    # component removes the marker for the dimensions it owns.
+    "C-11": ("src/ats_scan/embeddings/", "src/ats_scan/scoring/dimensions/s3_semantic.py", "tests/unit/scoring_semantic/", "tests/unit/scoring_evidence/test_dimension_xfail.py", "changelog.d/C-11.", "docs/dep-requests/C-11.md", "docs/contract-change/C-11-"),
+    "C-12": ("src/ats_scan/scoring/dimensions/s4_experience.py", "src/ats_scan/scoring/dimensions/s5_title.py", "src/ats_scan/scoring/dimensions/s6_domain.py", "src/ats_scan/scoring/dimensions/s7_education.py", "src/ats_scan/scoring/dimensions/s9_trajectory.py", "src/ats_scan/scoring/dimensions/s10_parseability.py", "tests/unit/scoring_profile/", "tests/unit/scoring_evidence/test_dimension_xfail.py", "changelog.d/C-12.", "docs/dep-requests/C-12.md", "docs/contract-change/C-12-"),
+    "C-13": ("src/ats_scan/scoring/aggregate.py", "src/ats_scan/scoring/confidence.py", "src/ats_scan/scoring/bands.py", "src/ats_scan/scoring/tiebreak.py", "src/ats_scan/scoring/filters.py", "tests/unit/scoring_aggregate/", "tests/property/test_aggregate_", "changelog.d/C-13.", "docs/dep-requests/C-13.md", "docs/contract-change/C-13-"),
+    "C-14": ("src/ats_scan/fairness/", "tests/fairness/", "changelog.d/C-14.", "docs/dep-requests/C-14.md", "docs/contract-change/C-14-"),
+    "C-15": ("src/ats_scan/cli/", "src/ats_scan/config/", "src/ats_scan/pipeline.py", "tests/integration/", "tests/e2e/", "tests/benchmark/", "changelog.d/C-15.", "docs/dep-requests/C-15.md", "docs/contract-change/C-15-"),
 }
 
 
@@ -93,7 +97,11 @@ def infer_component(branch: str) -> str | None:
     if branch.startswith("feat/"):
         prefix = branch.split("/")[1]
         if prefix.startswith("C-"):
-            return prefix.split("-")[0]
+            parts = prefix.split("-")
+            if parts[1] == "QA":
+                return "C-QA"
+            if parts[1].isdigit():
+                return f"C-{parts[1]:0>2}"
     return None
 
 
