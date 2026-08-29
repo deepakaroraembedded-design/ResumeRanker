@@ -20,6 +20,10 @@ class IngestConfig(BaseModel):
     max_pages: int = 40
     simhash_hamming_max: int = 3
     match_on_contact: bool = True
+    languages: tuple[str, ...] = ("en",)  # supported document languages (FR-209)
+    office_converter_command: str | None = None  # soffice binary path (FR-208)
+    office_converter_timeout_seconds: int = 60  # hard wall-clock timeout (FR-208)
+    failure_tolerance: float = 0.20  # fraction of docs that may fail before exit 5
 
 
 class ProficiencyFactors(BaseModel):
