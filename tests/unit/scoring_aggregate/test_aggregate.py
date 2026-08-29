@@ -242,6 +242,23 @@ class TestConfidence:
         c = confidence(resume, sub_scores, "hybrid")
         assert c == pytest.approx(0.30 + 0.25 + 0.0 + 0.20 * (1.0 - 2.5 / 25.0), abs=0.01)
 
+    def test_extraction_quality_from_metadata_quality(self) -> None:
+        meta = ExtractionMetadata(method="fake", quality=0.75)
+        resume = CanonicalResume(
+            candidate_id="c_test", parse_completeness=1.0, extraction=meta
+        )
+        sub_scores: dict[str, SubScore] = {}
+        c = confidence(resume, sub_scores, "deterministic")
+        assert c == pytest.approx(0.30 + 0.25 * 0.75 + 0.25 * 0.0 + 0.20, abs=0.01)
+
+    def test_model_agreement_defaults_to_one_when_s3_detail_missing(self) -> None:
+        resume = self._resume()
+        sub_scores = {"S3": SubScore(dimension="S3", value=70.0, detail={})}
+        c = confidence(resume, sub_scores, "hybrid")
+        # With no evidence the density term is 0; model_agreement falls back to 1.0.
+        expected = 0.30 + 0.25 + 0.25 * 0.0 + 0.20 * 1.0
+        assert c == pytest.approx(expected, abs=0.01)
+
 
 class TestTieBreak:
     """Deterministic ranking per TRD §5.6."""
