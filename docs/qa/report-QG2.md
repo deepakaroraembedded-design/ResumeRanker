@@ -165,13 +165,13 @@ Required test coverage of 85% reached. Total coverage: 86.57%
 -------------------------------------------------------- benchmark: 1 tests -------------------------------------------------------
 Name (time in us)                    Min       Max      Mean   StdDev    Median     IQR  Outliers  OPS (Kops/s)  Rounds  Iterations
 -----------------------------------------------------------------------------------------------------------------------------------
-test_pipeline_run_benchmark     305.7331  726.8160  331.3709  46.8625  322.0220  9.4090   153;174        3.0178    2314           1
+test_pipeline_run_benchmark     311.5430  733.9669  340.8765  32.5516  333.6730  2.5875   132;367        2.9336    2203           1
 -----------------------------------------------------------------------------------------------------------------------------------
 
 Legend:
   Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
   OPS: Operations Per Second, computed as 1 / Mean
-558 passed, 17 deselected in 14.49s
+558 passed, 17 deselected in 14.59s
 uv run --group dev python scripts/validate_schemas.py docs/contracts src
 wrote docs/contracts/source_document.schema.json
 wrote docs/contracts/extracted_text.schema.json
