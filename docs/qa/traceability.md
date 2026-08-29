@@ -48,13 +48,13 @@
 | FR-308 | M | — | uncovered |
 | FR-309 | M | — | uncovered |
 | FR-310 | M | — | uncovered |
-| FR-401 | M | — | uncovered |
-| FR-402 | M | — | uncovered |
-| FR-403 | S | — | uncovered |
-| FR-404 | M | — | uncovered |
-| FR-405 | M | — | uncovered |
-| FR-406 | S | — | uncovered |
-| FR-407 | M | — | uncovered |
+| FR-401 | M | tests/unit/jobspec/test_compile.py | covered |
+| FR-402 | M | tests/unit/jobspec/test_compile.py | covered |
+| FR-403 | S | tests/unit/jobspec/test_compile.py | covered |
+| FR-404 | M | tests/unit/jobspec/test_compile.py | covered |
+| FR-405 | M | tests/unit/jobspec/test_compile.py | covered |
+| FR-406 | S | tests/unit/jobspec/test_compile.py | covered |
+| FR-407 | M | tests/unit/jobspec/test_compile.py | covered |
 | FR-501 | M | — | uncovered |
 | FR-502 | M | — | uncovered |
 | FR-503 | M | — | uncovered |
@@ -118,11 +118,6 @@
 - FR-308
 - FR-309
 - FR-310
-- FR-401
-- FR-402
-- FR-404
-- FR-405
-- FR-407
 - FR-501
 - FR-502
 - FR-503

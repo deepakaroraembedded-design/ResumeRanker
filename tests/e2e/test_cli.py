@@ -269,3 +269,185 @@ def test_run_command_with_real_pipeline(tmp_path: Path) -> None:
         assert card.composite is not None
         assert card.band is not None
         assert card.rank is not None
+
+
+def test_run_command_rejects_existing_output_directory_without_force(tmp_path: Path) -> None:
+    resumes_dir = tmp_path / "resumes"
+    resumes_dir.mkdir()
+    (resumes_dir / "r1.txt").write_text("Alice Python 5 years", encoding="utf-8")
+    jd_path = tmp_path / "jd.txt"
+    jd_path.write_text("Senior Software Engineer\nPython\n", encoding="utf-8")
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "existing.txt").write_text("do not overwrite", encoding="utf-8")
+
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--resumes",
+            str(resumes_dir),
+            "--jd",
+            str(jd_path),
+            "--out",
+            str(out),
+            "--mode",
+            "offline",
+        ],
+    )
+    assert result.exit_code == 7, result.output
+
+
+def test_run_command_rejects_hybrid_mode_without_provider(tmp_path: Path) -> None:
+    resumes_dir = tmp_path / "resumes"
+    resumes_dir.mkdir()
+    (resumes_dir / "r1.txt").write_text("Alice Python 5 years", encoding="utf-8")
+    jd_path = tmp_path / "jd.txt"
+    jd_path.write_text("Senior Software Engineer\nPython\n", encoding="utf-8")
+    out = tmp_path / "out"
+
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--resumes",
+            str(resumes_dir),
+            "--jd",
+            str(jd_path),
+            "--out",
+            str(out),
+            "--mode",
+            "hybrid",
+        ],
+    )
+    assert result.exit_code == 6, result.output
+    assert "llm.provider" in result.output
+
+
+def test_run_command_review_jobspec_flag(tmp_path: Path) -> None:
+    resumes_dir = tmp_path / "resumes"
+    resumes_dir.mkdir()
+    jd_path = tmp_path / "jd.txt"
+    jd_path.write_text("Senior Software Engineer\nPython\n", encoding="utf-8")
+    out = tmp_path / "out"
+
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--resumes",
+            str(resumes_dir),
+            "--jd",
+            str(jd_path),
+            "--out",
+            str(out),
+            "--mode",
+            "offline",
+            "--review-jobspec",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "review" in result.output.lower()
+
+
+def test_run_command_dry_run(tmp_path: Path) -> None:
+    resumes_dir = tmp_path / "resumes"
+    resumes_dir.mkdir()
+    (resumes_dir / "r1.txt").write_text("Alice Python 5 years", encoding="utf-8")
+    jd_path = tmp_path / "jd.txt"
+    jd_path.write_text("Senior Software Engineer\nPython\n", encoding="utf-8")
+    out = tmp_path / "out"
+
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--resumes",
+            str(resumes_dir),
+            "--jd",
+            str(jd_path),
+            "--out",
+            str(out),
+            "--mode",
+            "offline",
+            "--dry-run",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "Would score 1 document" in result.output
+
+
+def test_run_command_no_readable_resumes(tmp_path: Path) -> None:
+    resumes_dir = tmp_path / "resumes"
+    resumes_dir.mkdir()
+    jd_path = tmp_path / "jd.txt"
+    jd_path.write_text("Senior Software Engineer\nPython\n", encoding="utf-8")
+    out = tmp_path / "out"
+
+    result = runner.invoke(
+        app,
+        [
+            "run",
+            "--resumes",
+            str(resumes_dir),
+            "--jd",
+            str(jd_path),
+            "--out",
+            str(out),
+            "--mode",
+            "offline",
+        ],
+    )
+    assert result.exit_code == 3, result.output
+
+
+def test_parse_command_no_readable_resumes(tmp_path: Path) -> None:
+    resumes_dir = tmp_path / "resumes"
+    resumes_dir.mkdir()
+    out = tmp_path / "out"
+
+    result = runner.invoke(
+        app,
+        ["parse", "--resumes", str(resumes_dir), "--out", str(out)],
+    )
+    assert result.exit_code == 3, result.output
+
+
+def test_compile_jd_command_real_failure(tmp_path: Path) -> None:
+    jd_path = tmp_path / "jd.txt"
+    jd_path.write_text("", encoding="utf-8")
+    out = tmp_path / "jobspec.yaml"
+
+    result = runner.invoke(app, ["compile-jd", "--jd", str(jd_path), "--out", str(out)])
+    assert result.exit_code == 4, result.output
+
+
+def test_explain_command_scorecard_not_found(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["explain", "--out", str(tmp_path), "--candidate", "c_missing"])
+    assert result.exit_code == 2, result.output
+
+
+def test_explain_command_invalid_scorecard(tmp_path: Path) -> None:
+    candidates = tmp_path / "candidates"
+    candidates.mkdir()
+    (candidates / "c_bad.scorecard.json").write_text("not json", encoding="utf-8")
+    result = runner.invoke(app, ["explain", "--out", str(tmp_path), "--candidate", "c_bad"])
+    assert result.exit_code == 2, result.output
+
+
+def test_validate_config_command_rejects_invalid_yaml(tmp_path: Path) -> None:
+    config_path = tmp_path / "bad.yaml"
+    config_path.write_text("{invalid", encoding="utf-8")
+    result = runner.invoke(app, ["validate-config", "--config", str(config_path)])
+    assert result.exit_code == 2, result.output
+
+
+def test_audit_command_manifest_not_found(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["audit", "--out", str(tmp_path)])
+    assert result.exit_code == 2, result.output
+
+
+def test_audit_command_incomplete_manifest(tmp_path: Path) -> None:
+    (tmp_path / "run_manifest.json").write_text('{"run_id": "x"}', encoding="utf-8")
+    result = runner.invoke(app, ["audit", "--out", str(tmp_path)])
+    assert result.exit_code == 2, result.output

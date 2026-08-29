@@ -56,6 +56,7 @@ JD_FIXTURES = [
     "filename,title,required,preferred,min_years",
     JD_FIXTURES,
 )
+@pytest.mark.covers("FR-401")
 def test_compile_fixture_jd(
     compiler: JobSpecCompiler,
     run_context: RunContext,
@@ -83,11 +84,13 @@ def test_compile_fixture_jd(
     )
 
 
+@pytest.mark.covers("FR-401")
 def test_satisfies_protocol(compiler: JobSpecCompiler) -> None:
     """The default compiler satisfies the JobSpecCompiler protocol."""
     assert isinstance(compiler, JobSpecCompilerProtocol)
 
 
+@pytest.mark.covers("FR-402")
 def test_compile_yaml_bypasses_llm(compiler: JobSpecCompiler, run_context: RunContext) -> None:
     """FR-402: hand-authored YAML bypasses the free-text parser."""
     source = """
@@ -114,6 +117,7 @@ experience:
     assert spec.preferred_skills == (PreferredSkill(canonical="sql", weight=2),)
 
 
+@pytest.mark.covers("FR-402")
 def test_compile_json_bypasses_llm(compiler: JobSpecCompiler, run_context: RunContext) -> None:
     """FR-402: hand-authored JSON also bypasses the free-text parser."""
     source = (
@@ -127,6 +131,7 @@ def test_compile_json_bypasses_llm(compiler: JobSpecCompiler, run_context: RunCo
     assert result.value.title == "JSON Job"
 
 
+@pytest.mark.covers("FR-402")
 def test_compile_invalid_yaml_is_fatal(compiler: JobSpecCompiler, run_context: RunContext) -> None:
     """A hand-authored JobSpec that fails validation is a fatal error."""
     source = """
@@ -139,6 +144,7 @@ required_skills: not_a_list
     assert any(d.fatal for d in result.diagnostics)
 
 
+@pytest.mark.covers("FR-401")
 def test_compile_empty_source_is_fatal(compiler: JobSpecCompiler, run_context: RunContext) -> None:
     """Empty JD source is a fatal compilation error."""
     result = compiler.compile("", run_context)
@@ -146,6 +152,7 @@ def test_compile_empty_source_is_fatal(compiler: JobSpecCompiler, run_context: R
     assert any(d.fatal and d.code == "JD_EMPTY" for d in result.diagnostics)
 
 
+@pytest.mark.covers("FR-401")
 def test_compile_whitespace_source_is_fatal(
     compiler: JobSpecCompiler, run_context: RunContext
 ) -> None:
@@ -154,6 +161,7 @@ def test_compile_whitespace_source_is_fatal(
     assert any(d.fatal for d in result.diagnostics)
 
 
+@pytest.mark.covers("FR-404")
 def test_ambiguous_requirements_default_to_weighted(
     compiler: JobSpecCompiler, run_context: RunContext
 ) -> None:
@@ -165,6 +173,7 @@ def test_ambiguous_requirements_default_to_weighted(
     assert any(s.canonical == "rust" for s in result.value.required_skills)
 
 
+@pytest.mark.covers("FR-405")
 def test_importance_weights_overridable(run_context: RunContext) -> None:
     """FR-405: weight phrases can be overridden via configuration."""
     custom_phrases = (("crucial", 5), ("helpful", 2))
@@ -176,6 +185,7 @@ def test_importance_weights_overridable(run_context: RunContext) -> None:
     assert weights == {"python": 5, "rust": 2}
 
 
+@pytest.mark.covers("FR-405")
 def test_importance_weights_from_language(
     compiler: JobSpecCompiler, run_context: RunContext
 ) -> None:
@@ -198,6 +208,7 @@ def test_importance_weights_from_language(
     }
 
 
+@pytest.mark.covers("FR-406")
 def test_warning_above_required_skill_limit(
     compiler: JobSpecCompiler, run_context: RunContext
 ) -> None:
@@ -209,6 +220,7 @@ def test_warning_above_required_skill_limit(
     assert any("limit 12" in w for w in result.value.warnings)
 
 
+@pytest.mark.covers("FR-407")
 def test_protected_proxy_language_flagged(
     compiler: JobSpecCompiler, run_context: RunContext
 ) -> None:
@@ -223,6 +235,7 @@ def test_protected_proxy_language_flagged(
     assert any("career gaps" in w for w in warnings)
 
 
+@pytest.mark.covers("FR-407")
 def test_proxy_knockout_requires_acknowledgement(
     compiler: JobSpecCompiler, run_context: RunContext
 ) -> None:
@@ -240,6 +253,7 @@ knockouts:
     assert any("recent graduate" in d.message for d in result.diagnostics)
 
 
+@pytest.mark.covers("FR-407")
 def test_proxy_knockout_allowed_when_acknowledged(run_context: RunContext) -> None:
     source = """
 job_id: jd_proxy
@@ -254,6 +268,7 @@ knockouts:
     assert result.ok, result.diagnostics
 
 
+@pytest.mark.covers("FR-403")
 def test_review_file_written(
     compiler: JobSpecCompiler, run_context: RunContext, output_dir: Path
 ) -> None:
@@ -264,6 +279,7 @@ def test_review_file_written(
     assert (output_dir / "jobspec.yaml").exists()
 
 
+@pytest.mark.covers("FR-403")
 def test_review_mode_writes_pending_sidecar(run_context: RunContext, output_dir: Path) -> None:
     """FR-403: review mode writes a pending sidecar alongside the JobSpec."""
     compiler = JobSpecCompiler(review_mode=True)
@@ -274,6 +290,7 @@ def test_review_mode_writes_pending_sidecar(run_context: RunContext, output_dir:
     assert (output_dir / "jobspec.review.yaml").exists()
 
 
+@pytest.mark.covers("FR-401")
 def test_knockout_rules_from_sections(compiler: JobSpecCompiler, run_context: RunContext) -> None:
     """FR-401: explicit knockout sections are turned into KnockoutRule objects."""
     source = (
@@ -284,3 +301,106 @@ def test_knockout_rules_from_sections(compiler: JobSpecCompiler, run_context: Ru
     assert result.ok
     assert len(result.value.knockouts) == 1
     assert "authorized to work" in result.value.knockouts[0].rule.lower()
+
+
+@pytest.mark.covers("FR-402")
+def test_compile_structured_looks_like_yaml_but_not_dict(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """A YAML/JSON-looking source that is not a dict falls back to free-text parsing."""
+    result = compiler.compile("- just a list\n- of items\n", run_context)
+    assert result.ok, result.diagnostics
+
+
+@pytest.mark.covers("FR-402")
+def test_compile_structured_without_job_id_or_title(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """A YAML mapping without job_id or title falls back to free-text parsing."""
+    result = compiler.compile("foo: bar\n", run_context)
+    assert result.ok, result.diagnostics
+
+
+@pytest.mark.covers("FR-402")
+def test_compile_malformed_json_falls_back_to_free_text(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """Malformed JSON that looks structured falls back to free-text parsing."""
+    result = compiler.compile('{"job_id": "bad", "title": "Bad"', run_context)
+    assert result.ok, result.diagnostics
+
+
+@pytest.mark.covers("FR-403")
+def test_compile_jd_write_failure_on_read_only_dir(
+    compiler: JobSpecCompiler, run_context: RunContext, tmp_path: Path
+) -> None:
+    """An OSError when writing the review JobSpec is surfaced as a fatal diagnostic."""
+    read_only = tmp_path / "readonly"
+    read_only.mkdir(mode=0o555)
+    ctx = RunContext(run_id="test", output_dir=read_only)
+    result = compiler.compile("Role\n\nRequired:\n- Python\n", ctx)
+    assert not result.ok
+    assert any(d.code == "JD_WRITE_FAILED" for d in result.diagnostics)
+
+
+@pytest.mark.covers("FR-401")
+def test_seniority_inference_junior(compiler: JobSpecCompiler, run_context: RunContext) -> None:
+    result = compiler.compile("Junior Data Engineer\n\nRequired:\n- Python\n", run_context)
+    assert result.ok
+    assert result.value.target_seniority == "junior"
+
+
+@pytest.mark.covers("FR-401")
+def test_seniority_inference_lead(compiler: JobSpecCompiler, run_context: RunContext) -> None:
+    result = compiler.compile("Lead Software Engineer\n\nRequired:\n- Python\n", run_context)
+    assert result.ok
+    assert result.value.target_seniority == "lead"
+
+
+@pytest.mark.covers("FR-401")
+def test_title_extraction_from_markdown_heading(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    result = compiler.compile("# Senior Role\n\nRequired:\n- Python\n", run_context)
+    assert result.ok
+    assert result.value.title == "Senior Role"
+
+
+@pytest.mark.covers("FR-401")
+def test_education_extraction_bachelors_in_computer_science(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    source = (
+        "Role\n\nRequired:\n- Python\n\n"
+        "Education:\n- Bachelor's degree in Computer Science or equivalent experience\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    assert result.value.education is not None
+    assert result.value.education.min_level == "bachelors"
+    assert result.value.education.fields == ("computer science",)
+    assert result.value.education.equivalent_experience_allowed is True
+    assert result.value.education.knockout is False
+
+
+@pytest.mark.covers("FR-401")
+def test_education_extraction_masters_degree_knockout(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    source = (
+        "Role\n\nRequired:\n- Python\n\nEducation:\n- Master's degree required. Degree required.\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    assert result.value.education is not None
+    assert result.value.education.min_level == "masters"
+    assert result.value.education.knockout is True
+
+
+@pytest.mark.covers("FR-401")
+def test_domain_extraction(compiler: JobSpecCompiler, run_context: RunContext) -> None:
+    source = "Role\n\nMust have:\n- Python\n\nDomain: fintech\n"
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    assert result.value.domain is not None
+    assert result.value.domain.industry == "fintech"
