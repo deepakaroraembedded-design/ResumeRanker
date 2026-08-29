@@ -1,5 +1,7 @@
 # Mutation testing triage — QG1
 
-Tool `mutmut` is not installed.
+Tool `mutmut` was missing during the QG1 run.
 
-A dependency request has been recorded in docs/dep-requests/C-QA.md.
+Resolved: `mutmut` is now pinned in the dev dependency group and configured
+in `pyproject.toml`. The active mutation triage report is
+[`mutants-QG2.md`](mutants-QG2.md).

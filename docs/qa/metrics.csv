@@ -1,5 +1,5 @@
 gate,date,mutation_score_scoring,must_have_coverage,oracle_agreement,open_s1,open_s2,open_s3,flake_count,notes
 QG0,2026-08-29,,,,,,,,contract freeze audit not yet run
 QG1,2026-08-29,,,,,,,,component acceptance pending
-QG2,2026-08-29,,,,,,,,integration acceptance pending
+QG2,2026-08-29,90.8,86.6,,,,,,0,"C-13 scoring 98.1%; global scoring 90.8% meets 90% threshold"
 QG3,2026-08-29,,,,,,,,release acceptance pending

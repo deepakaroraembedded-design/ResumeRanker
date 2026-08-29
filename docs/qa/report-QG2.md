@@ -6,7 +6,7 @@ Command: make gate
 ```
 make[1]: Entering directory '/home/deepak7121/RESUMERANKER'
 uv run --group dev ruff format --check src tests
-270 files already formatted
+272 files already formatted
 uv run --group dev ruff check src tests
 All checks passed!
 uv run --group dev mypy --strict src
@@ -37,14 +37,16 @@ Domain models do not import implementation layers KEPT
 
 Contracts: 4 kept, 0 broken.
 uv run --group dev pytest -m "not slow" --cov=ats_scan --cov-fail-under=85
-........................................................................ [ 12%]
-........................................................................ [ 25%]
-........................................................................ [ 38%]
-........................................................................ [ 51%]
-........................................................................ [ 64%]
-........................................................................ [ 77%]
-........................................................................ [ 90%]
-......................................................                   [100%]
+........................................................................ [ 10%]
+........................................................................ [ 20%]
+........................................................................ [ 30%]
+........................................................................ [ 40%]
+........................................................................ [ 50%]
+........................................................................ [ 61%]
+........................................................................ [ 71%]
+........................................................................ [ 81%]
+........................................................................ [ 91%]
+...........................................................              [100%]
 ================================ tests coverage ================================
 _______________ coverage: platform linux, python 3.12.14-final-0 _______________
 
@@ -136,19 +138,19 @@ src/ats_scan/report/xlsx.py                                 68      0     16    
 src/ats_scan/scoring/__init__.py                             3      0      0      0   100%
 src/ats_scan/scoring/aggregate.py                           40      0     12      1    98%
 src/ats_scan/scoring/bands.py                               13      0      8      0   100%
-src/ats_scan/scoring/confidence.py                          39      2     20      4    90%
+src/ats_scan/scoring/confidence.py                          39      0     20      1    98%
 src/ats_scan/scoring/dimensions/__init__.py                  1      0      0      0   100%
 src/ats_scan/scoring/dimensions/s1_required_skills.py       19      0      2      0   100%
 src/ats_scan/scoring/dimensions/s2_preferred_skills.py      19      0      2      0   100%
-src/ats_scan/scoring/dimensions/s3_semantic.py             172     15     62     14    88%
-src/ats_scan/scoring/dimensions/s4_experience.py           142     17     56     10    85%
-src/ats_scan/scoring/dimensions/s5_title.py                 84     19     34      8    74%
-src/ats_scan/scoring/dimensions/s6_domain.py                75     24     28      5    62%
-src/ats_scan/scoring/dimensions/s7_education.py            107     19     46     11    78%
+src/ats_scan/scoring/dimensions/s3_semantic.py             172      7     62      8    94%
+src/ats_scan/scoring/dimensions/s4_experience.py           142      8     56      2    94%
+src/ats_scan/scoring/dimensions/s5_title.py                 84      8     34      2    90%
+src/ats_scan/scoring/dimensions/s6_domain.py                75      8     28      2    88%
+src/ats_scan/scoring/dimensions/s7_education.py            107      5     46      2    95%
 src/ats_scan/scoring/dimensions/s8_skill_recency.py         31      0      6      0   100%
-src/ats_scan/scoring/dimensions/s9_trajectory.py            97     23     42      7    71%
-src/ats_scan/scoring/dimensions/s10_parseability.py         51      3     22      3    92%
-src/ats_scan/scoring/evidence.py                           202     22     86     14    85%
+src/ats_scan/scoring/dimensions/s9_trajectory.py            97      7     42      2    92%
+src/ats_scan/scoring/dimensions/s10_parseability.py         51      1     22      1    97%
+src/ats_scan/scoring/evidence.py                           202      5     86      3    97%
 src/ats_scan/scoring/filters.py                             28      0      8      0   100%
 src/ats_scan/scoring/registry.py                            20      1      6      2    88%
 src/ats_scan/scoring/tiebreak.py                            13      0      2      0   100%
@@ -159,19 +161,19 @@ src/ats_scan/structure/llm_parse.py                        186     16     52    
 src/ats_scan/structure/sections.py                         168     15     84     14    87%
 src/ats_scan/telemetry.py                                   17      4      0      0    76%
 ------------------------------------------------------------------------------------------
-TOTAL                                                     6158    618   1930    340    87%
-Required test coverage of 85% reached. Total coverage: 86.57%
+TOTAL                                                     6158    523   1930    287    89%
+Required test coverage of 85% reached. Total coverage: 88.75%
 
 -------------------------------------------------------- benchmark: 1 tests -------------------------------------------------------
 Name (time in us)                    Min       Max      Mean   StdDev    Median     IQR  Outliers  OPS (Kops/s)  Rounds  Iterations
 -----------------------------------------------------------------------------------------------------------------------------------
-test_pipeline_run_benchmark     311.5430  733.9669  340.8765  32.5516  333.6730  2.5875   132;367        2.9336    2203           1
+test_pipeline_run_benchmark     315.2121  511.6340  325.0836  25.0238  318.8230  2.9792   109;336        3.0761    2289           1
 -----------------------------------------------------------------------------------------------------------------------------------
 
 Legend:
   Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
   OPS: Operations Per Second, computed as 1 / Mean
-558 passed, 17 deselected in 14.59s
+707 passed, 17 deselected in 14.73s
 uv run --group dev python scripts/validate_schemas.py docs/contracts src
 wrote docs/contracts/source_document.schema.json
 wrote docs/contracts/extracted_text.schema.json
@@ -211,7 +213,10 @@ Wrote docs/qa/traceability.md
 Command: python scripts/qa/mutate.py --package ats_scan/scoring
 
 ```
-mutmut is not available; dependency request recorded in docs/dep-requests/C-QA.md
+Saved CI/CD stats to mutants/mutmut-cicd-stats.json
+⠹ 1788/1788  🎉 1623 🫥 4  ⏰ 0  🤔 0  🙁 161  🔇 0  🧙 0
+Mutation score: 90.8% (killed 1623, survived 161, no_tests 4, total 1788)
+Wrote docs/qa/mutants-QG2.md
 
 ```
 
