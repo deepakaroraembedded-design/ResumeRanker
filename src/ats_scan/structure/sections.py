@@ -252,13 +252,15 @@ def segment_sections(text: str, blocks: tuple[TextBlock, ...] = ()) -> list[Sect
     for i, (_idx, section_type, heading, start) in enumerate(section_starts):
         next_start = section_starts[i + 1][3] if i + 1 < len(section_starts) else len(text)
         heading_end = start + len(heading)
-        section_text = text[heading_end:next_start].strip()
-        section_blocks = _blocks_in_span(text, blocks, heading_end, next_start)
+        raw_section = text[heading_end:next_start]
+        section_text = raw_section.strip()
+        content_start = heading_end + (len(raw_section) - len(raw_section.lstrip()))
+        section_blocks = _blocks_in_span(text, blocks, content_start, next_start)
         sections.append(
             Section(
                 type=section_type,
                 heading=heading.strip() or None,
-                start=start,
+                start=content_start,
                 end=next_start,
                 text=section_text,
                 blocks=section_blocks,
@@ -401,7 +403,9 @@ def _looks_like_skills_list(text: str) -> bool:
         items_comma = [item.strip() for item in re.split(r"[,;·•]", line) if item.strip()]
         if len(items_comma) >= 2:
             short = sum(
-                1 for item in items_comma if len(item.split()) <= 3 and any(c.isalnum() for c in item)
+                1
+                for item in items_comma
+                if len(item.split()) <= 3 and any(c.isalnum() for c in item)
             )
             if short / len(items_comma) >= 0.5:
                 return True

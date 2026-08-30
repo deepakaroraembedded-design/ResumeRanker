@@ -126,6 +126,80 @@ Used Python in research.
         assert python.mentions >= 2
         assert python.evidence_spans
 
+    def test_evidence_spans_are_exact_token_spans(self) -> None:
+        text = """\
+Skills
+Python, AWS
+"""
+        sections = segment_sections(text)
+        skills = extract_skills(text, sections)
+        by_raw = {s.raw: s for s in skills}
+        assert "Python" in by_raw
+        start, end = by_raw["Python"].evidence_spans[0]
+        assert text[start:end] == "Python"
+
+
+class TestFullTextSkillScanner:
+    """Tests for the supplemental acronym / multi-phrase full-text scanner."""
+
+    def test_scans_acronyms_in_experience(self) -> None:
+        text = """\
+Summary
+Network engineer with routing protocol experience.
+
+Experience
+Built BGP routers and tuned OSPF adjacencies in Python.
+"""
+        sections = segment_sections(text)
+        skills = extract_skills(text, sections)
+        by_raw = {s.raw: s for s in skills}
+        assert "BGP" in by_raw
+        assert "OSPF" in by_raw
+        assert "Python" in by_raw
+        # The scanner should record the experience section as provenance.
+        assert "experience" in by_raw["BGP"].sections
+        assert by_raw["BGP"].mentions >= 1
+
+    def test_does_not_match_inside_longer_words(self) -> None:
+        text = """\
+Experience
+Worked at NATO headquarters on Python logistics systems.
+"""
+        sections = segment_sections(text)
+        skills = extract_skills(text, sections)
+        by_raw = {s.raw: s for s in skills}
+        assert "NATO" not in by_raw
+        assert "NAT" not in by_raw
+
+    def test_skips_contact_section(self) -> None:
+        text = """\
+Contact
+BGP expert
+
+Experience
+Built Python systems.
+"""
+        sections = segment_sections(text)
+        skills = extract_skills(text, sections)
+        by_raw = {s.raw: s for s in skills}
+        assert "BGP" not in by_raw
+        assert "Python" in by_raw
+
+    def test_scanner_evidence_spans_are_exact(self) -> None:
+        text = """\
+Summary
+Network engineer with BGP experience.
+
+Experience
+Built Python systems.
+"""
+        sections = segment_sections(text)
+        skills = extract_skills(text, sections)
+        by_raw = {s.raw: s for s in skills}
+        assert "BGP" in by_raw
+        start, end = by_raw["BGP"].evidence_spans[0]
+        assert text[start:end] == "BGP"
+
 
 class TestBuildTimeline:
     """Tests for calendar-union timeline per TRD §3.3 FR-304."""

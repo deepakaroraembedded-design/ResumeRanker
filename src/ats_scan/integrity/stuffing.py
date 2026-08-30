@@ -164,16 +164,24 @@ class KeywordStuffingDetector:
         if resume is not None:
             share = self._skill_token_share(source, resume)
             # A dedicated skills section is normal; only flag high density outside it.
-            threshold = max(self._config.skills_token_share_max, 0.35)
+            # Technical resumes often contain many legitimate skill terms in
+            # narrative bullets, so the floor is kept at 0.55 rather than 0.35 to
+            # avoid penalising normal experience density.
+            threshold = max(self._config.skills_token_share_max, 0.55)
             if share > threshold:
-                messages.append(
-                    f"skills-section token share {share:.0%} exceeds "
-                    f"{threshold:.0%}"
-                )
+                messages.append(f"skills-section token share {share:.0%} exceeds {threshold:.0%}")
 
             unnarrated = self._unnarrated_skills(resume, source)
             if unnarrated:
-                messages.append(f"claimed-but-unnarrated skills: {', '.join(unnarrated)}")
+                total_skills = len(resume.skills)
+                # A single un-narrated skill is normal; flag only when a
+                # meaningful subset of the claimed skills list has no narrative
+                # support. The threshold is 5 skills or 25% of the list, whichever
+                # is lower, capped at the list size so a one-skill list still
+                # triggers the check.
+                threshold = min(total_skills, max(5, int(0.25 * total_skills)))
+                if len(unnarrated) >= threshold:
+                    messages.append(f"claimed-but-unnarrated skills: {', '.join(unnarrated)}")
 
         if not messages:
             return ()

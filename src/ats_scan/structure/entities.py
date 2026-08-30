@@ -21,6 +21,7 @@ from ats_scan.models.resume import (
 from ats_scan.models.source import ExtractedText
 from ats_scan.structure.dates import calendar_union, month_range, parse_date_range
 from ats_scan.structure.sections import Section, SectionType, _looks_like_skills_list
+from ats_scan.structure.skills_scanner import scan_text_for_skills
 
 _EMAIL_RE: Final[re.Pattern[str]] = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 _PHONE_RE: Final[re.Pattern[str]] = re.compile(
@@ -154,7 +155,7 @@ _SKILLS_LIST_STOP_WORDS: Final[frozenset[str]] = frozenset(
 
 
 # Section labels that count toward parse completeness.
-_REQUIRED_SECTIONS: Final[frozenset[SectionType]] = frozenset(
+_REQUIRED_SECTIONS: Final[frozenset[str]] = frozenset(
     {
         SectionType.EXPERIENCE,
         SectionType.EDUCATION,
@@ -539,6 +540,36 @@ def _sentence_spans(text: str) -> list[tuple[int, int, str]]:
     return sentences
 
 
+def _token_abs_span(
+    sentence: str, token: str, sent_start: int, section_start: int
+) -> tuple[int, int]:
+    """Return the absolute resume span of *token* as it appears in *sentence*.
+
+    The sentence span is already relative to the section start. If the token is
+    not found (e.g. it was normalised away), fall back to the whole sentence.
+    """
+    offset = sentence.find(token)
+    if offset == -1:
+        return (section_start + sent_start, section_start + sent_start + len(sentence))
+    abs_start = section_start + sent_start + offset
+    return abs_start, abs_start + len(token)
+
+
+def _sentence_for_span(text: str, start: int, end: int) -> str:
+    """Return the sentence that contains the character span [start, end).
+
+    The search expands outward to the nearest sentence boundary (``.``, ``!``,
+    ``?`` or newline). If no boundary is found the whole text is returned.
+    """
+    sent_start = start
+    while sent_start > 0 and text[sent_start - 1] not in ".!?\n":
+        sent_start -= 1
+    sent_end = end
+    while sent_end < len(text) and text[sent_end] not in ".!?\n":
+        sent_end += 1
+    return text[sent_start:sent_end].strip()
+
+
 @dataclass
 class _SkillHarvest:
     """Accumulator for one skill mention across a resume."""
@@ -558,19 +589,38 @@ def extract_skills(text: str, sections: list[Section]) -> tuple[SkillMention, ..
     """
     by_skill: dict[str, _SkillHarvest] = defaultdict(_SkillHarvest)
     for section in sections:
-        for sent_start, sent_end, sentence in _sentence_spans(section.text):
-            is_skills_list = section.type == SectionType.SKILLS and _looks_like_skills_list(sentence)
-            tokens = _skill_tokens_from_list(sentence) if is_skills_list else _skill_tokens(sentence)
+        for sent_start, _sent_end, sentence in _sentence_spans(section.text):
+            is_skills_list = section.type == SectionType.SKILLS and _looks_like_skills_list(
+                sentence
+            )
+            tokens = (
+                _skill_tokens_from_list(sentence) if is_skills_list else _skill_tokens(sentence)
+            )
             for token in tokens:
                 entry = by_skill[token]
-                entry.sections.add(section.type.value)
+                entry.sections.add(str(section.type))
                 entry.mentions += 1
-                abs_start = section.start + sent_start
-                abs_end = section.start + sent_end
-                entry.evidence_spans.append((abs_start, abs_end))
+                entry.evidence_spans.append(
+                    _token_abs_span(sentence, token, sent_start, section.start)
+                )
                 if entry.first_used is None:
                     entry.first_used = sentence
                 entry.last_used = sentence
+
+    # Full-text scan for known skill phrases that the token-based harvest misses
+    # (acronyms, multi-word phrases, and tokens not separated by commas in skills
+    # lists). The scanner is anchored to the same text and sections so evidence
+    # spans remain valid. Matches are merged into any existing entry for the same
+    # raw token so that additional provenance is accumulated.
+    for raw, span, section_type in scan_text_for_skills(text, sections):
+        entry = by_skill[raw]
+        entry.sections.add(str(section_type))
+        entry.mentions += 1
+        entry.evidence_spans.append(span)
+        sentence = _sentence_for_span(text, *span)
+        if entry.first_used is None:
+            entry.first_used = sentence
+        entry.last_used = sentence
 
     mentions: list[SkillMention] = []
     for raw, data in by_skill.items():

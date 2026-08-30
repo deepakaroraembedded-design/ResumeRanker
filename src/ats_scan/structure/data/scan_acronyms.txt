@@ -1,0 +1,179 @@
+# Supplemental skill acronyms for the full-text resume scanner.
+# These terms are not always present in the ontology, so they are listed here
+# as a lightweight extraction aid. The scanner also loads the full ontology alias
+# list, so this file only needs to fill gaps.
+
+# Networking protocols
+BGP
+OSPF
+PIM
+IPsec
+WireGuard
+DTLS
+QUIC
+VLAN
+DHCP
+SSL
+TLS
+TCP
+TCP/IP
+UDP
+IPv6
+IPv4
+NAT
+GRE
+L2VPN
+VRRP
+MPLS
+RSVP
+IKE
+SNMP
+SSH
+RTP
+SCTP
+L2TP
+IPsec VPN
+SSL VPN
+
+# Networking concepts
+routing
+L3 routing
+switching
+firewall
+stateful firewall
+packet classification
+packet processing
+packet forwarding
+packet inspection
+deep packet inspection
+DPI
+L2
+L3
+L2/L3
+L4
+L7
+datapath
+data path
+data-plane
+kernel
+kernel modules
+kernel networking
+kernel bypass
+network drivers
+device drivers
+network stack
+TCP/IP stack
+socket programming
+network programming
+networking
+high-performance networking
+network datapath
+network virtualization
+virtualization
+network security
+transport security
+
+# Hardware / infrastructure
+DPDK
+SmartNIC
+DPU
+FPGA
+GPU
+NVIDIA
+CUDA
+Tesla
+A100
+H100
+DGX
+BMC
+iLO
+IPMI
+
+# Cloud / container / devops
+containerization
+containerization technologies
+AWS
+Azure
+GCP
+Docker
+Kubernetes
+ECS
+EKS
+GKE
+AKS
+Terraform
+CloudFormation
+Ansible
+Pulumi
+serverless
+
+# Compliance / security
+FIPS
+FedRAMP
+Common Criteria
+SOC2
+SOC 2
+zero trust
+zero-trust
+secure boot
+chain of trust
+TEE
+ARM TEE
+firmware hardening
+penetration testing
+SAST
+DAST
+endpoint security
+
+# AI / ML / data
+PyTorch
+TensorFlow
+Keras
+scikit-learn
+pandas
+NumPy
+LangChain
+LangGraph
+LLM
+RAG
+embeddings
+Whisper
+ASR
+model benchmarking
+model serving
+model inference
+model training
+fine-tuning
+reinforcement learning
+
+# Programming languages
+Go
+Golang
+Python
+C++
+C#
+Java
+Rust
+Bash
+Shell
+Assembly
+JavaScript
+TypeScript
+Ruby
+PHP
+Swift
+Kotlin
+Scala
+
+# Systems / architecture
+Linux
+Unix
+RTOS
+embedded systems
+firmware
+microservices
+distributed systems
+API design
+system design
+system architecture
+platform architecture

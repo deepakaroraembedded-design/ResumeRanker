@@ -369,7 +369,9 @@ def _semantic_skill_evidence(
             last_used: date | None = None
             if entry.end is not None and entry.end.value is not None:
                 last_used = parse_iso_date(entry.end.value)
-            candidates.append((raw, entry_span, quote, ProficiencyKind.LISTED_CORROBORATED, last_used))
+            candidates.append(
+                (raw, entry_span, quote, ProficiencyKind.LISTED_CORROBORATED, last_used)
+            )
 
     for project in resume.projects:
         for raw in project.skills_evidenced:
@@ -386,7 +388,9 @@ def _semantic_skill_evidence(
             last_used = None
             if project.end is not None and project.end.value is not None:
                 last_used = parse_iso_date(project.end.value)
-            candidates.append((raw, project_span, quote, ProficiencyKind.LISTED_CORROBORATED, last_used))
+            candidates.append(
+                (raw, project_span, quote, ProficiencyKind.LISTED_CORROBORATED, last_used)
+            )
 
     if not candidates:
         return ()
@@ -453,15 +457,21 @@ def _keyword_match_score(target: str, candidate: str) -> float | None:
     if not target_tokens:
         return None
     overlap = len(target_tokens & cand_tokens) / len(target_tokens)
-    threshold = 1.0 / len(target_tokens) if len(target_tokens) >= 2 else 0.5
+    # Short acronyms (e.g. "ai/ml", "ipsec") must match all tokens to avoid
+    # matching unrelated phrases that share only one token (e.g. "ai" in
+    # "AI governance"). Longer phrases tolerate a single missing token.
+    if len(target_tokens) <= 2:
+        threshold = 1.0
+    elif len(target_tokens) == 3:
+        threshold = 2.0 / 3.0
+    else:
+        threshold = 0.75
     if overlap >= threshold:
         return 0.55
     return None
 
 
-def _keyword_skill_evidence(
-    resume: CanonicalResume, target: str
-) -> tuple[SkillEvidence, ...]:
+def _keyword_skill_evidence(resume: CanonicalResume, target: str) -> tuple[SkillEvidence, ...]:
     """Keyword fallback for skill coverage.
 
     When the ontology cascade misses a target, this scans the structured skill

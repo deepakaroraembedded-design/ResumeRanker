@@ -38,7 +38,9 @@ class S8SkillRecency:
         evidence_out: list[Evidence] = []
         total = 0.0
         for skill in top:
-            rec, best_ev = recency_for_skill(resume, skill.canonical, now, recency_cfg, ontology, ctx)
+            rec, best_ev = recency_for_skill(
+                resume, skill.canonical, now, recency_cfg, ontology, ctx
+            )
             total += rec
             if best_ev is not None:
                 evidence_out.append(

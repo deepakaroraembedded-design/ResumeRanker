@@ -29,5 +29,9 @@ class S1RequiredSkills:
             dimension=self.id,
             value=value,
             evidence=evidence,
-            detail={"matches": matches, "gaps": gaps},
+            detail={
+                "matches": matches,
+                "gaps": gaps,
+                "gate": {"passed": len(matches), "total": len(required)},
+            },
         )

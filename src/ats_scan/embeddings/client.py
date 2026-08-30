@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 from collections.abc import Sequence
+from pathlib import Path
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -39,6 +40,20 @@ class LocalEmbeddingClient:
         if self._model is None:
             self._model = SentenceTransformer(self._model_name)
         return self._model
+
+    def model_identifier(self) -> str:
+        """Return a pinned model identifier: name + HF cache snapshot hash.
+
+        The snapshot hash is the exact revision the local cache is using, so the
+        identifier is reproducible across runs as long as the cached model files
+        are not replaced.
+        """
+        model = self._load_model()
+        vocab_file = getattr(model.tokenizer, "vocab_file", None)
+        if not isinstance(vocab_file, str):
+            return self._model_name
+        snapshot = Path(vocab_file).parent.name
+        return f"{self._model_name}@{snapshot}"
 
     async def _encode(self, texts: Sequence[str]) -> Sequence[Vector]:
         model = self._load_model()
@@ -93,6 +108,10 @@ class HostedEmbeddingClient:
         self.dimensions = dimensions
         self.endpoint = endpoint
         self.api_key = api_key
+
+    def model_identifier(self) -> str:
+        """Return the configured hosted model name as the identifier."""
+        return self.model
 
     async def embed(self, texts: Sequence[str]) -> Sequence[Vector]:
         """Not implemented; the default deployment uses the local model."""

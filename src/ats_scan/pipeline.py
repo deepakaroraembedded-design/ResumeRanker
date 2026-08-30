@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import inspect
 from collections.abc import Callable, Mapping, Sequence
@@ -50,6 +51,7 @@ from ats_scan.report import (
     XlsxWriter,
     copy_selected_resumes,
 )
+from ats_scan.report._helpers import preferred_gate, required_gate
 from ats_scan.scoring import load_dimensions
 from ats_scan.scoring.aggregate import aggregate
 from ats_scan.scoring.confidence import confidence
@@ -374,15 +376,25 @@ class Pipeline:
         scoring_ctx: ScoringContext,
     ) -> tuple[ScoreCard, ...]:
         """Attach recruiter-facing explanations and provenance to each scorecard."""
+        embedding_id = settings.config.embeddings.model or "all-MiniLM-L6-v2"
+        if scoring_ctx.embeddings is not None:
+            identifier_fn = getattr(scoring_ctx.embeddings, "model_identifier", None)
+            if callable(identifier_fn):
+                with contextlib.suppress(Exception):
+                    embedding_id = identifier_fn()
+
         provenance = Provenance(
             config_sha256=settings.config_hash,
             ontology_version=self.ontology.version,
             code_version=settings.code_version,
-            models={
-                "embedding": settings.config.embeddings.model or "all-MiniLM-L6-v2",
-                "llm": settings.config.llm.model,
-                "ontology": self.ontology.version,
-            },
+            models=cast(
+                dict[str, str | None],
+                {
+                    "embedding": embedding_id,
+                    "llm": settings.config.llm.model,
+                    "ontology": self.ontology.version,
+                },
+            ),
             scored_at=_now_iso(),
         )
         return tuple(
@@ -419,8 +431,17 @@ class Pipeline:
         matched = ", ".join(m.criterion for m in scorecard.matched[:3])
         gaps = ", ".join(g.criterion for g in scorecard.gaps[:3])
         flags = ", ".join(scorecard.flags)
+        req_gate = required_gate(scorecard)
+        pref_gate = preferred_gate(scorecard)
+        gate_text = ""
+        if req_gate:
+            gate_text = f"Required skills: {req_gate}"
+            if pref_gate:
+                gate_text += f", preferred: {pref_gate}"
+            gate_text += ". "
         text = (
             f"Composite {composite:.1f} ({band}). "
+            f"{gate_text}"
             f"Strongest matches: {matched or 'none'}. "
             f"Key gaps: {gaps or 'none'}. "
             f"Flags: {flags or 'none'}."

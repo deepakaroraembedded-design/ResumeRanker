@@ -87,6 +87,41 @@ def missing_required(card: ScoreCard) -> str:
     return ";".join(parts)
 
 
+def required_gate(card: ScoreCard) -> str:
+    """Return a recruiter-facing minimum-qualification gate from S1 detail.
+
+    The S1 dimension stores ``{"gate": {"passed": n, "total": n}}`` computed
+    from the required-skills list. If the detail is absent, return an empty
+    string.
+    """
+    s1 = card.sub_scores.get("S1")
+    if s1 is None or not s1.detail:
+        return ""
+    gate = s1.detail.get("gate")
+    if not isinstance(gate, dict):
+        return ""
+    passed = gate.get("passed")
+    total = gate.get("total")
+    if passed is None or total is None:
+        return ""
+    return f"{passed}/{total}"
+
+
+def preferred_gate(card: ScoreCard) -> str:
+    """Return the preferred-skills gate from S2 detail, if available."""
+    s2 = card.sub_scores.get("S2")
+    if s2 is None or s2.value is None or not s2.detail:
+        return ""
+    gate = s2.detail.get("gate")
+    if not isinstance(gate, dict):
+        return ""
+    passed = gate.get("passed")
+    total = gate.get("total")
+    if passed is None or total is None:
+        return ""
+    return f"{passed}/{total}"
+
+
 def relevant_years(card: ScoreCard) -> str:
     """Return relevant years from S4 detail if available, else empty string."""
     s4 = card.sub_scores.get("S4")

@@ -35,6 +35,10 @@ The system is designed to **never raise on bad data**. Every stage returns a `St
 - **Robust skill-list extraction** — the resume structurer parses comma, semicolon, bullet, ampersand, and slash-delimited skill lines and ignores heading-style two-item lines (e.g., `SCOPE & AUTHORITY`).
 - **Keyword and semantic skill fallback** — when the ontology does not contain an exact match, the scorer falls back to keyword matching on extracted skills and, in hybrid mode, embedding-based semantic similarity.
 - **Context-aware integrity detection** — the keyword-stuffing detector excludes the dedicated skills section and uses a higher threshold, reducing false positives on dense but legitimate skills lists.
+- **Full-text skill scanner** — the resume structurer also scans the entire extracted text for known skill phrases and acronyms (e.g., `BGP`, `OSPF`, `WireGuard`, `containerization`) that may only appear in experience bullets, not in a dedicated skills list.
+- **Keyword overlap threshold fix** — multi-token skill targets such as `ai/ml` now require full token overlap, eliminating false matches against unrelated phrases like `AI governance`.
+- **Minimum-qualification gate** — scorecard explanations now report `Required skills: X/Y` and `Preferred: X/Y` counts so recruiters can see a quick pass/fail summary.
+- **Pinned embedding model identifier** — the run manifest records the exact Hugging Face snapshot hash of the local embedding model (e.g., `all-MiniLM-L6-v2@1110a243...`), making S3 reproducibility auditable.
 
 ---
 
@@ -427,6 +431,36 @@ This writes a `c_<id>.resume.json` per candidate with the structured `CanonicalR
 ```bash
 uv run ats-scan compile-jd --jd path/to/jd.txt --out jobspec.yaml
 ```
+
+### Calibrate scoring weights against a labelled set
+
+The `calibrate` command runs the weight-tuning procedure described in TRD §5.7.
+It expects a directory of resumes that have been labelled with target scores
+(e.g., recruiter ratings) and writes a YAML file with tuned weights.
+
+```bash
+uv run ats-scan calibrate --resumes path/to/labelled-resumes/ --out calibration.yaml
+```
+
+In the current isolated component build, `calibrate` returns a report indicating
+that the real tuning is implemented by the scoring components; the CLI command
+wires the procedure and persists the result.
+
+### Audit a completed run
+
+The `audit` command validates a completed run, reports band and selection counts,
+and, when a demographics file is supplied, computes an adverse-impact report per
+TRD §11.3.
+
+```bash
+# Basic audit (no demographics)
+uv run ats-scan audit --out run-2026-08-30
+
+# Audit with adverse-impact analysis
+uv run ats-scan audit --out run-2026-08-30 --demographics path/to/demographics.csv
+```
+
+The demographics CSV must contain two columns: `candidate_id` and `group`.
 
 See `docs/TRD.md` §9 and `uv run ats-scan --help` for the full command surface.
 
