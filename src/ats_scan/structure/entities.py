@@ -125,6 +125,16 @@ _ROLE_HEADER_RE = re.compile(
 )
 
 
+# Optional month, year, dash, optional month, year-or-present.
+_DATE_RANGE_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?\s+)?"
+    r"(?:19|20)\d{2}\s*[-\u2013\u2014\u2015]\s*"
+    r"(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?\s+)?"
+    r"(?:(?:19|20)\d{2}|present|current|now|till date)",
+    re.IGNORECASE,
+)
+
+
 def _looks_like_role_header(line: str) -> bool:
     """Return True if a line looks like a role header with dates."""
     stripped = line.strip()
@@ -132,13 +142,7 @@ def _looks_like_role_header(line: str) -> bool:
         return False
     if "|" in stripped and re.search(r"(?:19\d{2}|20\d{2})", stripped):
         return True
-    return bool(
-        re.search(
-            r"(?:19\d{2}|20\d{2})\s*[-\u2013\u2014\u2015]\s*(?:19\d{2}|20\d{2}|present|current|now|till date)",
-            stripped,
-            re.IGNORECASE,
-        )
-    )
+    return bool(_DATE_RANGE_RE.search(stripped))
 
 
 def _extract_experience_lines(text: str) -> list[str]:
@@ -166,13 +170,70 @@ def _extract_experience_lines(text: str) -> list[str]:
     return blocks
 
 
+def _split_employer_location(text: str) -> tuple[str, str | None]:
+    """Split an employer string like 'Verizon — Irving, TX' into employer and location."""
+    if " — " in text:
+        employer, location = text.split(" — ", 1)
+        return employer.strip(), location.strip()
+    if re.search(r"\s+[-\u2013\u2014\u2015]\s+", text):
+        employer, location = re.split(r"\s+[-\u2013\u2014\u2015]\s+", text, maxsplit=1)
+        return employer.strip(), location.strip()
+    return text.strip(), None
+
+
+def _looks_like_employer(text: str) -> bool:
+    """Heuristic to decide whether a segment is more likely an employer than a title."""
+    lower = text.lower()
+    return bool(
+        re.search(
+            r"\b(inc\.?|corp\.?|corporation|llc|ltd\.?|limited|company|gmbh|plc|technologies)\b",
+            lower,
+        )
+    ) or text.rstrip(".").lower().endswith((".com", ".org", ".io"))
+
+
 def _parse_role_header(header: str) -> dict[str, str | None]:
-    """Parse a line like 'Employer | Title | 2020 – 2025'."""
+    """Parse a role header into employer, title, and dates.
+
+    Handles the canonical form "Employer | Title | 2020 – 2025" as well as the
+    common resume form "Title | Employer — Location 2020 – 2025" and the
+    bullet form "Title, Employer (2020 – 2025)".
+    """
+    # Try the canonical three-pipe form first.
     parts = [part.strip() for part in re.split(r"\s*\|\s*", header)]
-    employer = parts[0] if len(parts) >= 1 else None
-    title = parts[1] if len(parts) >= 2 else None
-    dates = parts[2] if len(parts) >= 3 else None
-    return {"employer": employer, "title": title, "dates": dates}
+    if len(parts) == 3:
+        return {"employer": parts[0], "title": parts[1], "dates": parts[2]}
+
+    if len(parts) == 2:
+        # Default: title | employer-location-dates.
+        title = parts[0]
+        remainder = parts[1]
+        date_match = _DATE_RANGE_RE.search(remainder)
+        if date_match:
+            dates = date_match.group(0)
+            employer_loc = remainder[: date_match.start()].strip().rstrip(",—")
+        else:
+            dates = None
+            employer_loc = remainder
+        # If the first segment looks like an employer, swap the default order.
+        if _looks_like_employer(parts[0]) and not _looks_like_employer(parts[1]):
+            title, employer_loc = parts[1], parts[0]
+        employer, _location = _split_employer_location(employer_loc)
+        return {"employer": employer, "title": title, "dates": dates}
+
+    # No pipe: try to extract a date and split by comma.
+    date_match = _DATE_RANGE_RE.search(header)
+    if date_match:
+        dates = date_match.group(0)
+        before = header[: date_match.start()].strip()
+        # Remove a parenthesised date fragment if it was left over.
+        before = re.sub(r"\s*\([^)]*\)\s*$", "", before).strip()
+        if "," in before:
+            title, employer = [p.strip() for p in before.split(",", 1)]
+            return {"employer": employer, "title": title, "dates": dates}
+        return {"employer": None, "title": before, "dates": dates}
+
+    return {"employer": None, "title": header, "dates": None}
 
 
 def _extract_bullets(text: str, parent_offset: int) -> tuple[Bullet, ...]:

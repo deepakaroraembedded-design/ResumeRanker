@@ -106,9 +106,6 @@ def _is_heading(line: str) -> bool:
     for _, pattern in _HEADING_PATTERNS:
         if pattern.search(stripped) and len(stripped) <= 40:
             return True
-    # Short uppercase phrase (e.g. "WORK EXPERIENCE").
-    if stripped.isupper() and len(stripped.split()) <= 4:
-        return True
     # Ends with a colon or dash.
     if stripped.endswith(":") or stripped.endswith("-"):
         return True
@@ -152,10 +149,9 @@ def _classify_heading(heading: str) -> SectionType:
 def _paragraphs(text: str) -> list[tuple[int, int, str]]:
     """Split text into paragraphs with (start, end, text) offsets.
 
-    Paragraphs are separated by blank lines. If a paragraph begins with a
-    section-heading line, the heading is split off into its own paragraph so
-    that the classifier can use it as a boundary even when the heading and its
-    content are separated by only a single newline.
+    Paragraphs are separated by blank lines. Any line that looks like a section
+    heading is also split off into its own paragraph, so that headings that are
+    only separated from their content by a single newline still form boundaries.
     """
     raw_blocks: list[tuple[int, int, str]] = []
     start = 0
@@ -170,22 +166,59 @@ def _paragraphs(text: str) -> list[tuple[int, int, str]]:
         raw_blocks.append((start, len(text), trailing))
 
     paragraphs: list[tuple[int, int, str]] = []
-    for block_start, block_end, block_text in raw_blocks:
+    for block_start, _block_end, block_text in raw_blocks:
         lines = block_text.splitlines()
         if not lines:
             continue
-        if _is_heading(lines[0]) and len(lines) > 1:
-            heading_text = lines[0].strip()
-            heading_start = block_start + block_text.find(heading_text)
-            heading_end = heading_start + len(heading_text)
-            paragraphs.append((heading_start, heading_end, heading_text))
-            content = "\n".join(lines[1:]).strip()
-            if content:
-                content_start = block_text.find(content, len(heading_text)) + block_start
-                content_end = content_start + len(content)
-                paragraphs.append((content_start, content_end, content))
-        else:
-            paragraphs.append((block_start, block_end, block_text.strip()))
+
+        # Compute the offset of each line within the block text.
+        line_offsets: list[int] = []
+        offset = 0
+        for line in lines:
+            line_offsets.append(offset)
+            offset += len(line) + 1  # +1 for the newline that follows the line
+
+        pending: list[str] = []
+        pending_start: int | None = None
+
+        def _flush_pending(text_start: int, text: str) -> None:
+            nonlocal pending, pending_start
+            if not pending:
+                pending_start = None
+                return
+            content = "\n".join(pending).strip()
+            if not content:
+                pending = []
+                pending_start = None
+                return
+            if pending_start is None:
+                pending_start = text_start
+            search_from = pending_start - text_start
+            content_offset = text.find(content, search_from)
+            if content_offset == -1:
+                content_offset = text.find(content)
+            if content_offset == -1:
+                content_offset = 0
+            content_start = text_start + content_offset
+            content_end = content_start + len(content)
+            paragraphs.append((content_start, content_end, content))
+            pending = []
+            pending_start = None
+
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if _is_heading(stripped):
+                _flush_pending(block_start, block_text)
+                heading_offset = line_offsets[i] + line.find(stripped)
+                heading_start = block_start + heading_offset
+                heading_end = heading_start + len(stripped)
+                paragraphs.append((heading_start, heading_end, stripped))
+                pending_start = heading_end + 1
+            else:
+                if not pending:
+                    pending_start = block_start + line_offsets[i]
+                pending.append(line)
+        _flush_pending(block_start, block_text)
     return paragraphs
 
 
