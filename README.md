@@ -412,7 +412,7 @@ See `docs/IMPLEMENTATION_PLAN.md` §2 and §4 for the ownership map and the merg
 
 ## Data sources and licensing
 
-The skill ontology combines **ESCO** and **O*NET** base taxonomies with a curated Swiftrade alias layer. The ontology is stored as versioned data files in `data/ontology/2026.07/` and its version identifier is recorded in every run manifest. License notices are kept in `data/ontology/2026.07/LICENSE.*`.
+The skill ontology combines **ESCO** and **O*NET** base taxonomies with a curated alias layer. The ontology is stored as versioned data files in `data/ontology/2026.07/` and its version identifier is recorded in every run manifest. License notices are kept in `data/ontology/2026.07/LICENSE.*`.
 
 ---
 

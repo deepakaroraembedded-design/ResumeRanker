@@ -19,7 +19,7 @@ ATS-Scan --- Resume Screening & Scoring Engine
 
   Date                 29 August 2026
 
-  Author               Deepak Arora --- Swiftrade
+  Author               Deepak Arora
 
   Status               Draft --- pending Engineering, Talent Acquisition and Legal review
 
@@ -663,7 +663,7 @@ All three core structures are defined as JSON Schema and generated into typed mo
 >
 > \],
 >
-> \"compiled_by\": \"llm:E-JD\", \"reviewed_by\": \"deepak.arora@swiftradellc.com\",
+> \"compiled_by\": \"llm:E-JD\", \"reviewed_by\": \"reviewer@example.com\",
 >
 > \"review_state\": \"approved\", \"warnings\": \[\"required_skill_count=6 (limit 12)\"\]
 >
@@ -1782,7 +1782,7 @@ audit.jsonl holds one append-only record per candidate, carrying: run and candid
 
   LLM access              Provider-agnostic adapter with schema-constrained output                        Avoids provider lock-in and lets the model be swapped without touching the scoring engine.
 
-  Skill ontology          ESCO and O\*NET as the base, plus a curated Swiftrade alias layer               Public taxonomies give coverage; the curated layer captures internal vocabulary.
+  Skill ontology          ESCO and O\*NET as the base, plus a curated alias layer                          Public taxonomies give coverage; the curated layer captures internal vocabulary.
 
   CLI / config            Typer, Rich, Pydantic v2, PyYAML                                                Typed configuration with schema validation and good terminal output.
 

@@ -7,7 +7,7 @@
 | **Companions** | *Technical Requirements & Design Document v1.0* (**TRD**) · *QA Plan & QA Agent Definition v1.0* (**QAP**) |
 | **Version** | 1.1 |
 | **Date** | 29 August 2026 |
-| **Author** | Deepak Arora — Swiftrade |
+| **Author** | Deepak Arora |
 | **Build agent** | [opencode](https://opencode.ai) — 14 parallel component agents + 1 QA agent + 1 integrator |
 | **Status** | Ready to execute once Wave 0 is signed off |
 

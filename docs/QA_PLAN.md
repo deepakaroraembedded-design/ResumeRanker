@@ -7,7 +7,7 @@
 | **Companions** | *Technical Requirements & Design Document v1.0* (**TRD**) · *Implementation Design & Multi-Agent Build Plan v1.1* (**IDP**) |
 | **Version** | 1.0 |
 | **Date** | 29 August 2026 |
-| **Author** | Deepak Arora — Swiftrade |
+| **Author** | Deepak Arora |
 | **Owning agent** | `qa-engineer` — component **C-QA** in the IDP ownership map |
 | **Status** | Ready to execute from the moment Wave 0 is tagged |
 

@@ -1,6 +1,6 @@
 {
     "machine_info": {
-        "node": "swiftrade",
+        "node": "local",
         "processor": "x86_64",
         "machine": "x86_64",
         "python_compiler": "Clang 22.1.3 ",

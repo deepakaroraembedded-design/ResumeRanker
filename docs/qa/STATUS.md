@@ -58,7 +58,7 @@ Overall pytest coverage from `make gate`:
 The local commit `3c97aec` has **not** been pushed.
 
 - Remote: `git@github.com:deepakaroraembedded-design/ResumeRanker.git`
-- `~/.ssh/id_ed25519` (comment `swiftrade`) authenticates to GitHub but is not
+- `~/.ssh/id_ed25519` (comment `github-deploy`) authenticates to GitHub but is not
   granted write access to this repository.
 - `~/.ssh/id_publicgithub` (comment `deepakarora.embedded@gmail.com`) is
   passphrase-protected and non-interactive unlock attempts (`ssh-agent`,
