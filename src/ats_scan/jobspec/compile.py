@@ -386,7 +386,19 @@ class JobSpecCompiler:
         else:
             level = "high_school"
 
-        field_match = re.search(r"(?i)in\s+([^,\.]+?)(?:\s+(?:or|and|with|equivalent))", text)
+        # Look for a field phrase only in the immediate vicinity of the degree mention.
+        # Handles: "Bachelor's degree in X", "Master's (preferred) degree in X",
+        # "Bachelor's or Master's degree in X or equivalent".
+        degree_phrase = r"(?:bachelor'?s?|master'?s?|ph\.?d\.?|doctorate|associate'?s?)"
+        field_match = re.search(
+            r"(?i)(?:"
+            + degree_phrase
+            + r")(?:\s*degree)?(?:\s+or\s+"
+            + degree_phrase
+            + r")?(?:\s*degree)?(?:\s*\([^)]+\))?(?:\s*degree)?\s+in\s+"
+            + r"([^(,\.]+?)(?=\s+(?:or|and|with|equivalent)|[\.,\)]|$)",
+            text,
+        )
         fields: tuple[str, ...] = ()
         if field_match:
             field = field_match.group(1).strip()
@@ -403,19 +415,27 @@ class JobSpecCompiler:
         )
 
     def _extract_certifications(self, text: str) -> list[dict[str, object]]:
-        """Extract certification requirements as flexible dicts (FR-401)."""
+        """Extract certification requirements as flexible dicts (FR-401).
+
+        Only lines that explicitly reference a certification, certificate,
+        licence, or the word "certified" are treated as certification
+        requirements.  This prevents every bullet under a general
+        "qualifications" section from being modelled as a certification.
+        """
         certs: list[dict[str, object]] = []
+        cert_keywords = re.compile(r"(?i)\b(certification|certificate|licence|license|certified)\b")
         for line in text.splitlines():
             raw = _strip_bullet(line)
-            if not raw:
+            if not raw or not cert_keywords.search(raw):
                 continue
             cleaned = _clean_skill(raw, self._weight_phrases)
             match = re.search(
-                r"(?i)(?:certification|certificate|license|licence)s?\s*(?::|in\s+)?(.+)",
+                r"(?i)(?:certification|certificate|licence|license|certified)s?\s*(?::|in\s+)?(.+)",
                 cleaned,
             )
             name = (match.group(1).strip() if match else cleaned).lower()
-            if name:
+            name = re.sub(r"^(?:in|for)\s+", "", name, flags=re.IGNORECASE).strip()
+            if name and len(name) > 1:
                 certs.append(
                     {
                         "canonical": name,

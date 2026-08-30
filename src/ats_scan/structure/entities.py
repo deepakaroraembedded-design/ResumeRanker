@@ -296,24 +296,44 @@ def extract_education(section: Section) -> tuple[EducationEntry, ...]:
     """Extract education entries from a section.
 
     FR-309: institution, degree level, field of study, graduation date, honours.
+    Handles both line-per-entry layouts and compact layouts where multiple
+    entries are separated by middle-dot or bullet characters.
     """
     entries: list[EducationEntry] = []
-    for line in section.text.splitlines():
-        line = line.strip()
-        if not line or line.lower() == "education":
+    # Split on newlines, middle dots, and common bullet separators.
+    raw_entries = re.split(r"[\n\r]+|\s*[·•●]\s*", section.text)
+    for entry in raw_entries:
+        entry = entry.strip()
+        if not entry or entry.lower() == "education":
             continue
-        # Match patterns like:
-        #   BS in Computer Science, University of Example, 2016
-        #   University of Example — BS Computer Science (2016)
+
         institution: str | None = None
         degree_level: str | None = None
         field: str | None = None
         grad_year: DateValue | None = None
 
+        # Pattern: "MCA, Master of Computer Applications — GGSIP University (2004)"
         match = re.match(
-            r"(?P<degree>[A-Z\.]+)\s+(?:in\s+)?(?P<field>[^,]+),\s+(?P<inst>[^,]+)(?:,\s+(?P<year>\d{4}))?",
-            line,
+            r"(?P<degree>[^,·•]+),\s*(?P<field>[^—–-]+?)\s*[—–-]\s*"
+            r"(?P<inst>[^()]+?)\s*\((?P<year>\d{4})\)",
+            entry,
         )
+        if not match:
+            # Pattern: "B.Sc. Mathematics — Hansraj College, Delhi University (2001)".
+            # The degree token must be all-uppercase or dotted, so we do not
+            # accidentally match an institution-first entry.
+            match = re.match(
+                r"(?P<degree>[A-Z][A-Z\.]{0,5})\s+(?P<field>[^—–-]+?)\s*[—–-]\s*"
+                r"(?P<inst>[^()]+?)\s*\((?P<year>\d{4})\)",
+                entry,
+            )
+        if not match:
+            # Pattern: "BS in Computer Science, University of Example, 2016"
+            match = re.match(
+                r"(?P<degree>[A-Z\.]+)\s+(?:in\s+)?(?P<field>[^,]+),\s+"
+                r"(?P<inst>[^,]+)(?:,\s+(?P<year>\d{4}))?",
+                entry,
+            )
         if match:
             degree_level = match.group("degree").strip()
             field = match.group("field").strip()
@@ -322,9 +342,9 @@ def extract_education(section: Section) -> tuple[EducationEntry, ...]:
             if year_str:
                 grad_year = DateValue(value=f"{year_str}-01-01", precision=DatePrecision.YEAR)
         else:
-            # Fallback: keep the whole line as the institution and look for a year.
-            institution = line
-            year_match = re.search(r"\b(19\d{2}|20\d{2})\b", line)
+            # Fallback: keep the whole entry as the institution and look for a year.
+            institution = entry
+            year_match = re.search(r"\b(19\d{2}|20\d{2})\b", entry)
             if year_match:
                 grad_year = DateValue(
                     value=f"{year_match.group(1)}-01-01",

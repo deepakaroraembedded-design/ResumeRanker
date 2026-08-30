@@ -18,11 +18,28 @@ _DEGREE_ORDINALS: dict[str, int] = {
     "bachelor": 3,
     "bachelors": 3,
     "undergraduate": 3,
+    "bs": 3,
+    "ba": 3,
+    "bsc": 3,
+    "b.sc": 3,
+    "btech": 3,
+    "b.tech": 3,
+    "be": 3,
+    "b.e": 3,
+    "bca": 3,
+    "b.c.a": 3,
     "master": 4,
     "masters": 4,
     "mba": 4,
+    "mca": 4,
+    "m.sc": 4,
+    "msc": 4,
+    "ms": 4,
+    "m.tech": 4,
+    "mtech": 4,
     "doctorate": 5,
     "phd": 5,
+    "ph.d": 5,
     "doctoral": 5,
 }
 
@@ -161,7 +178,8 @@ def _degree_ordinal(level: str | None) -> int:
     """Map a degree-level string to an ordinal."""
     if level is None:
         return 0
-    return _DEGREE_ORDINALS.get(level.lower().strip(), 0)
+    normalized = level.lower().strip().replace(".", "").replace("'", "")
+    return _DEGREE_ORDINALS.get(normalized, 0)
 
 
 def _parse_date(raw: str) -> date | None:
