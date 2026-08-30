@@ -73,8 +73,8 @@ def _write_column_interleaved_pdf(tmp_path: Path) -> Path:
     left = ["L1", "L2", "L3"]
     right = ["R1", "R2", "R3"]
     for i, (a, b) in enumerate(zip(left, right, strict=True)):
-        page.insert_text((50, 700 - i * 40), a, fontsize=12, color=(0, 0, 0))
-        page.insert_text((300, 700 - i * 40), b, fontsize=12, color=(0, 0, 0))
+        page.insert_text((50, 50 + i * 40), a, fontsize=12, color=(0, 0, 0))
+        page.insert_text((300, 50 + i * 40), b, fontsize=12, color=(0, 0, 0))
     doc.save(path)
     doc.close()
     return path

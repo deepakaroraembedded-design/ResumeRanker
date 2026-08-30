@@ -33,6 +33,7 @@ def extract_text_from_pdf(
             pages = pages[:max_pages]
 
         page_heights: dict[int, float] = {}
+        page_widths: dict[int, float] = {}
         all_blocks: list[LineBlock] = []
         max_columns = 1
         any_text_layer = False
@@ -41,6 +42,7 @@ def extract_text_from_pdf(
             page_width = page.width
             page_height = page.height
             page_heights[page_index] = page_height
+            page_widths[page_index] = page_width
 
             table_cells = find_table_cells(page)
             table_bboxes = [bbox for bbox, _row, _col in table_cells]
@@ -78,7 +80,7 @@ def extract_text_from_pdf(
         all_blocks = _drop_repeated_headers_footers(all_blocks, page_heights, config)
         all_blocks = _drop_page_number_lines(all_blocks, page_heights)
 
-        text, text_blocks = _join_blocks(all_blocks)
+        text, text_blocks = _join_blocks(all_blocks, page_widths, page_heights)
 
         chars_per_page = _chars_per_page(text, len(pages))
         metadata = ExtractionMetadata(
@@ -151,19 +153,39 @@ def _drop_page_number_lines(
     return result
 
 
-def _join_blocks(blocks: Sequence[LineBlock]) -> tuple[str, tuple[TextBlock, ...]]:
-    """Concatenate line blocks into a single text and a TextBlock tuple."""
+def _join_blocks(
+    blocks: Sequence[LineBlock],
+    page_widths: dict[int, float],
+    page_heights: dict[int, float],
+) -> tuple[str, tuple[TextBlock, ...]]:
+    """Concatenate line blocks into a single text and a TextBlock tuple.
+
+    TextBlock bboxes are normalised to the unit square so that downstream
+    integrity detectors (which assume a [0,1] media box) can detect off-page
+    text without false positives.
+    """
     text_parts: list[str] = []
     text_blocks: list[TextBlock] = []
     for block in blocks:
         if not block.text:
             continue
         text_parts.append(block.text)
+        width = page_widths.get(block.page, 1.0)
+        height = page_heights.get(block.page, 1.0)
+        if width <= 0 or height <= 0:
+            width = height = 1.0
+        x0, upper, x1, lower = block.bbox
+        normalised_bbox = (
+            x0 / width,
+            upper / height,
+            x1 / width,
+            lower / height,
+        )
         text_blocks.append(
             TextBlock(
                 text=block.text,
                 page=block.page,
-                bbox=block.bbox,
+                bbox=normalised_bbox,
                 font_size=block.font_size,
                 colour=block.color,
                 render_mode=block.render_mode,

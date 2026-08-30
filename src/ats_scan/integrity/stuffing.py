@@ -9,6 +9,107 @@ from ats_scan.models.config import IntegrityConfig
 from ats_scan.models.resume import CanonicalResume
 from ats_scan.models.source import ExtractedText, SourceDocument
 
+# Common English function words that should not count as keyword stuffing.
+_STOP_WORDS: frozenset[str] = frozenset(
+    {
+        "a",
+        "an",
+        "the",
+        "and",
+        "or",
+        "but",
+        "if",
+        "then",
+        "else",
+        "for",
+        "of",
+        "to",
+        "in",
+        "on",
+        "at",
+        "by",
+        "with",
+        "from",
+        "as",
+        "is",
+        "was",
+        "are",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "must",
+        "can",
+        "shall",
+        "this",
+        "that",
+        "these",
+        "those",
+        "i",
+        "me",
+        "my",
+        "myself",
+        "we",
+        "our",
+        "ours",
+        "you",
+        "your",
+        "yours",
+        "he",
+        "him",
+        "his",
+        "she",
+        "her",
+        "it",
+        "its",
+        "they",
+        "them",
+        "their",
+        "what",
+        "which",
+        "who",
+        "whom",
+        "whose",
+        "where",
+        "when",
+        "why",
+        "how",
+        "all",
+        "each",
+        "every",
+        "both",
+        "few",
+        "more",
+        "most",
+        "other",
+        "some",
+        "such",
+        "no",
+        "not",
+        "only",
+        "own",
+        "same",
+        "so",
+        "than",
+        "too",
+        "very",
+        "just",
+        "now",
+    }
+)
+
 
 class KeywordStuffingDetector:
     """Detect keyword stuffing aimed at classic ATS filters.
@@ -37,7 +138,8 @@ class KeywordStuffingDetector:
 
         counts: dict[str, int] = {}
         for token in tokens:
-            counts[token] = counts.get(token, 0) + 1
+            if token not in _STOP_WORDS:
+                counts[token] = counts.get(token, 0) + 1
 
         messages: list[str] = []
         spans: list[tuple[int, int]] = []

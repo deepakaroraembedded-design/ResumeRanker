@@ -109,7 +109,13 @@ def _visual_bottom(glyph: Glyph) -> float:
 def _line_blocks_from_glyphs(
     glyphs: Sequence[Glyph], page_width: float, config: PdfExtractionConfig
 ) -> list[LineBlock]:
-    """Group *glyphs* into column-major, top-to-bottom line blocks."""
+    """Group *glyphs* into column-major, top-to-bottom line blocks.
+
+    Glyphs are clustered into columns by horizontal gaps.  Within each column
+    lines are read top-to-bottom; columns are emitted left-to-right.  This handles
+    true multi-column layouts while keeping indented bullet points in the same
+    column as their headings on single-column resumes.
+    """
     if not glyphs:
         return []
 
@@ -120,8 +126,6 @@ def _line_blocks_from_glyphs(
     for column in columns:
         column_lines = _cluster_lines(column, config)
         lines.extend(column_lines)
-    # Reading order: columns left-to-right, then top-to-bottom (descending upper).
-    lines.sort(key=lambda line: (line.bbox[0], -line.bbox[1]))
     return lines
 
 
@@ -147,16 +151,16 @@ def _cluster_columns(glyphs: Sequence[Glyph], gap: float) -> list[list[Glyph]]:
 def _cluster_lines(glyphs: Sequence[Glyph], config: PdfExtractionConfig) -> list[LineBlock]:
     """Cluster glyphs within a single column into visual lines.
 
-    In pdfplumber coordinates the origin is at the bottom of the page, so visual
-    top-to-bottom order corresponds to descending upper boundaries.  Glyphs whose
-    upper boundaries are close (within a fraction of the font size) are treated
-    as one line.
+    In pdfplumber coordinates `top` is the distance from the top of the page, so
+    visual top-to-bottom order corresponds to ascending upper boundaries.  Glyphs
+    whose upper boundaries are close (within a fraction of the font size) are
+    treated as one line.
     """
     if not glyphs:
         return []
 
     line_gap = max(0.3 * _median_font_size(glyphs), 2.0)
-    sorted_glyphs = sorted(glyphs, key=lambda g: (-_visual_top(g), g.x0))
+    sorted_glyphs = sorted(glyphs, key=lambda g: (_visual_top(g), g.x0))
 
     lines: list[list[Glyph]] = []
     current: list[Glyph] = []
@@ -168,7 +172,7 @@ def _cluster_lines(glyphs: Sequence[Glyph], config: PdfExtractionConfig) -> list
         current_top = _visual_top(glyph)
         # A new line starts when the current glyph is visually below the
         # previous line by more than the line gap.
-        if previous_top - current_top > line_gap:
+        if current_top - previous_top > line_gap:
             lines.append(current)
             current = [glyph]
         else:
@@ -264,13 +268,13 @@ def _drop_repeated_headers_footers(
         if height <= 0:
             continue
         margin = height * config.header_footer_margin_share
-        upper = max(block.bbox[1], block.bbox[3])
-        lower = min(block.bbox[1], block.bbox[3])
-        # pdfplumber coordinates: origin at bottom, so header = large upper value,
-        # footer = small lower value.
-        if upper > height - margin:
+        upper = min(block.bbox[1], block.bbox[3])
+        lower = max(block.bbox[1], block.bbox[3])
+        # pdfplumber coordinates: top is distance from top of page, so header =
+        # small upper value, footer = large lower value.
+        if upper < margin:
             band = "header"
-        elif lower < margin:
+        elif lower > height - margin:
             band = "footer"
         else:
             continue

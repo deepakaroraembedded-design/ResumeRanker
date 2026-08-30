@@ -48,9 +48,9 @@ def _write_two_column_pdf(tmp_path: Path, left: list[str], right: list[str]) -> 
     doc = fitz.open()
     page = doc.new_page(width=612, height=792)
     for i, line in enumerate(left):
-        page.insert_text((50, 700 - i * 30), line, fontsize=12, color=(0, 0, 0))
+        page.insert_text((50, 50 + i * 30), line, fontsize=12, color=(0, 0, 0))
     for i, line in enumerate(right):
-        page.insert_text((300, 700 - i * 30), line, fontsize=12, color=(0, 0, 0))
+        page.insert_text((300, 50 + i * 30), line, fontsize=12, color=(0, 0, 0))
     doc.save(path)
     doc.close()
     return path
