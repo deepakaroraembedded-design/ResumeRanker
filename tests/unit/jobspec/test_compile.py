@@ -404,3 +404,34 @@ def test_domain_extraction(compiler: JobSpecCompiler, run_context: RunContext) -
     assert result.ok
     assert result.value.domain is not None
     assert result.value.domain.industry == "fintech"
+
+
+@pytest.mark.covers("FR-401")
+def test_education_extraction_preferred_degree_in_field(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """A JD with "Bachelor's or Master's (preferred) degree in X" should capture X."""
+    source = (
+        "Role\n\nRequired:\n- Python\n\n"
+        "What We’re Looking for (Minimum Qualifications):\n"
+        "Bachelor's or Master's (preferred) degree in Computer Science or a related field\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    assert result.value.education is not None
+    assert result.value.education.min_level == "bachelors"
+    assert result.value.education.fields == ("computer science",)
+
+
+@pytest.mark.covers("FR-401")
+def test_certification_extraction_ignores_skill_lines(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """General skill lines mentioning AWS/Azure must not be modelled as certifications."""
+    source = (
+        "Role\n\nRequired:\n- Python\n\n"
+        "Familiarity with cloud platforms like AWS or Azure, containerization, and virtualization\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    assert result.value.certifications == ()
