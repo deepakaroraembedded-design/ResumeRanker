@@ -575,22 +575,34 @@ def _infer_weight(line: str, phrases: tuple[tuple[str, int], ...]) -> int:
 def _clean_skill(line: str, phrases: tuple[tuple[str, int], ...]) -> str:
     """Remove weight markers and stray punctuation from a skill line."""
     text = line
-    for phrase, _ in phrases:
-        text = re.sub(re.escape(phrase), "", text, flags=re.IGNORECASE)
+    # Remove whole weight phrases only, not matching substrings (e.g. "familiar"
+    # inside "familiarity"). Phrases are ordered by length, longest first, so a
+    # more specific phrase wins over a shorter one.
+    for phrase, _ in sorted(phrases, key=lambda p: len(p[0]), reverse=True):
+        text = re.sub(r"\b" + re.escape(phrase) + r"\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"(?i)\b(must|required|preferred|optional)\b", "", text)
     text = re.sub(r"[:;,\.\-]+$", "", text.strip())
-    return text.strip()
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
 
 
 _SKILL_LEAD_PHRASES: tuple[str, ...] = (
+    "prior",
+    "previous",
+    "experience integrating",
     "expertise in",
     "proficiency in",
     "proficient in",
     "experience in",
     "experience with",
     "experienced with",
+    "prior experience with",
+    "previous experience with",
+    "prior experience in",
+    "previous experience in",
     "knowledge of",
     "understanding of",
+    "foundational understanding of",
     "familiarity with",
     "familiar with",
     "working knowledge of",
@@ -637,6 +649,18 @@ _SKILL_STOP_WORDS: frozenset[str] = frozenset(
         "such",
         "like",
         "including",
+        "alongside",
+        "various",
+        "protocols",
+        "protocol",
+        "technologies",
+        "technology",
+        "platforms",
+        "platform",
+        "solutions",
+        "solution",
+        "certifications",
+        "certification",
     }
 )
 
@@ -659,6 +683,8 @@ _SKILL_NOISE_PHRASES: tuple[str, ...] = (
     "leveraging",
     "securing",
     "positioning",
+    "automate predictive threat detection",
+    "intelligent data path analysis models",
 )
 
 
@@ -673,12 +699,22 @@ def _strip_skill_noise(text: str) -> str:
         if lower.endswith(" " + phrase):
             text = text[: -len(" " + phrase)].strip()
             lower = text.lower()
-    # Remove a trailing parenthetical size or acronym set if it dominates the phrase.
-    text = re.sub(r"\s*\([^)]{15,}\)\s*$", "", text).strip()
+    # Remove a trailing parenthetical acronym set if it dominates the phrase,
+    # while keeping short qualifiers like (l2/l3).
+    text = re.sub(r"\s*\([^)]{10,}\)\s*$", "", text).strip()
     # Strip leftover conjunctions/prepositions at the start or end of a split fragment.
     text = re.sub(r"^(?:and|or|in|with|for|of|such|like)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+(?:and|or|in|with|for|of|such|like)$", "", text, flags=re.IGNORECASE)
     return text.strip()
+
+
+def _normalize_canonical(text: str) -> str:
+    """Lowercase, collapse spaces, and drop stop words from a skill phrase."""
+    lower = text.lower()
+    words = re.findall(r"[a-z0-9/+#-]+", lower)
+    kept = [w for w in words if w not in _SKILL_STOP_WORDS and len(w) > 1]
+    # If every token is a stop word, the phrase is pure noise (e.g. "protocols").
+    return " ".join(kept)
 
 
 def _is_valid_skill(text: str) -> bool:
@@ -695,10 +731,24 @@ def _is_valid_skill(text: str) -> bool:
         return False
     if "minimum" in lower:
         return False
-    # Must contain at least one non-stop word longer than 1 char.
-    words = re.findall(r"[a-z0-9/+#-]+", lower)
-    content = [w for w in words if w not in _SKILL_STOP_WORDS and len(w) > 1]
-    return len(content) >= 1
+    norm = _normalize_canonical(text)
+    words = norm.split()
+    # Very long phrases are usually responsibility prose, not skills.
+    return not (not words or len(words) > 5)
+
+
+def _split_skill_items(text: str) -> list[str]:
+    """Split a skill line on commas, semicolons, and/or/like/such as outside parentheses."""
+    # First split on commas/semicolons that are not inside a parenthetical group.
+    parts = re.split(r"\s*[,;]\s*(?![^()]*\))", text)
+    items: list[str] = []
+    separator = re.compile(r"\s+\b(?:and|or|like|such as)\b\s+(?![^()]*\))", re.IGNORECASE)
+    for part in parts:
+        for sub in separator.split(part):
+            sub = sub.strip()
+            if sub:
+                items.append(sub)
+    return items
 
 
 def _skill_candidates(
@@ -707,25 +757,26 @@ def _skill_candidates(
     """Split a raw skill line into candidate canonical phrases with weights.
 
     Bullet lines are returned as a single candidate; prose lines are split on
-    commas, semicolons, and coordinating conjunctions.
+    commas, semicolons, and list separators, with lead-in noise removed from the
+    whole line first so fragments like "ity with ..." are not produced.
     """
     weight = _infer_weight(raw, weight_phrases)
     cleaned = _clean_skill(raw, weight_phrases).lower()
+    cleaned = _strip_skill_noise(cleaned)
     if not cleaned:
         return []
     # Short bullet-like lines without list separators are a single skill.
-    if len(cleaned) < 60 and not re.search(r"[,;]|\band\b|\bor\b", cleaned):
-        cleaned = _strip_skill_noise(cleaned)
+    if len(cleaned) < 60 and not re.search(r"[,;]|\band\b|\bor\b|\blike\b|\bsuch as\b", cleaned):
         if _is_valid_skill(cleaned):
-            return [(cleaned, weight)]
+            return [(_normalize_canonical(cleaned), weight)]
         return []
     # Split prose into candidate phrases.
-    parts = re.split(r"\s*[,;]\s*|\s+\band\b\s+|\s+\bor\b\s+", cleaned)
+    parts = _split_skill_items(cleaned)
     result: list[tuple[str, int]] = []
     for part in parts:
         part = _strip_skill_noise(part.strip())
         if _is_valid_skill(part):
-            result.append((part, weight))
+            result.append((_normalize_canonical(part), weight))
     return result
 
 

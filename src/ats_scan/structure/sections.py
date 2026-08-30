@@ -391,14 +391,27 @@ def _looks_like_skills_list(text: str) -> bool:
         line = line.strip()
         if not line:
             continue
-        items = [item.strip() for item in re.split(r"[,;]", line)]
-        if len(items) < 2:
-            continue
-        short = sum(
-            1 for item in items if len(item.split()) <= 3 and any(c.isalnum() for c in item)
-        )
-        if short / len(items) >= 0.7:
-            return True
+        # Strip a leading bullet and a category label such as "Kernel, Datapath & Networking:".
+        if line.startswith("•"):
+            line = line[1:].strip()
+        if ":" in line:
+            line = line.split(":", 1)[1]
+        # A heading such as "SCOPE & AUTHORITY" has only two items joined by &;
+        # a real skills list either has a comma/semicolon/bullet or three+ items.
+        items_comma = [item.strip() for item in re.split(r"[,;·•]", line) if item.strip()]
+        if len(items_comma) >= 2:
+            short = sum(
+                1 for item in items_comma if len(item.split()) <= 3 and any(c.isalnum() for c in item)
+            )
+            if short / len(items_comma) >= 0.5:
+                return True
+        items_all = [item.strip() for item in re.split(r"[,;·•&/]", line) if item.strip()]
+        if len(items_all) >= 3:
+            short = sum(
+                1 for item in items_all if len(item.split()) <= 3 and any(c.isalnum() for c in item)
+            )
+            if short / len(items_all) >= 0.5:
+                return True
     return False
 
 

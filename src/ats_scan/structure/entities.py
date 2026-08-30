@@ -20,7 +20,7 @@ from ats_scan.models.resume import (
 )
 from ats_scan.models.source import ExtractedText
 from ats_scan.structure.dates import calendar_union, month_range, parse_date_range
-from ats_scan.structure.sections import Section, SectionType
+from ats_scan.structure.sections import Section, SectionType, _looks_like_skills_list
 
 _EMAIL_RE: Final[re.Pattern[str]] = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 _PHONE_RE: Final[re.Pattern[str]] = re.compile(
@@ -71,6 +71,84 @@ _HEURISTIC_SKILLS: Final[frozenset[str]] = frozenset(
         "php",
         "ruby",
         "scala",
+    }
+)
+
+
+# Tokens treated as noise when a comma/bullet skills list is expanded in a
+# dedicated skills section.  This is intentionally conservative: a token that is
+# not a stop word is kept as a candidate skill and downstream ontology matching
+# decides whether it is meaningful.
+_SKILLS_LIST_STOP_WORDS: Final[frozenset[str]] = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "are",
+        "as",
+        "at",
+        "be",
+        "been",
+        "being",
+        "by",
+        "for",
+        "from",
+        "has",
+        "have",
+        "having",
+        "in",
+        "is",
+        "it",
+        "its",
+        "of",
+        "on",
+        "or",
+        "that",
+        "the",
+        "to",
+        "was",
+        "were",
+        "with",
+        "via",
+        "using",
+        "such",
+        "like",
+        "including",
+        "etc",
+        "eg",
+        "ie",
+        "etc.",
+        "e.g",
+        "i.e",
+        "e.g.",
+        "i.e.",
+        "and/or",
+        "both",
+        "either",
+        "neither",
+        "nor",
+        "not",
+        "but",
+        "also",
+        "plus",
+        "various",
+        "other",
+        "others",
+        "another",
+        "all",
+        "any",
+        "some",
+        "many",
+        "much",
+        "more",
+        "most",
+        "few",
+        "several",
+        "every",
+        "each",
+        "one",
+        "two",
+        "three",
     }
 )
 
@@ -413,6 +491,37 @@ def _skill_tokens(text: str) -> list[str]:
     return tokens
 
 
+def _skill_tokens_from_list(text: str) -> list[str]:
+    """Extract candidate raw skills from a comma/bullet skills list line.
+
+    Category labels such as "Kernel, Datapath & Networking:" are stripped.
+    Items are split by common delimiters; stop words and obvious noise are
+    dropped.  The ontology layer (C-04) later decides which candidates are real
+    skills, so this function is intentionally permissive.
+    """
+    if ":" in text:
+        text = text.split(":", 1)[1]
+
+    items = re.split(r"[,;·•&/]|(?:\s+\band\b\s+)|(?:\s+&\s+)", text)
+    results: list[str] = []
+    for item in items:
+        item = item.strip()
+        if not item:
+            continue
+        item = re.sub(r"\s+", " ", item).rstrip(".")
+        if not item:
+            continue
+        cleaned = re.sub(r"[^a-z0-9+#]", "", item.lower())
+        if cleaned.isdigit() or not cleaned:
+            continue
+        if len(cleaned) < 2 and cleaned not in {"c", "r", "go"}:
+            continue
+        if cleaned in _SKILLS_LIST_STOP_WORDS:
+            continue
+        results.append(item)
+    return results
+
+
 def _sentence_spans(text: str) -> list[tuple[int, int, str]]:
     """Return (start, end, sentence) spans for a piece of text."""
     sentences: list[tuple[int, int, str]] = []
@@ -450,7 +559,9 @@ def extract_skills(text: str, sections: list[Section]) -> tuple[SkillMention, ..
     by_skill: dict[str, _SkillHarvest] = defaultdict(_SkillHarvest)
     for section in sections:
         for sent_start, sent_end, sentence in _sentence_spans(section.text):
-            for token in _skill_tokens(sentence):
+            is_skills_list = section.type == SectionType.SKILLS and _looks_like_skills_list(sentence)
+            tokens = _skill_tokens_from_list(sentence) if is_skills_list else _skill_tokens(sentence)
+            for token in tokens:
                 entry = by_skill[token]
                 entry.sections.add(section.type.value)
                 entry.mentions += 1

@@ -163,10 +163,12 @@ class KeywordStuffingDetector:
 
         if resume is not None:
             share = self._skill_token_share(source, resume)
-            if share > self._config.skills_token_share_max:
+            # A dedicated skills section is normal; only flag high density outside it.
+            threshold = max(self._config.skills_token_share_max, 0.35)
+            if share > threshold:
                 messages.append(
                     f"skills-section token share {share:.0%} exceeds "
-                    f"{self._config.skills_token_share_max:.0%}"
+                    f"{threshold:.0%}"
                 )
 
             unnarrated = self._unnarrated_skills(resume, source)
@@ -228,7 +230,12 @@ class KeywordStuffingDetector:
         ]
 
     def _skill_token_share(self, source: str, resume: CanonicalResume) -> float:
-        """Return the share of tokens in *source* that match a claimed skill."""
+        """Return the share of non-skills-section tokens that match a claimed skill.
+
+        A dedicated skills section is expected to be dense with skill tokens, so
+        it is excluded from the share.  High skill-token density outside that
+        section indicates classic keyword stuffing.
+        """
         skill_tokens: set[str] = set()
         for skill in resume.skills:
             if skill.raw:
@@ -237,7 +244,21 @@ class KeywordStuffingDetector:
                 skill_tokens.update(tokenize(skill.canonical))
         if not skill_tokens:
             return 0.0
-        tokens = tokenize(source)
+
+        skills_spans = [
+            span
+            for skill in resume.skills
+            if "skills" in {s.lower() for s in skill.sections} and skill.evidence_spans
+            for span in skill.evidence_spans
+        ]
+        if skills_spans:
+            start = min(s[0] for s in skills_spans)
+            end = max(s[1] for s in skills_spans)
+            non_skills_text = source[:start] + source[end:]
+        else:
+            non_skills_text = source
+
+        tokens = tokenize(non_skills_text)
         if not tokens:
             return 0.0
         matched = sum(1 for token in tokens if token in skill_tokens)

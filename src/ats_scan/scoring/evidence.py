@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import asyncio
+import concurrent.futures
 import math
+import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import StrEnum
 from typing import Any, Protocol, cast
 
 from ats_scan.models.config import ProficiencyFactors, RecencyFactors, ScoringConfig
+from ats_scan.models.embeddings import Vector
 from ats_scan.models.jobspec import PreferredSkill, RequiredSkill
 from ats_scan.models.resume import (
     Bullet,
@@ -15,7 +20,62 @@ from ats_scan.models.resume import (
     SkillMention,
 )
 from ats_scan.models.scoring import Evidence, GapDetail, MatchDetail, MatchRoute
-from ats_scan.protocols import OntologyIndex
+from ats_scan.protocols import EmbeddingClient, OntologyIndex
+
+# Semantic skill-matching thresholds.  These are module constants because the
+# frozen ScoringConfig model does not expose knobs for this enhancement.
+_SEMANTIC_MATCH_THRESHOLD: float = 0.55
+_SEMANTIC_MATCH_MAX_FACTOR: float = 0.55
+_SEMANTIC_MIN_TARGET_LENGTH: int = 10
+_SEMANTIC_STOP_WORDS: frozenset[str] = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "in",
+        "on",
+        "at",
+        "with",
+        "of",
+        "to",
+        "for",
+        "as",
+        "is",
+        "are",
+        "such",
+        "like",
+        "including",
+    }
+)
+
+
+# Keyword skill-matching thresholds.  Used when the ontology cascade misses a
+# target that appears in the resume's own skill list (e.g., acronyms and phrases
+# not yet in the ontology data).
+_KEYWORD_STOP_WORDS: frozenset[str] = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "in",
+        "on",
+        "at",
+        "with",
+        "of",
+        "to",
+        "for",
+        "as",
+        "is",
+        "are",
+        "such",
+        "like",
+        "including",
+    }
+)
 
 
 class ProficiencyKind(StrEnum):
@@ -52,6 +112,7 @@ class SkillEvidence:
     quote: str
     kind: ProficiencyKind
     last_used: date | None
+    cosine: float | None = None  # only used for EMBEDDING semantic matches
 
 
 def parse_iso_date(value: str | None) -> date | None:
@@ -228,14 +289,265 @@ def _evidence_from_entry(
     )
 
 
+def _run_embed_sync(client: EmbeddingClient, texts: Sequence[str]) -> Sequence[Vector]:
+    """Run an async embedding call from a synchronous scoring context."""
+    coro = client.embed(texts)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        return executor.submit(asyncio.run, coro).result()
+
+
+def _cosine(a: Vector, b: Vector) -> float:
+    """Cosine similarity between two vectors."""
+    dot = sum(x * y for x, y in zip(a, b, strict=True))
+    norm_a = math.sqrt(sum(x * x for x in a))
+    norm_b = math.sqrt(sum(x * x for x in b))
+    if norm_a == 0.0 or norm_b == 0.0:
+        return 0.0
+    return dot / (norm_a * norm_b)
+
+
+def _has_semantic_overlap(a: str, b: str) -> bool:
+    """Return True if two skill phrases share a meaningful token or stem."""
+    a_words = set(re.findall(r"[a-z0-9]+", a.lower())) - _SEMANTIC_STOP_WORDS
+    b_words = set(re.findall(r"[a-z0-9]+", b.lower())) - _SEMANTIC_STOP_WORDS
+    if a_words & b_words:
+        return True
+    for aw in a_words:
+        for bw in b_words:
+            if len(aw) >= 4 and (aw in bw or bw in aw):
+                return True
+    return False
+
+
+def _semantic_skill_evidence(
+    resume: CanonicalResume, target: str, ctx: Any
+) -> tuple[SkillEvidence, ...]:
+    """Embeddings-based semantic fallback for skill coverage (S1/S2/S8).
+
+    Only used when the deterministic ontology cascade finds no evidence. It
+    compares the target skill phrase to raw skill mentions in the resume and
+    returns partial-credit EMBEDDING evidence when cosine similarity and a
+    token overlap are both high enough.
+    """
+    embeddings = getattr(ctx, "embeddings", None)
+    if embeddings is None:
+        return ()
+    try:
+        client = cast(EmbeddingClient, embeddings)
+    except Exception:
+        return ()
+
+    # Avoid semantic-matching short, ambiguous terms such as "Go", "AWS", "C".
+    if " " not in target and len(target) < _SEMANTIC_MIN_TARGET_LENGTH:
+        return ()
+
+    # Collect all raw skill mentions with their provenance.
+    candidates: list[tuple[str, tuple[int, int], str, ProficiencyKind, date | None]] = []
+    for skill in resume.skills:
+        raw = skill.raw or skill.canonical or ""
+        if not raw:
+            continue
+        span = skill.evidence_spans[0] if skill.evidence_spans else (0, len(raw))
+        candidates.append((raw, span, raw, _proficiency_from_mention(skill), None))
+
+    for entry in resume.experience:
+        for raw in entry.skills_evidenced:
+            if not raw:
+                continue
+            entry_span = entry.span
+            quote = raw
+            if entry.bullets and entry_span is None:
+                bullet = entry.bullets[0]
+                entry_span = bullet.span or (0, len(bullet.text))
+                quote = bullet.text
+            if entry_span is None:
+                entry_span = (0, len(quote))
+            last_used: date | None = None
+            if entry.end is not None and entry.end.value is not None:
+                last_used = parse_iso_date(entry.end.value)
+            candidates.append((raw, entry_span, quote, ProficiencyKind.LISTED_CORROBORATED, last_used))
+
+    for project in resume.projects:
+        for raw in project.skills_evidenced:
+            if not raw:
+                continue
+            project_span = project.span
+            quote = raw
+            if project.bullets and project_span is None:
+                bullet = project.bullets[0]
+                project_span = bullet.span or (0, len(bullet.text))
+                quote = bullet.text
+            if project_span is None:
+                project_span = (0, len(quote))
+            last_used = None
+            if project.end is not None and project.end.value is not None:
+                last_used = parse_iso_date(project.end.value)
+            candidates.append((raw, project_span, quote, ProficiencyKind.LISTED_CORROBORATED, last_used))
+
+    if not candidates:
+        return ()
+
+    unique_texts = list({c[0] for c in candidates})
+    try:
+        vectors = _run_embed_sync(client, unique_texts)
+    except Exception:
+        return ()
+    vector_map = dict(zip(unique_texts, vectors, strict=True))
+
+    try:
+        target_vec = _run_embed_sync(client, [target])[0]
+    except Exception:
+        return ()
+
+    found: list[SkillEvidence] = []
+    for raw, span, quote, kind, last_used in candidates:
+        cosine = _cosine(target_vec, vector_map[raw])
+        if cosine < _SEMANTIC_MATCH_THRESHOLD:
+            continue
+        if not _has_semantic_overlap(target, raw):
+            continue
+        factor = min(_SEMANTIC_MATCH_MAX_FACTOR, f_match(MatchRoute.EMBEDDING, cosine))
+        if factor <= 0.0:
+            continue
+        found.append(
+            SkillEvidence(
+                raw=raw,
+                canonical=None,
+                route=MatchRoute.EMBEDDING,
+                span=span,
+                quote=quote,
+                kind=kind,
+                last_used=last_used,
+                cosine=cosine,
+            )
+        )
+    return tuple(found)
+
+
+def _keyword_match_score(target: str, candidate: str) -> float | None:
+    """Score a keyword match between a JD target and a resume skill phrase.
+
+    Returns a coarse score used only to pick the route: 1.0 = exact match,
+    0.85 = substring, 0.55 = token overlap.  None means no credible match.
+    """
+    target_norm = re.sub(r"[^a-z0-9+#]", "", target.lower())
+    cand_norm = re.sub(r"[^a-z0-9+#]", "", candidate.lower())
+    if not target_norm or not cand_norm:
+        return None
+    if target_norm == cand_norm:
+        return 1.0
+    # Substring matches only for meaningful phrases (>= 4 chars) to avoid single
+    # letters like "C" or short targets like "Go" matching unrelated words.
+    if (
+        len(target_norm) >= 4
+        and len(cand_norm) >= 4
+        and (target_norm in cand_norm or cand_norm in target_norm)
+    ):
+        return 0.85
+    target_tokens = set(re.findall(r"[a-z0-9]+", target.lower())) - _KEYWORD_STOP_WORDS
+    cand_tokens = set(re.findall(r"[a-z0-9]+", candidate.lower())) - _KEYWORD_STOP_WORDS
+    if not target_tokens:
+        return None
+    overlap = len(target_tokens & cand_tokens) / len(target_tokens)
+    threshold = 1.0 / len(target_tokens) if len(target_tokens) >= 2 else 0.5
+    if overlap >= threshold:
+        return 0.55
+    return None
+
+
+def _keyword_skill_evidence(
+    resume: CanonicalResume, target: str
+) -> tuple[SkillEvidence, ...]:
+    """Keyword fallback for skill coverage.
+
+    When the ontology cascade misses a target, this scans the structured skill
+    phrases already extracted from the resume and awards partial credit for
+    exact, substring or token-overlap matches.
+    """
+    found: list[SkillEvidence] = []
+    seen: set[str] = set()
+
+    for skill in resume.skills:
+        raw = skill.raw
+        score = _keyword_match_score(target, raw)
+        if score is None or raw in seen:
+            continue
+        seen.add(raw)
+        route = MatchRoute.EXACT if score >= 1.0 else MatchRoute.FUZZY
+        span = skill.evidence_spans[0] if skill.evidence_spans else (0, len(raw))
+        found.append(
+            SkillEvidence(
+                raw=raw,
+                canonical=skill.canonical,
+                route=route,
+                span=span,
+                quote=raw,
+                kind=_proficiency_from_mention(skill),
+                last_used=parse_iso_date(skill.last_used),
+            )
+        )
+
+    for entry in resume.experience:
+        for raw in entry.skills_evidenced:
+            score = _keyword_match_score(target, raw)
+            if score is None or raw in seen:
+                continue
+            seen.add(raw)
+            route = MatchRoute.EXACT if score >= 1.0 else MatchRoute.FUZZY
+            span = entry.span or (0, len(raw))
+            last_used: date | None = None
+            if entry.end is not None and entry.end.value is not None:
+                last_used = parse_iso_date(entry.end.value)
+            found.append(
+                SkillEvidence(
+                    raw=raw,
+                    canonical=None,
+                    route=route,
+                    span=span,
+                    quote=raw,
+                    kind=ProficiencyKind.LISTED_CORROBORATED,
+                    last_used=last_used,
+                )
+            )
+
+    for project in resume.projects:
+        for raw in project.skills_evidenced:
+            score = _keyword_match_score(target, raw)
+            if score is None or raw in seen:
+                continue
+            seen.add(raw)
+            route = MatchRoute.EXACT if score >= 1.0 else MatchRoute.FUZZY
+            span = project.span or (0, len(raw))
+            last_used = None
+            if project.end is not None and project.end.value is not None:
+                last_used = parse_iso_date(project.end.value)
+            found.append(
+                SkillEvidence(
+                    raw=raw,
+                    canonical=None,
+                    route=route,
+                    span=span,
+                    quote=raw,
+                    kind=ProficiencyKind.LISTED_CORROBORATED,
+                    last_used=last_used,
+                )
+            )
+
+    return tuple(found)
+
+
 def collect_skill_evidence(
-    resume: CanonicalResume, target: str, ontology: OntologyIndex
+    resume: CanonicalResume, target: str, ontology: OntologyIndex, ctx: Any | None = None
 ) -> tuple[SkillEvidence, ...]:
     """Gather all evidence that could support a required/preferred skill.
 
-    Sources are the structured ``skills`` list, the ``skills_evidenced``
-    tuples on experience and project entries, and (if available) verified
-    bullet mentions.
+    Sources are the deterministic ontology cascade, the structured ``skills``
+    list, the ``skills_evidenced`` tuples on experience and project entries, and
+    (if no evidence is found) keyword and semantic fallbacks for partial credit.
     """
     found: list[SkillEvidence] = []
     for skill in resume.skills:
@@ -252,6 +564,9 @@ def collect_skill_evidence(
             ev = _evidence_from_entry(target, project, raw_skill, ontology)
             if ev is not None:
                 found.append(ev)
+    found.extend(_keyword_skill_evidence(resume, target))
+    if not found and ctx is not None:
+        found.extend(_semantic_skill_evidence(resume, target, ctx))
     return tuple(found)
 
 
@@ -274,7 +589,7 @@ def _best_match_value(
         dt = years_since(last_date, now) if now and last_date else 0.0
         rec = f_recency(dt, half_life, config.recency.floor)
         prof = f_prof(ev.kind, config.factors)
-        match_factor = f_match(ev.route)
+        match_factor = f_match(ev.route, ev.cosine)
         m = match_factor * prof * rec
         if m > best_m:
             best_m = m
@@ -313,7 +628,7 @@ def score_skill_coverage(
 
     for skill in skills:
         target = skill.canonical
-        evidence = collect_skill_evidence(resume, target, ontology)
+        evidence = collect_skill_evidence(resume, target, ontology, ctx)
         if not evidence:
             gap_details.append(
                 GapDetail(
@@ -353,9 +668,10 @@ def recency_for_skill(
     now: date | None,
     config: RecencyFactors,
     ontology: OntologyIndex,
+    ctx: Any | None = None,
 ) -> tuple[float, SkillEvidence | None]:
     """Best recency factor for a single skill (used by S8)."""
-    evidence = collect_skill_evidence(resume, target, ontology)
+    evidence = collect_skill_evidence(resume, target, ontology, ctx)
     best_rec = 0.0
     best_ev: SkillEvidence | None = None
     for ev in evidence:

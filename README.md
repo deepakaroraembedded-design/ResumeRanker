@@ -29,6 +29,15 @@ The system is designed to **never raise on bad data**. Every stage returns a `St
 
 ---
 
+## Recent improvements
+
+- **Prose JD skill parsing** — the JobSpec compiler extracts required and preferred skills from free-text sections such as *Minimum Qualifications* and *Preferred Qualifications*, including parenthetical acronym lists and separators like `like` / `such as`.
+- **Robust skill-list extraction** — the resume structurer parses comma, semicolon, bullet, ampersand, and slash-delimited skill lines and ignores heading-style two-item lines (e.g., `SCOPE & AUTHORITY`).
+- **Keyword and semantic skill fallback** — when the ontology does not contain an exact match, the scorer falls back to keyword matching on extracted skills and, in hybrid mode, embedding-based semantic similarity.
+- **Context-aware integrity detection** — the keyword-stuffing detector excludes the dedicated skills section and uses a higher threshold, reducing false positives on dense but legitimate skills lists.
+
+---
+
 ## Algorithmic core
 
 ### Scoring dimensions (S1–S10)
@@ -374,7 +383,7 @@ make gate
 ### Run tests
 
 ```bash
-uv run --group dev pytest -m "not slow"
+uv run pytest -m "not slow"
 ```
 
 ### Generate schemas
@@ -385,13 +394,41 @@ uv run python scripts/validate_schemas.py docs/contracts src
 
 ### Run the pipeline
 
-The CLI entry point is implemented by component C-15. After C-15 is merged, the typical invocation is:
-
 ```bash
-uv run ats-scan score --jobspec path/to/jobspec.md --resumes path/to/resumes/ --output run-2026-08-29
+# Score a directory of resumes against a job description (offline / deterministic mode)
+uv run ats-scan run --resumes path/to/resumes/ --jd path/to/jd.txt --out run-2026-08-30 --mode offline --force
+
+# Hybrid mode (uses LLM for structuring, S3 rubric, and explanations)
+uv run ats-scan run --resumes path/to/resumes/ --jd path/to/jd.txt --out run-2026-08-30 --force
 ```
 
-See `docs/TRD.md` §9 and the C-15 agent block in `docs/IMPLEMENTATION_PLAN.md` for the full command surface.
+Key flags:
+
+- `--resumes` — directory containing candidate resumes (PDF, Word, RTF, plain text, HTML)
+- `--jd` — path to a free-text job description or a pre-compiled `JobSpec` YAML file
+- `--out` — output directory (default: `ats-out`)
+- `--mode offline` — deterministic mode with local embeddings only
+- `--mode hybrid` — default; uses LLM where configured
+- `--blind` / `--no-blind` — redact identity attributes before scoring (default: blind)
+- `--force` — overwrite an existing output directory
+- `--review-jobspec` — halt after compiling the JD so you can review the generated `JobSpec`
+- `--dry-run` — ingest and compile only; do not score
+
+### Parse resumes without scoring
+
+```bash
+uv run ats-scan parse --resumes path/to/resumes/ --out parsed-resumes
+```
+
+This writes a `c_<id>.resume.json` per candidate with the structured `CanonicalResume`.
+
+### Compile a job description for review
+
+```bash
+uv run ats-scan compile-jd --jd path/to/jd.txt --out jobspec.yaml
+```
+
+See `docs/TRD.md` §9 and `uv run ats-scan --help` for the full command surface.
 
 ---
 
