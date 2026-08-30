@@ -111,12 +111,22 @@ _STOP_WORDS: frozenset[str] = frozenset(
 )
 
 
+# Minimum number of words for a sentence to count as narrative context. Token
+# repetitions inside shorter sentences are still treated as stuffing, while
+# skills mentioned in longer sentences are treated as narrated.
+_MIN_CONTEXT_WORDS = 12
+
+
 class KeywordStuffingDetector:
     """Detect keyword stuffing aimed at classic ATS filters.
 
     Implements FR-1103: skills-section token share above the configured maximum,
     a skill repeated above the configured count without context, and skills
     claimed in a list but absent from all narrative text.
+
+    A token is treated as contextless repetition only when its occurrences are
+    concentrated in short sentences; legitimate technical terms that appear many
+    times in long, descriptive sentences are not penalised.
     """
 
     code = "KEYWORD_STUFFING"
@@ -136,18 +146,11 @@ class KeywordStuffingDetector:
         if not tokens:
             return ()
 
-        counts: dict[str, int] = {}
-        for token in tokens:
-            if token not in _STOP_WORDS:
-                counts[token] = counts.get(token, 0) + 1
-
         messages: list[str] = []
         spans: list[tuple[int, int]] = []
         quotes: list[str] = []
 
-        repeated = [
-            token for token, count in counts.items() if count > self._config.keyword_repeat_max
-        ]
+        repeated = self._repeated_keywords(source)
         if repeated:
             messages.append(
                 f"repeated keywords exceeding {self._config.keyword_repeat_max}: "
@@ -166,7 +169,7 @@ class KeywordStuffingDetector:
                     f"{self._config.skills_token_share_max:.0%}"
                 )
 
-            unnarrated = self._unnarrated_skills(resume)
+            unnarrated = self._unnarrated_skills(resume, source)
             if unnarrated:
                 messages.append(f"claimed-but-unnarrated skills: {', '.join(unnarrated)}")
 
@@ -182,6 +185,47 @@ class KeywordStuffingDetector:
                 quotes=tuple(quotes),
             ),
         )
+
+    def _sentences(self, text: str) -> list[str]:
+        """Split text into rough sentences, merging continuation lines.
+
+        Bullet points that wrap across multiple lines are joined so that a skill
+        mentioned in the middle of a long bullet is not treated as un-narrated.
+        """
+        raw_lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if not raw_lines:
+            return []
+
+        merged: list[str] = [raw_lines[0]]
+        for line in raw_lines[1:]:
+            previous = merged[-1]
+            if previous.endswith((",", ";", ":")) or (line and line[0].islower()):
+                merged[-1] = f"{previous} {line}"
+            else:
+                merged.append(line)
+
+        sentences: list[str] = []
+        for block in merged:
+            for part in re.split(r"[.!?]\s+", block):
+                if part.strip():
+                    sentences.append(part.strip())
+        return sentences
+
+    def _repeated_keywords(self, source: str) -> list[str]:
+        """Return tokens that are repeated mostly in short, contextless sentences."""
+        short_counts: dict[str, int] = {}
+        for sentence in self._sentences(source):
+            if len(sentence.split()) >= _MIN_CONTEXT_WORDS:
+                continue
+            for token in tokenize(sentence):
+                if token not in _STOP_WORDS:
+                    short_counts[token] = short_counts.get(token, 0) + 1
+
+        return [
+            token
+            for token, count in short_counts.items()
+            if count > self._config.keyword_repeat_max
+        ]
 
     def _skill_token_share(self, source: str, resume: CanonicalResume) -> float:
         """Return the share of tokens in *source* that match a claimed skill."""
@@ -199,13 +243,17 @@ class KeywordStuffingDetector:
         matched = sum(1 for token in tokens if token in skill_tokens)
         return matched / len(tokens)
 
-    def _unnarrated_skills(self, resume: CanonicalResume) -> list[str]:
+    def _unnarrated_skills(self, resume: CanonicalResume, source: str) -> list[str]:
         """Return skills claimed in a list but absent from narrative text."""
         narrative_parts: list[str] = []
         for entry in resume.experience:
             narrative_parts.extend(bullet.text for bullet in entry.bullets)
         for project in resume.projects:
             narrative_parts.extend(bullet.text for bullet in project.bullets)
+        # Long sentences anywhere in the document provide context for a skill.
+        for sentence in self._sentences(source):
+            if len(sentence.split()) >= _MIN_CONTEXT_WORDS:
+                narrative_parts.append(sentence)
         narrative = " ".join(narrative_parts).lower()
 
         unnarrated: list[str] = []

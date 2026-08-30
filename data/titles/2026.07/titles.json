@@ -107,7 +107,9 @@
         "platform engineer",
         "site reliability",
         "sre",
-        "platform engineering"
+        "platform engineering",
+        "systems architect",
+        "platform architect"
       ]
     },
     "product_management": {
@@ -147,7 +149,8 @@
         "developer",
         "coder",
         "programmer",
-        "software engineering"
+        "software engineering",
+        "engineer"
       ]
     }
   },
@@ -227,6 +230,38 @@
       "family": "security",
       "seniority": "senior"
     },
+    "ai systems architect": {
+      "family": "platform_engineering",
+      "seniority": "mid"
+    },
+    "lead engineer": {
+      "family": "software_engineering",
+      "seniority": "lead"
+    },
+    "platform architect": {
+      "family": "platform_engineering",
+      "seniority": "mid"
+    },
+    "principal engineer": {
+      "family": "software_engineering",
+      "seniority": "principal"
+    },
+    "principal platform architect": {
+      "family": "platform_engineering",
+      "seniority": "principal"
+    },
+    "principal software development engineer": {
+      "family": "software_engineering",
+      "seniority": "principal"
+    },
+    "principal systems architect": {
+      "family": "platform_engineering",
+      "seniority": "principal"
+    },
+    "senior ai systems architect": {
+      "family": "platform_engineering",
+      "seniority": "senior"
+    },
     "senior business analyst": {
       "family": "analytics",
       "seniority": "senior"
@@ -247,16 +282,44 @@
       "family": "product_management",
       "seniority": "senior"
     },
+    "senior engineer": {
+      "family": "software_engineering",
+      "seniority": "senior"
+    },
+    "senior platform architect": {
+      "family": "platform_engineering",
+      "seniority": "senior"
+    },
+    "senior software development engineer": {
+      "family": "software_engineering",
+      "seniority": "senior"
+    },
     "senior software engineer": {
       "family": "software_engineering",
+      "seniority": "senior"
+    },
+    "senior systems architect": {
+      "family": "platform_engineering",
       "seniority": "senior"
     },
     "site reliability engineer": {
       "family": "platform_engineering",
       "seniority": "senior"
     },
+    "software development engineer": {
+      "family": "software_engineering",
+      "seniority": "mid"
+    },
     "software engineer": {
       "family": "software_engineering",
+      "seniority": "mid"
+    },
+    "staff engineer": {
+      "family": "software_engineering",
+      "seniority": "staff"
+    },
+    "systems architect": {
+      "family": "platform_engineering",
       "seniority": "mid"
     },
     "vice president": {
