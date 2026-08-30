@@ -435,3 +435,85 @@ def test_certification_extraction_ignores_skill_lines(
     result = compiler.compile(source, run_context)
     assert result.ok
     assert result.value.certifications == ()
+
+
+@pytest.mark.covers("FR-401")
+def test_prose_required_skills_from_minimum_qualifications(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """Prose under a "Minimum Qualifications" heading is split into required skills."""
+    source = (
+        "Role\n\n"
+        "What We’re Looking for (Minimum Qualifications):\n"
+        "Expertise in Linux kernel networking, NAT, and Python programming\n"
+        "Proficiency in Go or Rust\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    required = {s.canonical for s in result.value.required_skills}
+    assert "linux kernel networking" in required
+    assert "nat" in required
+    assert "python programming" in required
+    assert "go" in required
+    assert "rust" in required
+
+
+@pytest.mark.covers("FR-401")
+def test_prose_preferred_skills_from_preferred_qualifications(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """Prose under a "Preferred Qualifications" heading is split into preferred skills."""
+    source = (
+        "Role\n\n"
+        "What Will Make You Stand Out (Preferred Qualifications):\n"
+        "Experience with AWS or Azure, Docker and Kubernetes\n\n"
+        "Base Pay Range\n$100,000 - $200,000 USD\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    preferred = {s.canonical for s in result.value.preferred_skills}
+    assert "aws" in preferred
+    assert "azure" in preferred
+    assert "docker" in preferred
+    assert "kubernetes" in preferred
+    # Footer lines must not be collected as preferred skills.
+    assert "$100" not in preferred
+    assert "200,000 usd" not in preferred
+
+
+@pytest.mark.covers("FR-401")
+def test_section_terminator_stops_preferred_section(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """Lines like "#LI-Hybrid" or "Zscaler’s salary ranges..." close the active section."""
+    source = (
+        "Role\n\nPreferred:\n- Rust\n\n"
+        "#LI-Hybrid\n"
+        "Zscaler’s salary ranges are benchmarked...\n"
+        "Base Pay Range\n$100,000 USD\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    preferred = {s.canonical for s in result.value.preferred_skills}
+    assert "rust" in preferred
+    assert "salary" not in preferred
+    assert "$100" not in preferred
+
+
+@pytest.mark.covers("FR-401")
+def test_responsibilities_heading_with_parenthetical(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """What you’ll do (Role Expectations) is recognised as responsibilities."""
+    source = (
+        "Role\n\nWhat you’ll do (Role Expectations):\n"
+        "Design scalable systems and review PRDs.\n\n"
+        "Who You Are (Success Profile):\n"
+        "You act like an owner.\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    assert len(result.value.responsibility_chunks) == 1
+    assert "design scalable systems" in result.value.responsibility_chunks[0].text.lower()
+    # The success-profile paragraph should not leak into responsibilities.
+    assert not any("owner" in rc.text.lower() for rc in result.value.responsibility_chunks)

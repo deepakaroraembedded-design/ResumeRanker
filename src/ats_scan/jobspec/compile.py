@@ -70,6 +70,36 @@ class JobSpecCompiler:
         "pregnancy",
     )
 
+    _TERMINATOR_HEADINGS: frozenset[str] = frozenset(
+        {
+            "who you are",
+            "success profile",
+            "base pay range",
+            "benefits",
+            "benefits program",
+            "benefits overview",
+            "pay transparency",
+            "equal employment",
+            "equal employment opportunity",
+            "eeo statement",
+            "by applying for this role",
+            "by applying",
+            "salary ranges",
+            "compensation",
+            "how to apply",
+            "application process",
+            "additional information",
+            "disclaimer",
+            "diversity and inclusion",
+            "diversity",
+            "inclusion",
+            "li-hybrid",
+            "li-cm3",
+        }
+    )
+
+    _TERMINATE: str = "__terminate__"
+
     _HEADING_MAP: dict[str, str] = {
         "required": "required",
         "requirements": "required",
@@ -105,8 +135,16 @@ class JobSpecCompiler:
         "work location": "knockouts",
         "responsibilities": "responsibilities",
         "what you'll do": "responsibilities",
+        "what you will do": "responsibilities",
+        "role expectations": "responsibilities",
         "key responsibilities": "responsibilities",
         "job responsibilities": "responsibilities",
+        "what we're looking for": "required",
+        "what we are looking for": "required",
+        "minimum qualifications": "required",
+        "preferred qualifications": "preferred",
+        "what will make you stand out": "preferred",
+        "stand out": "preferred",
     }
 
     def __init__(
@@ -302,45 +340,68 @@ class JobSpecCompiler:
                 continue
             heading = self._canonical_heading(line)
             if heading is not None:
+                if heading == self._TERMINATE:
+                    current_key = None
+                    continue
                 current_key = heading
                 sections.setdefault(current_key, [])
                 continue
             if current_key is None:
                 continue
-            if current_key in ("required", "preferred") and not _is_bullet(line):
-                continue
+            # Required and preferred sections may contain either bullet items or
+            # prose paragraphs (common in free-text JDs); collect both.
             sections[current_key].append(line)
         return sections
 
     def _canonical_heading(self, line: str) -> str | None:
         """Return a canonical section key if *line* is a section heading."""
-        text = line.rstrip(":").strip().lower()
-        # Strip trailing "skills" / "requirements" duplicates to normalise.
+        text = line.rstrip(":").strip()
+        # Drop parenthetical annotations such as "(Minimum Qualifications)" so
+        # prose JDs like Zscaler's are matched.
+        text = re.sub(r"\s*\([^)]+\)", " ", text).strip()
+        text = text.lower().replace("’", "'")
+        # Strip trailing plural forms used as headings.
         text = re.sub(r"\s+(skills|requirements|criteria)$", "", text)
+        # Qualification headings are ambiguous: the prefix decides whether they
+        # are required or preferred, and "qualifications" alone maps to education.
+        if text.endswith("minimum qualifications"):
+            return "required"
+        if text.endswith("preferred qualifications"):
+            return "preferred"
+        # Job-board metadata tags (e.g., #LI-Hybrid) and common JD footer phrases
+        # terminate the current section even if they are not full headings.
+        if text.startswith("#li-") or text.startswith("li-"):
+            return self._TERMINATE
+        if any(phrase in text for phrase in self._TERMINATOR_HEADINGS):
+            return self._TERMINATE
         return self._HEADING_MAP.get(text)
 
     def _extract_required_skills(self, lines: list[str]) -> list[RequiredSkill]:
-        """Parse required skills with weights (FR-401, FR-405)."""
+        """Parse required skills with weights (FR-401, FR-405).
+
+        Handles both bullet items and prose paragraphs by splitting prose into
+        candidate phrases and stripping lead-in language.
+        """
         skills: list[RequiredSkill] = []
         for line in lines:
             raw = _strip_bullet(line)
             if not raw:
                 continue
-            weight = _infer_weight(raw, self._weight_phrases)
-            canonical = _clean_skill(raw, self._weight_phrases).lower()
-            if canonical:
+            for canonical, weight in _skill_candidates(raw, self._weight_phrases):
                 skills.append(RequiredSkill(canonical=canonical, weight=weight, knockout=False))
         return skills
 
     def _extract_preferred_skills(self, lines: list[str]) -> list[PreferredSkill]:
-        """Parse preferred skills with a default weight of 2 (FR-401)."""
+        """Parse preferred skills with a default weight of 2 (FR-401).
+
+        Handles both bullet items and prose paragraphs.
+        """
         skills: list[PreferredSkill] = []
         for line in lines:
             raw = _strip_bullet(line)
             if not raw:
                 continue
-            canonical = _clean_skill(raw, self._weight_phrases).lower()
-            if canonical:
+            for canonical, _weight in _skill_candidates(raw, self._weight_phrases):
                 skills.append(PreferredSkill(canonical=canonical, weight=2))
         return skills
 
@@ -519,6 +580,153 @@ def _clean_skill(line: str, phrases: tuple[tuple[str, int], ...]) -> str:
     text = re.sub(r"(?i)\b(must|required|preferred|optional)\b", "", text)
     text = re.sub(r"[:;,\.\-]+$", "", text.strip())
     return text.strip()
+
+
+_SKILL_LEAD_PHRASES: tuple[str, ...] = (
+    "expertise in",
+    "proficiency in",
+    "proficient in",
+    "experience in",
+    "experience with",
+    "experienced with",
+    "knowledge of",
+    "understanding of",
+    "familiarity with",
+    "familiar with",
+    "working knowledge of",
+    "exposure to",
+    "competency in",
+    "competent in",
+    "skills in",
+    "skill in",
+    "strong",
+    "solid",
+    "basic",
+    "some",
+    "foundational",
+    "proven",
+    "deep",
+    "extensive",
+    "hands-on",
+)
+
+_SKILL_TRAIL_PHRASES: tuple[str, ...] = (
+    "skills",
+    "skill",
+    "experience",
+    "knowledge",
+)
+
+_SKILL_STOP_WORDS: frozenset[str] = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "in",
+        "on",
+        "at",
+        "with",
+        "of",
+        "to",
+        "for",
+        "as",
+        "is",
+        "are",
+        "such",
+        "like",
+        "including",
+    }
+)
+
+_SKILL_NOISE_PHRASES: tuple[str, ...] = (
+    "years of",
+    "year of",
+    "problem-solving",
+    "communication",
+    "collaboration",
+    "leadership",
+    "teamwork",
+    "excellent",
+    "outstanding",
+    "proven ability",
+    "ability to",
+    "designing",
+    "developing",
+    "optimizing",
+    "debugging",
+    "leveraging",
+    "securing",
+    "positioning",
+)
+
+
+def _strip_skill_noise(text: str) -> str:
+    """Remove leading and trailing fluff from a skill phrase."""
+    lower = text.lower()
+    for phrase in _SKILL_LEAD_PHRASES:
+        if lower.startswith(phrase + " "):
+            text = text[len(phrase) :].strip()
+            lower = text.lower()
+    for phrase in _SKILL_TRAIL_PHRASES:
+        if lower.endswith(" " + phrase):
+            text = text[: -len(" " + phrase)].strip()
+            lower = text.lower()
+    # Remove a trailing parenthetical size or acronym set if it dominates the phrase.
+    text = re.sub(r"\s*\([^)]{15,}\)\s*$", "", text).strip()
+    # Strip leftover conjunctions/prepositions at the start or end of a split fragment.
+    text = re.sub(r"^(?:and|or|in|with|for|of|such|like)\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+(?:and|or|in|with|for|of|such|like)$", "", text, flags=re.IGNORECASE)
+    return text.strip()
+
+
+def _is_valid_skill(text: str) -> bool:
+    """Return True if *text* looks like a genuine skill phrase."""
+    if not text or len(text) < 2:
+        return False
+    lower = text.lower()
+    # Exclude education, experience-duration and generic soft-skill statements.
+    if any(phrase in lower for phrase in _SKILL_NOISE_PHRASES):
+        return False
+    if re.search(r"\b(degree|bachelor|master|phd|doctorate)\b", lower):
+        return False
+    if re.search(r"\b\d+\s*\+?\s*years?\b", lower):
+        return False
+    if "minimum" in lower:
+        return False
+    # Must contain at least one non-stop word longer than 1 char.
+    words = re.findall(r"[a-z0-9/+#-]+", lower)
+    content = [w for w in words if w not in _SKILL_STOP_WORDS and len(w) > 1]
+    return len(content) >= 1
+
+
+def _skill_candidates(
+    raw: str, weight_phrases: tuple[tuple[str, int], ...]
+) -> list[tuple[str, int]]:
+    """Split a raw skill line into candidate canonical phrases with weights.
+
+    Bullet lines are returned as a single candidate; prose lines are split on
+    commas, semicolons, and coordinating conjunctions.
+    """
+    weight = _infer_weight(raw, weight_phrases)
+    cleaned = _clean_skill(raw, weight_phrases).lower()
+    if not cleaned:
+        return []
+    # Short bullet-like lines without list separators are a single skill.
+    if len(cleaned) < 60 and not re.search(r"[,;]|\band\b|\bor\b", cleaned):
+        cleaned = _strip_skill_noise(cleaned)
+        if _is_valid_skill(cleaned):
+            return [(cleaned, weight)]
+        return []
+    # Split prose into candidate phrases.
+    parts = re.split(r"\s*[,;]\s*|\s+\band\b\s+|\s+\bor\b\s+", cleaned)
+    result: list[tuple[str, int]] = []
+    for part in parts:
+        part = _strip_skill_noise(part.strip())
+        if _is_valid_skill(part):
+            result.append((part, weight))
+    return result
 
 
 def _looks_like_yaml_mapping(text: str) -> bool:
