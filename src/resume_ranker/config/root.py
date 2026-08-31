@@ -11,7 +11,7 @@ import yaml  # type: ignore[import-untyped]
 from resume_ranker.errors import ConfigurationError
 from resume_ranker.models.config import RootConfig
 
-_ENV_PREFIX = "ATS_"
+_ENV_PREFIX = "RESUME_RANKER_"
 
 
 def _to_nested_dict(flat: dict[str, Any]) -> dict[str, Any]:
@@ -57,10 +57,10 @@ def _load_yaml_file(path: Path | None) -> dict[str, Any]:
 
 
 def _load_env_overrides() -> dict[str, Any]:
-    """Collect environment variables prefixed with ATS_ and convert to nested dict.
+    """Collect environment variables prefixed with RESUME_RANKER_ and convert to nested dict.
 
     The prefix is stripped, the remaining key is lower-cased, and '__' is treated
-    as a nesting separator. For example ``ATS_SCORING__WEIGHTS__S1=25`` becomes
+    as a nesting separator. For example ``RESUME_RANKER_SCORING__WEIGHTS__S1=25`` becomes
     ``{"scoring": {"weights": {"s1": 25}}}``.
     """
     raw: dict[str, Any] = {}
@@ -113,7 +113,7 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
     """Merge *override* into *base* recursively; override wins at leaves.
 
     Dict keys are matched case-insensitively so that environment variables
-    such as ``ATS_SCORING__WEIGHTS__S1`` override the file key ``S1`` instead of
+    such as ``RESUME_RANKER_SCORING__WEIGHTS__S1`` override the file key ``S1`` instead of
     creating a duplicate lowercase entry.
     """
     merged = dict(base)
@@ -152,7 +152,7 @@ class ConfigResolver:
     """Resolve effective configuration from file, environment and CLI flags.
 
     Precedence (highest to lowest): CLI flag overrides > environment variables
-    (``ATS_*``) > YAML config file > Pydantic defaults in ``RootConfig``.
+    (``RESUME_RANKER_*``) > YAML config file > Pydantic defaults in ``RootConfig``.
     The effective config is hashed and the hash is recorded in the run manifest.
     """
 

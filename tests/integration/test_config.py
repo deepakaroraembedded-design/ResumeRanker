@@ -12,7 +12,7 @@ from resume_ranker.errors import ConfigurationError
 
 @pytest.fixture
 def config_file(tmp_path: Path) -> Path:
-    path = tmp_path / "ats.yaml"
+    path = tmp_path / "resume-ranker.yaml"
     path.write_text(
         yaml.safe_dump(
             {
@@ -44,7 +44,7 @@ def test_config_file_overrides_defaults(config_file: Path) -> None:
 
 
 def test_env_var_overrides_file(config_file: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("ATS_SCORING__WEIGHTS__S1", "20")
+    monkeypatch.setenv("RESUME_RANKER_SCORING__WEIGHTS__S1", "20")
     resolver = ConfigResolver(config_file)
     cfg, _cfg_hash = resolver.resolve()
     assert cfg.scoring.weights["S1"] == 20
@@ -53,7 +53,7 @@ def test_env_var_overrides_file(config_file: Path, monkeypatch: pytest.MonkeyPat
 def test_cli_override_highest_precedence(
     config_file: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("ATS_SCORING__WEIGHTS__S1", "20")
+    monkeypatch.setenv("RESUME_RANKER_SCORING__WEIGHTS__S1", "20")
     resolver = ConfigResolver(config_file)
     cfg, _cfg_hash = resolver.resolve({"scoring": {"weights": {"S1": 15}}})
     assert cfg.scoring.weights["S1"] == 15
@@ -68,7 +68,7 @@ def test_invalid_config_raises_configuration_error(tmp_path: Path) -> None:
 
 
 def test_config_hash_is_stable_and_redacts_secrets(tmp_path: Path) -> None:
-    path = tmp_path / "ats.yaml"
+    path = tmp_path / "resume-ranker.yaml"
     path.write_text(yaml.safe_dump({"llm": {"provider": "openai", "api_key": "secret"}}))
     resolver = ConfigResolver(path)
     cfg, cfg_hash = resolver.resolve()
@@ -77,8 +77,8 @@ def test_config_hash_is_stable_and_redacts_secrets(tmp_path: Path) -> None:
 
 
 def test_env_var_coerces_booleans_and_numbers(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("ATS_FAIRNESS__BLIND", "false")
-    monkeypatch.setenv("ATS_LLM__CONCURRENCY", "8")
+    monkeypatch.setenv("RESUME_RANKER_FAIRNESS__BLIND", "false")
+    monkeypatch.setenv("RESUME_RANKER_LLM__CONCURRENCY", "8")
     resolver = ConfigResolver()
     cfg, _cfg_hash = resolver.resolve()
     assert cfg.fairness.blind is False
@@ -87,5 +87,5 @@ def test_env_var_coerces_booleans_and_numbers(monkeypatch: pytest.MonkeyPatch) -
 
 def teardown_module() -> None:
     for key in list(os.environ):
-        if key.startswith("ATS_"):
+        if key.startswith("RESUME_RANKER_"):
             del os.environ[key]

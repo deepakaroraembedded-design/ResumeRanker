@@ -14,7 +14,7 @@ class ContentAddressedCache:
     """
 
     def __init__(self, path: Path | None = None) -> None:
-        self.path = path or Path(".ats-cache/cache.db")
+        self.path = path or Path(".resume-ranker-cache/cache.db")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._ensure_schema()
 

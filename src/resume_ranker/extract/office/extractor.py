@@ -29,16 +29,16 @@ def _supported_languages() -> tuple[str, ...]:
     Note: extraction configuration is not currently reachable through
     ``RunContext.config`` (which only carries ``IngestConfig``).  Contract
     change C-03-002 requests that path.  Until it is merged, the environment
-    variable ``ATS_SCAN_LANGUAGES`` (comma-separated) or the English default is
+    variable ``RESUME_RANKER_LANGUAGES`` (comma-separated) or the English default is
     used.
     """
-    env = os.environ.get("ATS_SCAN_LANGUAGES", "en")
+    env = os.environ.get("RESUME_RANKER_LANGUAGES", "en")
     return tuple(lang.strip() for lang in env.split(",") if lang.strip()) or ("en",)
 
 
 def _converter_timeout() -> int:
     """Return the configured converter timeout in seconds, defaulting to 60."""
-    env = os.environ.get("ATS_SCAN_CONVERTER_TIMEOUT_S", str(_CONVERTER_TIMEOUT_S))
+    env = os.environ.get("RESUME_RANKER_CONVERTER_TIMEOUT_S", str(_CONVERTER_TIMEOUT_S))
     try:
         return int(env)
     except (TypeError, ValueError):
@@ -47,7 +47,7 @@ def _converter_timeout() -> int:
 
 def _converter_command() -> list[str] | None:
     """Return the configured or discovered headless office converter command."""
-    env_cmd = os.environ.get("ATS_SCAN_OFFICE_CONVERTER_CMD")
+    env_cmd = os.environ.get("RESUME_RANKER_OFFICE_CONVERTER_CMD")
     if env_cmd:
         return env_cmd.split()
 

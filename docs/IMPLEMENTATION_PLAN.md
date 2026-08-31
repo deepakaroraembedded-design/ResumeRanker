@@ -765,7 +765,7 @@ Written last, by the integrator, once every component is merged. It contains no 
 
 **Definition of Done**
 - [ ] All seven commands of TRD §7.1: `run`, `parse`, `compile-jd`, `explain`, `validate-config`, `calibrate`, `audit`
-- [ ] Config precedence flag > env (`ATS_` prefix, `__` nesting) > file > default; effective config hashed into the manifest (FR-1002)
+- [ ] Config precedence flag > env (`RESUME_RANKER_` prefix, `__` nesting) > file > default; effective config hashed into the manifest (FR-1002)
 - [ ] Schema validation with exit code 2 and a precise message (FR-1003)
 - [ ] All exit codes of TRD §7.3 implemented and tested
 - [ ] Never writes into the input directory (FR-1005)

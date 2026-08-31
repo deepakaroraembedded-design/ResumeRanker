@@ -598,7 +598,7 @@ def create_llm_adapter(
     Raises:
         ConfigurationError: if the provider is unsupported.
     """
-    cache_dir = run_ctx.cache_dir or Path(".ats-cache")
+    cache_dir = run_ctx.cache_dir or Path(".resume-ranker-cache")
     cache = Cache(cache_dir / "llm_cache.db")
     budget = UsageTracker()
 

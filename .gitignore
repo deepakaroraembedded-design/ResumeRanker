@@ -37,3 +37,10 @@ dist/
 
 # Mutation testing workspace
 mutants/
+
+# Run/cache outputs and local test data
+.ats-cache/
+.resume-ranker-cache/
+ats-out/
+resume-ranker-out/
+TESTDATA/

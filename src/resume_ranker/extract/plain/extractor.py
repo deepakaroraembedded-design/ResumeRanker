@@ -33,9 +33,9 @@ def _supported_languages() -> tuple[str, ...]:
     Note: extraction configuration is not currently reachable through
     ``RunContext.config`` (which only carries ``IngestConfig``).  Contract change
     C-03-002 requests that path.  Until it is merged, the environment variable
-    ``ATS_SCAN_LANGUAGES`` (comma-separated) or the English default is used.
+    ``RESUME_RANKER_LANGUAGES`` (comma-separated) or the English default is used.
     """
-    env = os.environ.get("ATS_SCAN_LANGUAGES", "en")
+    env = os.environ.get("RESUME_RANKER_LANGUAGES", "en")
     return tuple(lang.strip() for lang in env.split(",") if lang.strip()) or ("en",)
 
 

@@ -8,12 +8,13 @@ version = "0.1.0"
 description = "Resume screening and scoring engine"
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "Proprietary" }
+license = { text = "LGPL-3.0-or-later" }
 authors = [
     { name = "Deepak Arora" },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -62,6 +63,7 @@ dev = [
 resume-ranker = "resume_ranker.cli.main:app"
 
 [project.urls]
+Repository = "https://github.com/deepakaroraembedded-design/ResumeRanker.git"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/resume_ranker"]

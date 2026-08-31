@@ -1214,9 +1214,9 @@ Deterministic mode is a supported operating mode, not a failure state. It is sel
 
   \--jd PATH               (required)     Job description file, or a pre-authored JobSpec (.yaml/.json).
 
-  \--out PATH              ./ats-out      Output directory. Created if absent; refuses to overwrite a non-empty directory without \--force.
+  \--out PATH              ./resume-ranker-out      Output directory. Created if absent; refuses to overwrite a non-empty directory without \--force.
 
-  \--config PATH           ./ats.yaml     Configuration file. All settings have defaults; the file is optional.
+  \--config PATH           ./resume-ranker.yaml     Configuration file. All settings have defaults; the file is optional.
 
   \--mode                  hybrid         hybrid \| offline. offline disables all LLM calls.
 
@@ -1232,7 +1232,7 @@ Deterministic mode is a supported operating mode, not a failure state. It is sel
 
   \--llm-concurrency INT   16             Maximum in-flight LLM requests.
 
-  \--cache PATH            ./.ats-cache   Content-addressed cache directory. \--no-cache disables it.
+  \--cache PATH            ./.resume-ranker-cache   Content-addressed cache directory. \--no-cache disables it.
 
   \--review-jobspec        off            Halt after JD compilation until the emitted JobSpec is confirmed.
 
@@ -1329,7 +1329,7 @@ Configuration is a single YAML document validated against a schema. Every key ha
 
 9.1 Directory layout
 
-> ats-out/
+> resume-ranker-out/
 >
 > run_manifest.json provenance, counts, timings, calibration anchors
 >
@@ -1911,7 +1911,7 @@ Indicative total: 14 weeks with two engineers, plus roughly a quarter of a recru
 
 Appendix A --- Annotated configuration example
 
-> \# ats.yaml --- every key shown with its default; the whole file is optional.
+> \# resume-ranker.yaml --- every key shown with its default; the whole file is optional.
 >
 > version: 1
 >
@@ -2053,9 +2053,9 @@ Appendix A --- Annotated configuration example
 >
 > mode: hybrid \# hybrid \| offline
 >
-> provider: \${ATS_LLM_PROVIDER}
+> provider: \${RESUME_RANKER_LLM_PROVIDER}
 >
-> model: \${ATS_LLM_MODEL} \# pinned identifier, recorded in the manifest
+> model: \${RESUME_RANKER_LLM_MODEL} \# pinned identifier, recorded in the manifest
 >
 > temperature: 0.0
 >
@@ -2075,7 +2075,7 @@ Appendix A --- Annotated configuration example
 >
 > local: true
 >
-> model: \${ATS_EMBED_MODEL}
+> model: \${RESUME_RANKER_EMBED_MODEL}
 >
 > batch_size: 64
 >

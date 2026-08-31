@@ -69,7 +69,7 @@ def jd_file(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def config_file(tmp_path: Path) -> Path:
-    path = tmp_path / "ats.yaml"
+    path = tmp_path / "resume-ranker.yaml"
     path.write_text("selection:\n  threshold: 60.0\n", encoding="utf-8")
     return path
 

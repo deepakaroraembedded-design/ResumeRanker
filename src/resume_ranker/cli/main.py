@@ -81,7 +81,7 @@ def _load_source_documents(path: Path) -> list[SourceDocument]:
 def run(
     resumes: Annotated[Path, typer.Option(..., help="Directory of candidate resumes")],
     jd: Annotated[Path, typer.Option(..., help="Job description or pre-compiled JobSpec file")],
-    out: Annotated[Path, typer.Option(help="Output directory")] = Path("./ats-out"),
+    out: Annotated[Path, typer.Option(help="Output directory")] = Path("./resume-ranker-out"),
     config: Annotated[Path | None, typer.Option(help="YAML configuration file")] = None,
     mode: Annotated[str, typer.Option(help="hybrid | offline")] = "hybrid",
     threshold: Annotated[float, typer.Option(help="Minimum composite score for selection")] = 70.0,
@@ -162,7 +162,7 @@ def run(
 @app.command()
 def parse(
     resumes: Annotated[Path, typer.Option(..., help="Directory of candidate resumes")],
-    out: Annotated[Path, typer.Option(help="Output directory")] = Path("./ats-out"),
+    out: Annotated[Path, typer.Option(help="Output directory")] = Path("./resume-ranker-out"),
     config: Annotated[Path | None, typer.Option(help="YAML configuration file")] = None,
 ) -> None:
     """Extract and structure resumes without scoring."""

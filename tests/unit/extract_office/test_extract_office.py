@@ -231,7 +231,7 @@ class TestLegacyOfficeExtractor:
     def test_no_converter_returns_diagnostic(
         self, ctx: RunContext, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setenv("ATS_SCAN_OFFICE_CONVERTER_CMD", "/nonexistent/binary")
+        monkeypatch.setenv("RESUME_RANKER_OFFICE_CONVERTER_CMD", "/nonexistent/binary")
         path = tmp_path / "legacy.doc"
         path.write_bytes(b"dummy")
         doc = _doc(str(path), "application/msword")
@@ -247,8 +247,8 @@ class TestLegacyOfficeExtractor:
         converter = tmp_path / "slow_converter.sh"
         converter.write_text("#!/bin/sh\nsleep 5\n", encoding="utf-8")
         converter.chmod(0o755)
-        monkeypatch.setenv("ATS_SCAN_OFFICE_CONVERTER_CMD", str(converter))
-        monkeypatch.setenv("ATS_SCAN_CONVERTER_TIMEOUT_S", "1")
+        monkeypatch.setenv("RESUME_RANKER_OFFICE_CONVERTER_CMD", str(converter))
+        monkeypatch.setenv("RESUME_RANKER_CONVERTER_TIMEOUT_S", "1")
 
         path = tmp_path / "legacy.rtf"
         path.write_bytes(b"dummy")
@@ -277,7 +277,7 @@ class TestLegacyOfficeExtractor:
         )
         converter.write_text(script, encoding="utf-8")
         converter.chmod(0o755)
-        monkeypatch.setenv("ATS_SCAN_OFFICE_CONVERTER_CMD", str(converter))
+        monkeypatch.setenv("RESUME_RANKER_OFFICE_CONVERTER_CMD", str(converter))
 
         path = tmp_path / "legacy.doc"
         path.write_bytes(b"dummy")
@@ -294,7 +294,7 @@ class TestLanguageFlag:
     def test_unsupported_language_emits_diagnostic(
         self, ctx: RunContext, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setenv("ATS_SCAN_LANGUAGES", "en")
+        monkeypatch.setenv("RESUME_RANKER_LANGUAGES", "en")
         path = tmp_path / "spanish.txt"
         path.write_text(
             "Este es un currículum en español. La experiencia incluye Python.", encoding="utf-8"

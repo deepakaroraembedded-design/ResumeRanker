@@ -18,15 +18,14 @@ def select(cards: Sequence[ScoreCard], config: SelectionConfig) -> tuple[ScoreCa
     Candidates with no composite score or no rank cannot satisfy the matching
     part of the rule and are therefore not selected.
     """
-    result: list[ScoreCard] = []
     for card in cards:
         composite = card.composite
         if composite is None:
-            result.append(card.model_copy(update={"selected": False}))
+            card.selected = False
             continue
 
         is_selected = card.eligible and composite >= config.threshold
         if is_selected and config.top_n is not None:
             is_selected = card.rank is not None and card.rank <= config.top_n
-        result.append(card.model_copy(update={"selected": is_selected}))
-    return tuple(result)
+        card.selected = is_selected
+    return tuple(cards)

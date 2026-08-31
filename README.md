@@ -38,7 +38,7 @@ The system is designed to **never raise on bad data**. Every stage returns a `St
 - **Full-text skill scanner** — the resume structurer also scans the entire extracted text for known skill phrases and acronyms (e.g., `BGP`, `OSPF`, `WireGuard`, `containerization`) that may only appear in experience bullets, not in a dedicated skills list.
 - **Keyword overlap threshold fix** — multi-token skill targets such as `ai/ml` now require full token overlap, eliminating false matches against unrelated phrases like `AI governance`.
 - **Minimum-qualification gate** — scorecard explanations now report `Required skills: X/Y` and `Preferred: X/Y` counts so recruiters can see a quick pass/fail summary.
-- **Pinned embedding model identifier** — the run manifest records the exact Hugging Face snapshot hash of the local embedding model (e.g., `all-MiniLM-L6-v2@1110a243...`), making S3 reproducibility auditable.
+- **Pinned embedding model identifier** — the run manifest records the exact Hugging Face snapshot hash of the local embedding model (e.g., `Qwen/Qwen3-Embedding-8B@<snapshot_hash>`), making S3 reproducibility auditable.
 
 ---
 
@@ -410,7 +410,7 @@ Key flags:
 
 - `--resumes` — directory containing candidate resumes (PDF, Word, RTF, plain text, HTML)
 - `--jd` — path to a free-text job description or a pre-compiled `JobSpec` YAML file
-- `--out` — output directory (default: `ats-out`)
+- `--out` — output directory (default: `resume-ranker-out`)
 - `--mode offline` — deterministic mode with local embeddings only
 - `--mode hybrid` — default; uses LLM where configured
 - `--blind` / `--no-blind` — redact identity attributes before scoring (default: blind)
@@ -489,4 +489,5 @@ The skill ontology combines **ESCO** and **O*NET** base taxonomies with a curate
 
 ## License
 
-[License to be added by project owner.]
+This project is licensed under the **GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)**.
+See the [`LICENSE`](LICENSE) file for the full text.

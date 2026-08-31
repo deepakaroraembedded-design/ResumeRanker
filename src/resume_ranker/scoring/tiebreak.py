@@ -38,4 +38,6 @@ def rank(cards: Sequence[ScoreCard]) -> tuple[ScoreCard, ...]:
         )
 
     sorted_cards = sorted(cards, key=key)
-    return tuple(card.model_copy(update={"rank": i + 1}) for i, card in enumerate(sorted_cards))
+    for i, card in enumerate(sorted_cards):
+        card.rank = i + 1
+    return tuple(sorted_cards)

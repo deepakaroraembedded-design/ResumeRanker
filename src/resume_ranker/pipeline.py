@@ -133,6 +133,7 @@ class Pipeline:
         self.integrity_detectors = integrity_detectors
         self.report_writers = report_writers
         self.score_fn = score_fn
+        self._score_accepts_findings: bool | None = None
         self.embeddings = embeddings
         self.llm = llm
 
@@ -286,22 +287,24 @@ class Pipeline:
                 failed += 1
                 all_diagnostics.extend(structure_result.diagnostics)
                 continue
-            resume = structure_result.value.model_copy(
-                update={"candidate_id": self._candidate_id(doc, structure_result.value)}
-            )
+            resume = structure_result.value
+            candidate_id = self._candidate_id(doc, resume)
+            if resume.candidate_id != candidate_id:
+                resume.candidate_id = candidate_id
 
             findings, integrity_diagnostics, _flags = self._inspect_integrity(doc, text, resume)
             all_diagnostics.extend(integrity_diagnostics)
 
             redacted_resume, _reident_map = self.redactor.redact(resume)
             scorecard = self._score_with_findings(redacted_resume, jobspec, scoring_ctx, findings)
-            scorecard = scorecard.model_copy(
-                update={
-                    "candidate_id": resume.candidate_id,
-                    "job_id": jobspec.job_id,
-                    "run_id": settings.run_id,
-                }
-            )
+            if (
+                scorecard.candidate_id != resume.candidate_id
+                or scorecard.job_id != jobspec.job_id
+                or scorecard.run_id != settings.run_id
+            ):
+                scorecard.candidate_id = resume.candidate_id
+                scorecard.job_id = jobspec.job_id
+                scorecard.run_id = settings.run_id
             scorecards.append(scorecard)
             resumes[resume.candidate_id] = resume
 
@@ -329,7 +332,7 @@ class Pipeline:
             documents_in=len(documents),
             documents_failed=failed,
             model_identifiers={
-                "embedding": settings.config.embeddings.model or "all-MiniLM-L6-v2",
+                "embedding": settings.config.embeddings.model or "Qwen/Qwen3-Embedding-8B",
                 "llm": settings.config.llm.model,
                 "ontology": self.ontology.version,
             },
@@ -363,9 +366,10 @@ class Pipeline:
         findings: tuple[IntegrityFinding, ...],
     ) -> ScoreCard:
         """Invoke ``self.score_fn``, passing findings only if it accepts them."""
+        if self._score_accepts_findings is None:
+            self._score_accepts_findings = "findings" in inspect.signature(self.score_fn).parameters
         score_fn: Any = self.score_fn
-        sig = inspect.signature(score_fn)
-        if "findings" in sig.parameters:
+        if self._score_accepts_findings:
             return cast(ScoreCard, score_fn(resume, spec, ctx, findings=findings))
         return cast(ScoreCard, score_fn(resume, spec, ctx))
 
@@ -376,7 +380,7 @@ class Pipeline:
         scoring_ctx: ScoringContext,
     ) -> tuple[ScoreCard, ...]:
         """Attach recruiter-facing explanations and provenance to each scorecard."""
-        embedding_id = settings.config.embeddings.model or "all-MiniLM-L6-v2"
+        embedding_id = settings.config.embeddings.model or "Qwen/Qwen3-Embedding-8B"
         if scoring_ctx.embeddings is not None:
             identifier_fn = getattr(scoring_ctx.embeddings, "model_identifier", None)
             if callable(identifier_fn):
@@ -397,15 +401,10 @@ class Pipeline:
             ),
             scored_at=_now_iso(),
         )
-        return tuple(
-            card.model_copy(
-                update={
-                    "explanation": self.explain(card),
-                    "provenance": provenance,
-                }
-            )
-            for card in cards
-        )
+        for card in cards:
+            card.explanation = self.explain(card)
+            card.provenance = provenance
+        return cards
 
     def _write_reports(self, result: RunResult, out_dir: Path) -> None:
         """Write all registered report artefacts to *out_dir*.
@@ -548,7 +547,9 @@ def build_pipeline(config: RootConfig, mode: str) -> Pipeline:
     # by S3's LLM rubric; in offline mode it is left as None so dimensions degrade.
     llm: LLMClient | None = None
     if mode == "hybrid":
-        placeholder_ctx = RunContext(run_id="pipeline-build", cache_dir=Path(".ats-cache"))
+        placeholder_ctx = RunContext(
+            run_id="pipeline-build", cache_dir=Path(".resume-ranker-cache")
+        )
         llm = create_llm_adapter(placeholder_ctx, config.llm)
 
     structurer: Structurer = HeuristicStructurer()
