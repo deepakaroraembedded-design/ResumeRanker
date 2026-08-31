@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from ats_scan.ontology import SkillOntology
+from resume_ranker.ontology import SkillOntology
 
 
 @pytest.mark.slow

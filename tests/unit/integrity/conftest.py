@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ats_scan.models.source import (
+from resume_ranker.models.source import (
     ExtractedText,
     ExtractionMetadata,
     SourceDocument,

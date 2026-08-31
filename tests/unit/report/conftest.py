@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from ats_scan.models.common import Diagnostic
-from ats_scan.models.jobspec import JobSpec, RequiredSkill
-from ats_scan.models.resume import CanonicalResume, Identity, SkillMention, SourceDocument
-from ats_scan.models.run import RunManifest, RunResult
-from ats_scan.models.scoring import (
+from resume_ranker.models.common import Diagnostic
+from resume_ranker.models.jobspec import JobSpec, RequiredSkill
+from resume_ranker.models.resume import CanonicalResume, Identity, SkillMention, SourceDocument
+from resume_ranker.models.run import RunManifest, RunResult
+from resume_ranker.models.scoring import (
     Band,
     Evidence,
     GapDetail,

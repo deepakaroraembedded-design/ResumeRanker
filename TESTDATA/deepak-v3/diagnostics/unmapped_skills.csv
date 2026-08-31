@@ -1,0 +1,12 @@
+# This output is decision support only. A human reviewer must confirm every advance or reject decision before any candidate is contacted or excluded.
+candidate_id,raw_skill,sections,mentions
+c_37ebe551,Linux,contact;experience;skills;summary,5
+c_37ebe551,C++,skills,1
+c_37ebe551,Python,skills,1
+c_37ebe551,Bash,skills,1
+c_37ebe551,AWS,skills,1
+c_37ebe551,Docker,skills,1
+c_37ebe551,Kubernetes,skills,1
+c_37ebe551,Git,skills,1
+c_37ebe551,Jenkins,skills,1
+c_37ebe551,roadmapping,skills,1

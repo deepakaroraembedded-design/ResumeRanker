@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ats_scan.ontology import (
+from resume_ranker.ontology import (
     SkillOntology,
     TitleTaxonomy,
     from_config,
@@ -10,7 +10,7 @@ from ats_scan.ontology import (
     load_skills,
     load_titles,
 )
-from ats_scan.ontology.loader import EmployerData, TitleData
+from resume_ranker.ontology.loader import EmployerData, TitleData
 
 
 def _data_root() -> Path:

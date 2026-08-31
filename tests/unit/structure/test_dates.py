@@ -5,8 +5,8 @@ from datetime import date
 from hypothesis import given
 from hypothesis.strategies import integers, lists
 
-from ats_scan.models.resume import DatePrecision, DateValue
-from ats_scan.structure.dates import calendar_union, month_range, parse_date, parse_date_range
+from resume_ranker.models.resume import DatePrecision, DateValue
+from resume_ranker.structure.dates import calendar_union, month_range, parse_date, parse_date_range
 
 
 class TestParseDate:

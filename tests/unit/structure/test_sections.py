@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ats_scan.structure.sections import SectionType, segment_sections
+from resume_ranker.structure.sections import SectionType, segment_sections
 
 SAMPLE_RESUME = """\
 Jane Doe
@@ -107,7 +107,7 @@ BS in Computer Science, 2016
         assert sections[-1].type == SectionType.OTHER
 
     def test_blocks_in_span(self) -> None:
-        from ats_scan.models.source import TextBlock
+        from resume_ranker.models.source import TextBlock
 
         text = "Contact\n\nJane Doe\n\nExperience\n\nAcme Corp"
         blocks = (TextBlock(text="Jane Doe", page=0, bbox=(0, 0, 1, 1)),)

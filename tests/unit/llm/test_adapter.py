@@ -7,17 +7,17 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from ats_scan.llm.adapter import LLMAdapter, create_llm_adapter
-from ats_scan.llm.budget import UsageTracker
-from ats_scan.llm.cache import Cache
-from ats_scan.llm.transport import (
+from resume_ranker.llm.adapter import LLMAdapter, create_llm_adapter
+from resume_ranker.llm.budget import UsageTracker
+from resume_ranker.llm.cache import Cache
+from resume_ranker.llm.transport import (
     LLMTransportError,
     OpenAIHTTPTransport,
     RecordedTransport,
     RetryableError,
 )
-from ats_scan.models.config import LLMConfig
-from ats_scan.models.run import RunContext
+from resume_ranker.models.config import LLMConfig
+from resume_ranker.models.run import RunContext
 
 
 class SampleModel(BaseModel):
@@ -434,7 +434,7 @@ class TestAdapterStructured:
         assert adapter._nonce == "110065123c5785ab"  # SHA-256 of run_test_001[:16]
 
     def test_create_llm_adapter_unsupported_provider(self, run_context: RunContext) -> None:
-        from ats_scan.errors import ConfigurationError
+        from resume_ranker.errors import ConfigurationError
 
         with pytest.raises(ConfigurationError):
             create_llm_adapter(

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from tests.unit.integrity.conftest import extracted_text, source_doc
 
-from ats_scan.integrity.injection import InjectionDetector
-from ats_scan.models.source import ExtractedText
+from resume_ranker.integrity.injection import InjectionDetector
+from resume_ranker.models.source import ExtractedText
 
 
 def _plain_text(text: str) -> ExtractedText:

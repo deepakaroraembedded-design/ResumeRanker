@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from ats_scan.models.ontology import TitleMatch
-from ats_scan.ontology import TitleTaxonomy
+from resume_ranker.models.ontology import TitleMatch
+from resume_ranker.ontology import TitleTaxonomy
 
 
 @pytest.fixture

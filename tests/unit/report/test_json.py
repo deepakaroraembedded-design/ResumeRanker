@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from ats_scan.models.run import RunResult
-from ats_scan.report.json import ScorecardJsonWriter
+from resume_ranker.models.run import RunResult
+from resume_ranker.report.json import ScorecardJsonWriter
 
 
 @pytest.fixture

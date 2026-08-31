@@ -8,15 +8,15 @@ from pathlib import Path
 
 import pymupdf
 
-from ats_scan.codes import ReasonCode
-from ats_scan.ingest.manifest import (
+from resume_ranker.codes import ReasonCode
+from resume_ranker.ingest.manifest import (
     Manifest,
     build_manifest,
     cluster_by_identity,
 )
-from ats_scan.models.config import IngestConfig
-from ats_scan.models.resume import CanonicalResume, Identity
-from ats_scan.models.source import SourceDocument
+from resume_ranker.models.config import IngestConfig
+from resume_ranker.models.resume import CanonicalResume, Identity
+from resume_ranker.models.source import SourceDocument
 
 
 def _random_bytes(length: int, seed: int = 0) -> bytes:

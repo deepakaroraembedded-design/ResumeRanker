@@ -3,14 +3,14 @@ from __future__ import annotations
 import importlib
 import pkgutil
 
-import ats_scan
-from ats_scan.scoring import registry as scoring_registry
+import resume_ranker
+from resume_ranker.scoring import registry as scoring_registry
 
 
-def test_all_ats_scan_modules_importable() -> None:
-    """Every module under ats_scan imports without raising at module scope."""
+def test_all_resume_ranker_modules_importable() -> None:
+    """Every module under resume_ranker imports without raising at module scope."""
     for _importer, modname, _ispkg in pkgutil.walk_packages(
-        ats_scan.__path__, ats_scan.__name__ + "."
+        resume_ranker.__path__, resume_ranker.__name__ + "."
     ):
         importlib.import_module(modname)
 

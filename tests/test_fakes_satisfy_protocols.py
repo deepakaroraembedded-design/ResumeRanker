@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from ats_scan.protocols import (
+from resume_ranker.protocols import (
     Dimension,
     EmbeddingClient,
     IntegrityDetector,

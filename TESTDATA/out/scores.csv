@@ -1,0 +1,3 @@
+# This output is decision support only. A human reviewer must confirm every advance or reject decision before any candidate is contacted or excluded.
+rank,candidate_id,file,name,composite,band,selected,eligible,confidence,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,matched_required,missing_required,relevant_years,flags,reason_codes,explanation
+1,c_37ebe551,,DEEPAK ARORA,96.97,strong,true,true,0.75,100.00,,,100.00,91.79,100.00,88.00,,70.00,100.00,,,20.19,,,Composite 97.0 (strong). Strongest matches: none. Key gaps: none. Flags: none.

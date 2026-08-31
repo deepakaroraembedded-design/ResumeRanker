@@ -4,8 +4,8 @@ from pathlib import Path
 
 import yaml
 
-from ats_scan.jobspec import is_reviewed, jobspec_path, review_path, write_jobspec
-from ats_scan.models.jobspec import JobSpec
+from resume_ranker.jobspec import is_reviewed, jobspec_path, review_path, write_jobspec
+from resume_ranker.models.jobspec import JobSpec
 
 
 def test_review_paths(output_dir: Path) -> None:

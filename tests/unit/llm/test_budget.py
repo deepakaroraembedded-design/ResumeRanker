@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from ats_scan.llm.budget import UsageTracker
+from resume_ranker.llm.budget import UsageTracker
 
 
 class TestUsageTracker:

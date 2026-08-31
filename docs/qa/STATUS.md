@@ -1,4 +1,4 @@
-# ATS-Scan C-QA status snapshot
+# RESUME-RANKER C-QA status snapshot
 
 **Date:** 2026-08-29  
 **Branch:** `main`  
@@ -18,7 +18,7 @@ deduplicates covering test paths.
 - Added `@pytest.mark.covers(...)` markers to C-QA tests, giving traceability for
 `FR-701`–`FR-707` and `FR-801`–`FR-803`.
 - Took temporary C-13 ownership to implement `FR-802` (selection stage) in
-`src/ats_scan/scoring/selection.py` because the `feat/C-13-aggregate` branch
+`src/resume_ranker/scoring/selection.py` because the `feat/C-13-aggregate` branch
 was dormant and even with `main`.
 - Added `test_selection_*` tests in `tests/qa/test_differential_scoring.py`.
 - Regenerated `docs/qa/traceability.md`, `docs/qa/report-QG2.md`, and
@@ -39,7 +39,7 @@ was dormant and even with `main`.
 | `make e2e` | `pytest tests/e2e -m e2e` | **9/9 PASS** |
 | `make qa-gate` | C-QA scoring gate | **PASS** |
 
-QG2 for `ats_scan/scoring` is **signed off**.
+QG2 for `resume_ranker/scoring` is **signed off**.
 
 - Mutation score: **90.8%** (1645 killed, 162 survived, 4 no_tests, 1811 total)
 - Scoring/rank Must-haves: **10/10 covered** (`FR-701`–`FR-707`, `FR-801`–`FR-803`)
@@ -140,7 +140,7 @@ closed or re-triaged.
 - `docs/qa/report-QG2.md` — signed-off C-13 scoring report
 - `docs/qa/mutants-QG2.md` — mutation triage for scoring
 - `docs/qa/defects/QA-0001.md`, `QA-0002.md` — open W0 defects
-- `src/ats_scan/scoring/selection.py` — new `FR-802` implementation
+- `src/resume_ranker/scoring/selection.py` — new `FR-802` implementation
 - `tests/qa/test_differential_scoring.py` — selection tests + scoring markers
 - `scripts/qa/trace.py` — traceability parser
 - `scripts/qa/gate.py` — gate runner

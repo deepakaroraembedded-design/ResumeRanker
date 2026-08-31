@@ -17,7 +17,7 @@ imports:
 	$(UV) lint-imports
 
 test:
-	$(UV) pytest -m "not slow" --cov=ats_scan --cov-fail-under=85
+	$(UV) pytest -m "not slow" --cov=resume_ranker --cov-fail-under=85
 
 schema:
 	$(UV) python scripts/validate_schemas.py docs/contracts src

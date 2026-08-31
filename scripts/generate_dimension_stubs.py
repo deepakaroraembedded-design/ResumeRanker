@@ -23,11 +23,11 @@ TEMPLATE = '''from __future__ import annotations
 
 from typing import ClassVar
 
-from ats_scan.models.jobspec import JobSpec
-from ats_scan.models.resume import CanonicalResume
-from ats_scan.models.run import ScoringContext
-from ats_scan.models.scoring import SubScore
-from ats_scan.scoring.registry import dimension
+from resume_ranker.models.jobspec import JobSpec
+from resume_ranker.models.resume import CanonicalResume
+from resume_ranker.models.run import ScoringContext
+from resume_ranker.models.scoring import SubScore
+from resume_ranker.scoring.registry import dimension
 
 
 @dimension
@@ -46,7 +46,7 @@ class {class_name}:
 
 def main() -> None:
     for idx, (module, dim_id, class_name, name) in enumerate(DIMS, start=1):
-        path = ROOT / f"src/ats_scan/scoring/dimensions/{module}.py"
+        path = ROOT / f"src/resume_ranker/scoring/dimensions/{module}.py"
         path.write_text(
             TEMPLATE.format(idx=idx, id=dim_id, class_name=class_name, name=name),
             encoding="utf-8",

@@ -5,10 +5,10 @@ from typing import Any
 
 from tests.fakes import FakeEmbeddingClient, FakeOntology, FakeTitleTaxonomy
 
-from ats_scan.models.config import ScoringConfig
-from ats_scan.models.jobspec import JobSpec, PreferredSkill, RequiredSkill
-from ats_scan.models.resume import CanonicalResume, SkillMention
-from ats_scan.models.run import ScoringContext
+from resume_ranker.models.config import ScoringConfig
+from resume_ranker.models.jobspec import JobSpec, PreferredSkill, RequiredSkill
+from resume_ranker.models.resume import CanonicalResume, SkillMention
+from resume_ranker.models.run import ScoringContext
 
 
 def scoring_context(now: str = "2026-08-29") -> ScoringContext:

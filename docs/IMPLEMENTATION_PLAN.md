@@ -1,9 +1,9 @@
-# ATS-Scan — Implementation Design & Multi-Agent Build Plan
+# RESUME-RANKER — Implementation Design & Multi-Agent Build Plan
 
 | | |
 |---|---|
 | **Document** | Implementation design and parallel build plan |
-| **System** | ATS-Scan — resume screening & scoring engine |
+| **System** | RESUME-RANKER — resume screening & scoring engine |
 | **Companions** | *Technical Requirements & Design Document v1.0* (**TRD**) · *QA Plan & QA Agent Definition v1.0* (**QAP**) |
 | **Version** | 1.1 |
 | **Date** | 29 August 2026 |
@@ -35,7 +35,7 @@ Parallel AI agents fail on integration, not on implementation. Each agent writes
 ### 1.1 The three invariants
 
 **Invariant 1 — Contracts are frozen before fan-out.**
-Every type that crosses a component boundary (`CanonicalResume`, `JobSpec`, `ScoreCard`, `SubScore`, `Evidence`, `Diagnostic`) and every interface (`TextExtractor`, `Dimension`, `LLMClient`, …) is written, reviewed and tagged in Wave 0. After the tag `contracts-frozen`, **no component agent may modify anything under `src/ats_scan/models/`, `protocols.py`, `errors.py` or `codes.py`.** An agent that believes a contract is wrong files a change request (§7.6) and does not edit it.
+Every type that crosses a component boundary (`CanonicalResume`, `JobSpec`, `ScoreCard`, `SubScore`, `Evidence`, `Diagnostic`) and every interface (`TextExtractor`, `Dimension`, `LLMClient`, …) is written, reviewed and tagged in Wave 0. After the tag `contracts-frozen`, **no component agent may modify anything under `src/resume_ranker/models/`, `protocols.py`, `errors.py` or `codes.py`.** An agent that believes a contract is wrong files a change request (§7.6) and does not edit it.
 
 **Invariant 2 — Every file has exactly one owner.**
 The ownership map in §2.2 assigns every path in the repository to exactly one component. Two agents never have write access to the same file. This is not a convention — it is checked mechanically before merge (§7.1) and enforced at import level by `import-linter` (§3.7).
@@ -66,7 +66,7 @@ That last row deserves emphasis. Wave 0 writes the scoring acceptance tests *bef
 ### 2.1 Tree
 
 ```
-ats-scan/
+resume-ranker/
 ├── AGENTS.md                     # shared agent rules            [W0]
 ├── opencode.json                 # agent + command definitions   [W0]
 ├── pyproject.toml  uv.lock       # ALL deps pinned in Wave 0     [W0]
@@ -88,7 +88,7 @@ ats-scan/
 ├── scripts/
 │   ├── spawn-agents.sh  merge-components.sh  check-ownership.py  [W0]
 │   └── qa/                       # oracle, mutation, trace tools [C-QA]
-├── src/ats_scan/
+├── src/resume_ranker/
 │   ├── models/                   # FROZEN domain types           [W0]
 │   ├── protocols.py errors.py codes.py cache.py telemetry.py     [W0]
 │   ├── ingest/                                                   [C-01]
@@ -133,22 +133,22 @@ ats-scan/
 
 | ID | Component | Exclusive write paths |
 |---|---|---|
-| **W0** | Foundation | `src/ats_scan/models/**`, `protocols.py`, `errors.py`, `codes.py`, `cache.py`, `telemetry.py`, `*/registry.py`, `extract/__init__.py`, `scoring/__init__.py`, `scoring/dimensions/__init__.py`, `tests/conftest.py`, `tests/fakes/**`, `tests/corpus/**`, `pyproject.toml`, `uv.lock`, `Makefile`, `.importlinter`, `.github/**`, `AGENTS.md`, `opencode.json`, `.opencode/**`, `scripts/**` |
-| **C-01** | Ingest & triage | `src/ats_scan/ingest/**`, `tests/unit/ingest/**` |
-| **C-02** | PDF & OCR extraction | `src/ats_scan/extract/pdf/**`, `src/ats_scan/extract/ocr/**`, `tests/unit/extract_pdf/**`, `tests/adversarial/test_pdf_*.py` |
-| **C-03** | Office / plain / HTML extraction | `src/ats_scan/extract/office/**`, `src/ats_scan/extract/plain/**`, `tests/unit/extract_office/**` |
-| **C-04** | Ontology & normalisation | `src/ats_scan/ontology/**`, `data/ontology/**`, `data/titles/**`, `tests/unit/ontology/**`, `tests/property/test_ontology_*.py` |
-| **C-05** | LLM adapter & prompts | `src/ats_scan/llm/**`, `tests/unit/llm/**` |
-| **C-06** | Integrity detectors | `src/ats_scan/integrity/**`, `tests/unit/integrity/**`, `tests/adversarial/test_integrity_*.py` |
-| **C-07** | Report writers | `src/ats_scan/report/**`, `tests/unit/report/**` |
-| **C-08** | Resume structuring | `src/ats_scan/structure/**`, `tests/unit/structure/**`, `tests/golden/structure/**` |
-| **C-09** | JobSpec compiler | `src/ats_scan/jobspec/**`, `tests/unit/jobspec/**` |
-| **C-10** | Scoring — evidence dims | `src/ats_scan/scoring/evidence.py`, `scoring/dimensions/s1_required_skills.py`, `s2_preferred_skills.py`, `s8_skill_recency.py`, `tests/unit/scoring_evidence/**` |
-| **C-11** | Scoring — semantic + embeddings | `src/ats_scan/embeddings/**`, `scoring/dimensions/s3_semantic.py`, `tests/unit/scoring_semantic/**` |
+| **W0** | Foundation | `src/resume_ranker/models/**`, `protocols.py`, `errors.py`, `codes.py`, `cache.py`, `telemetry.py`, `*/registry.py`, `extract/__init__.py`, `scoring/__init__.py`, `scoring/dimensions/__init__.py`, `tests/conftest.py`, `tests/fakes/**`, `tests/corpus/**`, `pyproject.toml`, `uv.lock`, `Makefile`, `.importlinter`, `.github/**`, `AGENTS.md`, `opencode.json`, `.opencode/**`, `scripts/**` |
+| **C-01** | Ingest & triage | `src/resume_ranker/ingest/**`, `tests/unit/ingest/**` |
+| **C-02** | PDF & OCR extraction | `src/resume_ranker/extract/pdf/**`, `src/resume_ranker/extract/ocr/**`, `tests/unit/extract_pdf/**`, `tests/adversarial/test_pdf_*.py` |
+| **C-03** | Office / plain / HTML extraction | `src/resume_ranker/extract/office/**`, `src/resume_ranker/extract/plain/**`, `tests/unit/extract_office/**` |
+| **C-04** | Ontology & normalisation | `src/resume_ranker/ontology/**`, `data/ontology/**`, `data/titles/**`, `tests/unit/ontology/**`, `tests/property/test_ontology_*.py` |
+| **C-05** | LLM adapter & prompts | `src/resume_ranker/llm/**`, `tests/unit/llm/**` |
+| **C-06** | Integrity detectors | `src/resume_ranker/integrity/**`, `tests/unit/integrity/**`, `tests/adversarial/test_integrity_*.py` |
+| **C-07** | Report writers | `src/resume_ranker/report/**`, `tests/unit/report/**` |
+| **C-08** | Resume structuring | `src/resume_ranker/structure/**`, `tests/unit/structure/**`, `tests/golden/structure/**` |
+| **C-09** | JobSpec compiler | `src/resume_ranker/jobspec/**`, `tests/unit/jobspec/**` |
+| **C-10** | Scoring — evidence dims | `src/resume_ranker/scoring/evidence.py`, `scoring/dimensions/s1_required_skills.py`, `s2_preferred_skills.py`, `s8_skill_recency.py`, `tests/unit/scoring_evidence/**` |
+| **C-11** | Scoring — semantic + embeddings | `src/resume_ranker/embeddings/**`, `scoring/dimensions/s3_semantic.py`, `tests/unit/scoring_semantic/**` |
 | **C-12** | Scoring — profile dims | `scoring/dimensions/s4_experience.py`, `s5_title.py`, `s6_domain.py`, `s7_education.py`, `s9_trajectory.py`, `s10_parseability.py`, `tests/unit/scoring_profile/**` |
-| **C-13** | Aggregation & filters | `src/ats_scan/scoring/aggregate.py`, `confidence.py`, `bands.py`, `tiebreak.py`, `filters.py`, `tests/unit/scoring_aggregate/**`, `tests/property/test_aggregate_*.py` |
-| **C-14** | Fairness | `src/ats_scan/fairness/**`, `tests/fairness/**` |
-| **C-15** | CLI, config, pipeline | `src/ats_scan/cli/**`, `src/ats_scan/config/**`, `src/ats_scan/pipeline.py`, `tests/integration/**`, `tests/e2e/**`, `tests/benchmark/**` |
+| **C-13** | Aggregation & filters | `src/resume_ranker/scoring/aggregate.py`, `confidence.py`, `bands.py`, `tiebreak.py`, `filters.py`, `tests/unit/scoring_aggregate/**`, `tests/property/test_aggregate_*.py` |
+| **C-14** | Fairness | `src/resume_ranker/fairness/**`, `tests/fairness/**` |
+| **C-15** | CLI, config, pipeline | `src/resume_ranker/cli/**`, `src/resume_ranker/config/**`, `src/resume_ranker/pipeline.py`, `tests/integration/**`, `tests/e2e/**`, `tests/benchmark/**` |
 | **C-QA** | Independent verification | `tests/qa/**`, `docs/qa/**`, `scripts/qa/**` — see **QAP** |
 
 Beyond the table, three naming rules close the remaining gaps. They exist so that no path is ever unowned, which is the condition `scripts/check-ownership.py` actually enforces.
@@ -203,7 +203,7 @@ The reason this boundary is worth a hard rule: every component agent writes its 
 
 ### 3.2 Frozen domain models
 
-`src/ats_scan/models/` — Pydantic v2 models mirroring TRD §4 exactly, one module per aggregate:
+`src/resume_ranker/models/` — Pydantic v2 models mirroring TRD §4 exactly, one module per aggregate:
 
 ```
 models/
@@ -268,7 +268,7 @@ class StageResult(Generic[T]):
 
 ### 3.3 Frozen protocols
 
-`src/ats_scan/protocols.py` — the complete list. Each component implements one or more of these and depends only on the others' protocol, never on their implementation.
+`src/resume_ranker/protocols.py` — the complete list. Each component implements one or more of these and depends only on the others' protocol, never on their implementation.
 
 ```python
 @runtime_checkable
@@ -354,7 +354,7 @@ class ScoringContext:
 No component ever edits a registration file. Registration is by decorator plus directory scan:
 
 ```python
-# src/ats_scan/scoring/registry.py                                   [W0, read-only]
+# src/resume_ranker/scoring/registry.py                                   [W0, read-only]
 _REGISTRY: dict[str, Dimension] = {}
 
 def dimension(cls: type[Dimension]) -> type[Dimension]:
@@ -365,7 +365,7 @@ def dimension(cls: type[Dimension]) -> type[Dimension]:
     return cls
 
 def load_dimensions() -> Mapping[str, Dimension]:
-    pkg = importlib.import_module("ats_scan.scoring.dimensions")
+    pkg = importlib.import_module("resume_ranker.scoring.dimensions")
     for mod in pkgutil.iter_modules(pkg.__path__):
         importlib.import_module(f"{pkg.__name__}.{mod.name}")
     return MappingProxyType(_REGISTRY)
@@ -374,8 +374,8 @@ def load_dimensions() -> Mapping[str, Dimension]:
 A dimension agent writes exactly one new file and touches nothing else:
 
 ```python
-# src/ats_scan/scoring/dimensions/s1_required_skills.py              [C-10]
-from ats_scan.scoring.registry import dimension
+# src/resume_ranker/scoring/dimensions/s1_required_skills.py              [C-10]
+from resume_ranker.scoring.registry import dimension
 
 @dimension
 class S1RequiredSkills:
@@ -385,14 +385,14 @@ class S1RequiredSkills:
     def score(self, resume, spec, ctx) -> SubScore: ...
 ```
 
-`src/ats_scan/extract/registry.py` uses the same pattern over `ats_scan.extract.*` subpackages and dispatches on `TextExtractor.supports()`. This is why C-02 and C-03 can add extractors concurrently without ever meeting in a file.
+`src/resume_ranker/extract/registry.py` uses the same pattern over `resume_ranker.extract.*` subpackages and dispatches on `TextExtractor.supports()`. This is why C-02 and C-03 can add extractors concurrently without ever meeting in a file.
 
 ### 3.5 Conflict-free aggregation patterns
 
 | Shared thing | Naive approach (conflicts) | Pattern used here |
 |---|---|---|
 | Dimension / extractor registration | append to `__init__.py` | decorator + `pkgutil` scan (§3.4) |
-| Reason codes | one central `StrEnum` | per-package `codes.py` defining a `StrEnum`; `ats_scan/codes.py` collects them by scan and a Wave-0 test asserts global uniqueness |
+| Reason codes | one central `StrEnum` | per-package `codes.py` defining a `StrEnum`; `resume_ranker/codes.py` collects them by scan and a Wave-0 test asserts global uniqueness |
 | Changelog | one `CHANGELOG.md` | towncrier newsfragments: `changelog.d/C-04.feature.md`; integrator assembles at the end |
 | Dependencies | each agent edits `pyproject.toml` | **all deps pinned in Wave 0.** An agent needing another writes `docs/dep-requests/C-04.md` and uses a stdlib workaround or stops; the integrator batches additions |
 | Config schema | one settings class | each package owns `config.py` with its own Pydantic sub-model; `config/root.py` (C-15) composes them by scan |
@@ -417,7 +417,7 @@ lint:     ruff check src tests
 fmt:      ruff format --check src tests
 types:    mypy --strict src
 imports:  lint-imports                       # import-linter contracts
-test:     pytest -m "not slow" --cov=ats_scan --cov-fail-under=85
+test:     pytest -m "not slow" --cov=resume_ranker --cov-fail-under=85
 schema:   python scripts/validate_schemas.py docs/contracts src
 own:      python scripts/check-ownership.py  # branch touched only its own paths
 ```
@@ -426,41 +426,41 @@ own:      python scripts/check-ownership.py  # branch touched only its own paths
 
 ```ini
 [importlinter]
-root_package = ats_scan
+root_package = resume_ranker
 
 [importlinter:contract:layers]
 name = Layered architecture
 type = layers
 layers =
-    ats_scan.cli
-    ats_scan.pipeline
-    ats_scan.report
-    ats_scan.scoring
-    ats_scan.fairness : ats_scan.integrity
-    ats_scan.structure : ats_scan.jobspec
-    ats_scan.extract : ats_scan.ingest
-    ats_scan.ontology : ats_scan.embeddings : ats_scan.llm
-    ats_scan.models : ats_scan.protocols : ats_scan.errors : ats_scan.codes
+    resume_ranker.cli
+    resume_ranker.pipeline
+    resume_ranker.report
+    resume_ranker.scoring
+    resume_ranker.fairness : resume_ranker.integrity
+    resume_ranker.structure : resume_ranker.jobspec
+    resume_ranker.extract : resume_ranker.ingest
+    resume_ranker.ontology : resume_ranker.embeddings : resume_ranker.llm
+    resume_ranker.models : resume_ranker.protocols : resume_ranker.errors : resume_ranker.codes
 
 [importlinter:contract:dimension-independence]
 name = Scoring dimensions never import one another
 type = independence
 modules =
-    ats_scan.scoring.dimensions.s1_required_skills
-    ats_scan.scoring.dimensions.s2_preferred_skills
-    ats_scan.scoring.dimensions.s3_semantic
-    ats_scan.scoring.dimensions.s4_experience
-    ats_scan.scoring.dimensions.s5_title
-    ats_scan.scoring.dimensions.s6_domain
-    ats_scan.scoring.dimensions.s7_education
-    ats_scan.scoring.dimensions.s8_skill_recency
-    ats_scan.scoring.dimensions.s9_trajectory
-    ats_scan.scoring.dimensions.s10_parseability
+    resume_ranker.scoring.dimensions.s1_required_skills
+    resume_ranker.scoring.dimensions.s2_preferred_skills
+    resume_ranker.scoring.dimensions.s3_semantic
+    resume_ranker.scoring.dimensions.s4_experience
+    resume_ranker.scoring.dimensions.s5_title
+    resume_ranker.scoring.dimensions.s6_domain
+    resume_ranker.scoring.dimensions.s7_education
+    resume_ranker.scoring.dimensions.s8_skill_recency
+    resume_ranker.scoring.dimensions.s9_trajectory
+    resume_ranker.scoring.dimensions.s10_parseability
 
 [importlinter:contract:no-clock-in-scoring]
 name = Scoring must take time from ScoringContext
 type = forbidden
-source_modules = ats_scan.scoring
+source_modules = resume_ranker.scoring
 forbidden_modules = time
 ```
 
@@ -560,7 +560,7 @@ Also ships the versioned data files. Everything downstream of skill matching dep
 - [ ] Property test: `canonicalise` is idempotent and case-stable
 - [ ] Benchmark: 10,000 lookups < 200 ms warm
 
-**Gotchas.** The embedding tier must be lazy — `OntologyIndex` takes an optional `EmbeddingClient` and skips that tier when it is `None` (offline mode without a local model). Do not make the ontology import `ats_scan.embeddings`; take the client through the constructor. `import-linter` will fail you otherwise.
+**Gotchas.** The embedding tier must be lazy — `OntologyIndex` takes an optional `EmbeddingClient` and skips that tier when it is `None` (offline mode without a local model). Do not make the ontology import `resume_ranker.embeddings`; take the client through the constructor. `import-linter` will fail you otherwise.
 
 ---
 
@@ -672,7 +672,7 @@ Also owns `scoring/evidence.py`, the shared match/proficiency/recency factor mac
 - [ ] The Wave-0 `xfail` table-driven tests now pass, including all boundary values
 - [ ] Property tests: monotonic in evidence; bounded [0,100]; independent of skill ordering
 
-**Gotchas.** `ctx.now` for recency — never `date.today()`. `import-linter` forbids importing `time` from `ats_scan.scoring`; use `datetime` arithmetic on injected dates only.
+**Gotchas.** `ctx.now` for recency — never `date.today()`. `import-linter` forbids importing `time` from `resume_ranker.scoring`; use `datetime` arithmetic on injected dates only.
 
 ---
 
@@ -887,15 +887,15 @@ Option B is the default recommendation. The dominant risk in this whole approach
 **`AGENTS.md`** — loaded automatically into every session. Keep it short; long rule files get skimmed.
 
 ```markdown
-# ATS-Scan — rules for all agents
+# RESUME-RANKER — rules for all agents
 
-You are implementing ONE component of ATS-Scan. Read `docs/IMPLEMENTATION_PLAN.md`
+You are implementing ONE component of RESUME-RANKER. Read `docs/IMPLEMENTATION_PLAN.md`
 §2.2 (ownership) and your own block in §4 before writing any code.
 
 ## Hard rules
 1. Write ONLY inside your component's owned paths. Creating or editing a file
    outside them fails the build and the branch is rejected.
-2. NEVER modify `src/ats_scan/models/`, `protocols.py`, `errors.py`, `codes.py`,
+2. NEVER modify `src/resume_ranker/models/`, `protocols.py`, `errors.py`, `codes.py`,
    `pyproject.toml`, `uv.lock`, `Makefile`, or anything under `tests/fakes/`.
    These are frozen. If one is wrong, write `docs/contract-change/<ID>-NNN.md`
    describing the problem and STOP. Do not work around it by editing it.
@@ -929,7 +929,7 @@ each formula comes from.
   "instructions": ["AGENTS.md", "docs/IMPLEMENTATION_PLAN.md"],
   "agent": {
     "component-builder": {
-      "description": "Implements one ATS-Scan component inside its own git worktree, against frozen contracts.",
+      "description": "Implements one RESUME-RANKER component inside its own git worktree, against frozen contracts.",
       "mode": "primary",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/component-builder.md}",
@@ -958,9 +958,9 @@ each formula comes from.
   },
   "command": {
     "build-component": {
-      "description": "Implement one ATS-Scan component end to end",
+      "description": "Implement one RESUME-RANKER component end to end",
       "agent": "component-builder",
-      "template": "Implement component $1.\n\nRead docs/IMPLEMENTATION_PLAN.md — §2.2 for your owned paths and §4 for your component block. Read src/ats_scan/protocols.py and src/ats_scan/models/ for the frozen contracts, and tests/fakes/ for the doubles you must test against.\n\nWork in this order:\n1. Restate your owned paths and your Definition of Done checklist. If anything is ambiguous, say so before writing code.\n2. Find every test in the repository that covers your component, including xfail-marked ones. These are your acceptance criteria — read them first.\n3. Implement. Small commits. Never touch a file outside your owned paths.\n4. Run `make gate` until green, then `make own` to confirm you stayed in your lane.\n5. Post a summary: what you implemented, which DoD boxes are ticked, which are not and why, and any contract-change requests you filed.\n\nStop and report rather than guessing if a frozen contract appears wrong."
+      "template": "Implement component $1.\n\nRead docs/IMPLEMENTATION_PLAN.md — §2.2 for your owned paths and §4 for your component block. Read src/resume_ranker/protocols.py and src/resume_ranker/models/ for the frozen contracts, and tests/fakes/ for the doubles you must test against.\n\nWork in this order:\n1. Restate your owned paths and your Definition of Done checklist. If anything is ambiguous, say so before writing code.\n2. Find every test in the repository that covers your component, including xfail-marked ones. These are your acceptance criteria — read them first.\n3. Implement. Small commits. Never touch a file outside your owned paths.\n4. Run `make gate` until green, then `make own` to confirm you stayed in your lane.\n5. Post a summary: what you implemented, which DoD boxes are ticked, which are not and why, and any contract-change requests you filed.\n\nStop and report rather than guessing if a frozen contract appears wrong."
     },
     "review-branch": {
       "description": "Contract-guard review of a component branch",
@@ -1052,10 +1052,10 @@ wait
 `.opencode/prompts/component-builder.md`:
 
 ```markdown
-You implement exactly one component of ATS-Scan, in an isolated git worktree.
+You implement exactly one component of RESUME-RANKER, in an isolated git worktree.
 
 Your contract with the rest of the system is entirely in
-`src/ats_scan/protocols.py` and `src/ats_scan/models/`. Those files are frozen.
+`src/resume_ranker/protocols.py` and `src/resume_ranker/models/`. Those files are frozen.
 Other components are being written right now by other agents; you will never
 see their code and must never depend on it. Where you need them, use the
 doubles in `tests/fakes/`.
@@ -1208,7 +1208,7 @@ Only after all fourteen merges are green. The integrator now writes the componen
 | E9 | Degradation | LLM transport failing mid-run still exits 0 with `LLM_DEGRADED` recorded |
 | E10 | Partial failure | A corrupt PDF in the batch appears in `errors.csv`, run still exits 0 |
 | E11 | Exit codes | Each of TRD §7.3 reproduced by a targeted fixture |
-| E12 | Adverse impact | `ats-scan audit` produces a valid report on a synthetic cohort |
+| E12 | Adverse impact | `resume-ranker audit` produces a valid report on a synthetic cohort |
 | E13 | Performance | 1,000-resume offline run ≤ 6 min, peak RSS ≤ 4 GB (TRD §10.1) |
 | E14 | Warm cache | Re-run of the same batch ≤ 90 s |
 
@@ -1258,7 +1258,7 @@ fmt:      ; uv run ruff format --check src tests
 lint:     ; uv run ruff check src tests
 types:    ; uv run mypy --strict src
 imports:  ; uv run lint-imports
-test:     ; uv run pytest -m "not slow" --cov=ats_scan --cov-fail-under=85
+test:     ; uv run pytest -m "not slow" --cov=resume_ranker --cov-fail-under=85
 schema:   ; uv run python scripts/validate_schemas.py docs/contracts src
 own:      ; uv run python scripts/check-ownership.py --base contracts-frozen
 e2e:      ; uv run pytest tests/e2e -m e2e -v
@@ -1303,7 +1303,7 @@ For adding a component later, or re-cutting one that proved too large:
 <Two or three sentences: what it does, and explicitly what it does NOT do.>
 
 **Owns** <exact paths — must be disjoint from every other component>
-**May read** src/ats_scan/models/**, protocols.py, tests/fakes/**
+**May read** src/resume_ranker/models/**, protocols.py, tests/fakes/**
 **Public API** <signatures>
 **Definition of Done** <checkboxes, each traceable to a TRD requirement>
 **Gotchas** <the traps a competent implementer would otherwise fall into>
@@ -1328,4 +1328,4 @@ For adding a component later, or re-cutting one that proved too large:
 
 ---
 
-*Companion to the ATS-Scan Technical Requirements & Design Document v1.0 and the QA Plan & QA Agent Definition v1.0. Section references prefixed **TRD** point into the requirements document, **QAP** into the QA plan; unprefixed references point into this one.*
+*Companion to the RESUME-RANKER Technical Requirements & Design Document v1.0 and the QA Plan & QA Agent Definition v1.0. Section references prefixed **TRD** point into the requirements document, **QAP** into the QA plan; unprefixed references point into this one.*

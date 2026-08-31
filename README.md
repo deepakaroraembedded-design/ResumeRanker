@@ -1,4 +1,4 @@
-# ATS-Scan
+# RESUME-RANKER
 
 Resume screening and scoring engine that turns a job description and a set of resumes into a ranked, evidence-backed shortlist.
 
@@ -14,7 +14,7 @@ This README focuses on the algorithmic core and how to run the code.
 
 ## What the engine does
 
-ATS-Scan is a deterministic, explainable pipeline:
+RESUME-RANKER is a deterministic, explainable pipeline:
 
 1. **Ingest** resumes and one job description per run.
 2. **Extract** text from PDF, Word, RTF and plain-text files, preserving reading order and page locations.
@@ -342,7 +342,7 @@ Responses are validated against JSON schemas, cached by SHA-256 of (model id, pr
 │   ├── QA_PLAN.md                    # Independent verification plan
 │   ├── TRD.md                        # Full technical requirements and design
 │   └── contracts/                    # Generated JSON schemas
-├── src/ats_scan/
+├── src/resume_ranker/
 │   ├── models/                       # Frozen Pydantic v2 domain models
 │   ├── protocols.py                  # Protocols every component implements
 │   ├── errors.py, codes.py           # Reason codes and exceptions
@@ -400,10 +400,10 @@ uv run python scripts/validate_schemas.py docs/contracts src
 
 ```bash
 # Score a directory of resumes against a job description (offline / deterministic mode)
-uv run ats-scan run --resumes path/to/resumes/ --jd path/to/jd.txt --out run-2026-08-30 --mode offline --force
+uv run resume-ranker run --resumes path/to/resumes/ --jd path/to/jd.txt --out run-2026-08-30 --mode offline --force
 
 # Hybrid mode (uses LLM for structuring, S3 rubric, and explanations)
-uv run ats-scan run --resumes path/to/resumes/ --jd path/to/jd.txt --out run-2026-08-30 --force
+uv run resume-ranker run --resumes path/to/resumes/ --jd path/to/jd.txt --out run-2026-08-30 --force
 ```
 
 Key flags:
@@ -421,7 +421,7 @@ Key flags:
 ### Parse resumes without scoring
 
 ```bash
-uv run ats-scan parse --resumes path/to/resumes/ --out parsed-resumes
+uv run resume-ranker parse --resumes path/to/resumes/ --out parsed-resumes
 ```
 
 This writes a `c_<id>.resume.json` per candidate with the structured `CanonicalResume`.
@@ -429,7 +429,7 @@ This writes a `c_<id>.resume.json` per candidate with the structured `CanonicalR
 ### Compile a job description for review
 
 ```bash
-uv run ats-scan compile-jd --jd path/to/jd.txt --out jobspec.yaml
+uv run resume-ranker compile-jd --jd path/to/jd.txt --out jobspec.yaml
 ```
 
 ### Calibrate scoring weights against a labelled set
@@ -439,7 +439,7 @@ It expects a directory of resumes that have been labelled with target scores
 (e.g., recruiter ratings) and writes a YAML file with tuned weights.
 
 ```bash
-uv run ats-scan calibrate --resumes path/to/labelled-resumes/ --out calibration.yaml
+uv run resume-ranker calibrate --resumes path/to/labelled-resumes/ --out calibration.yaml
 ```
 
 In the current isolated component build, `calibrate` returns a report indicating
@@ -454,15 +454,15 @@ TRD §11.3.
 
 ```bash
 # Basic audit (no demographics)
-uv run ats-scan audit --out run-2026-08-30
+uv run resume-ranker audit --out run-2026-08-30
 
 # Audit with adverse-impact analysis
-uv run ats-scan audit --out run-2026-08-30 --demographics path/to/demographics.csv
+uv run resume-ranker audit --out run-2026-08-30 --demographics path/to/demographics.csv
 ```
 
 The demographics CSV must contain two columns: `candidate_id` and `group`.
 
-See `docs/TRD.md` §9 and `uv run ats-scan --help` for the full command surface.
+See `docs/TRD.md` §9 and `uv run resume-ranker --help` for the full command surface.
 
 ---
 
@@ -472,7 +472,7 @@ This repository is built by parallel component agents after the Wave 0 contract 
 
 Key rules:
 
-- Frozen files (`src/ats_scan/models/`, `protocols.py`, `errors.py`, `codes.py`, `pyproject.toml`, `uv.lock`, `Makefile`, `.importlinter`, `tests/fakes/`) are never edited by component agents.
+- Frozen files (`src/resume_ranker/models/`, `protocols.py`, `errors.py`, `codes.py`, `pyproject.toml`, `uv.lock`, `Makefile`, `.importlinter`, `tests/fakes/`) are never edited by component agents.
 - Every component tests against the fakes in `tests/fakes/`, never against another component’s implementation.
 - The QA agent (C-QA) independently verifies every component against the TRD and never edits implementation code.
 - `make own` enforces path ownership before merge.

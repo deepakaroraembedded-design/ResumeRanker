@@ -8,14 +8,14 @@ import pymupdf as fitz
 import pytest
 from PIL import Image, ImageDraw, ImageFont
 
-from ats_scan.extract import load_extractors
-from ats_scan.extract.pdf import PdfExtractor, render_page_tokens
-from ats_scan.extract.pdf._config import PdfExtractionConfig
-from ats_scan.extract.pdf._normalize import normalize_text
-from ats_scan.models.run import RunContext
-from ats_scan.models.scoring import Evidence
-from ats_scan.models.source import SourceDocument
-from ats_scan.protocols import TextExtractor
+from resume_ranker.extract import load_extractors
+from resume_ranker.extract.pdf import PdfExtractor, render_page_tokens
+from resume_ranker.extract.pdf._config import PdfExtractionConfig
+from resume_ranker.extract.pdf._normalize import normalize_text
+from resume_ranker.models.run import RunContext
+from resume_ranker.models.scoring import Evidence
+from resume_ranker.models.source import SourceDocument
+from resume_ranker.protocols import TextExtractor
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 

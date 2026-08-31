@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Wave 0 repository skeleton and stubs for ATS-Scan."""
+"""Generate Wave 0 repository skeleton and stubs for RESUME-RANKER."""
 from __future__ import annotations
 
 import os
@@ -28,28 +28,28 @@ CONFTEXT_STUB_BODY = '''from __future__ import annotations
 
 DIRS = [
     # Source packages
-    "src/ats_scan",
-    "src/ats_scan/models",
-    "src/ats_scan/extract",
-    "src/ats_scan/extract/pdf",
-    "src/ats_scan/extract/ocr",
-    "src/ats_scan/extract/office",
-    "src/ats_scan/extract/plain",
-    "src/ats_scan/ingest",
-    "src/ats_scan/ontology",
-    "src/ats_scan/llm",
-    "src/ats_scan/llm/prompts",
-    "src/ats_scan/llm/schemas",
-    "src/ats_scan/integrity",
-    "src/ats_scan/report",
-    "src/ats_scan/structure",
-    "src/ats_scan/jobspec",
-    "src/ats_scan/embeddings",
-    "src/ats_scan/scoring",
-    "src/ats_scan/scoring/dimensions",
-    "src/ats_scan/fairness",
-    "src/ats_scan/config",
-    "src/ats_scan/cli",
+    "src/resume_ranker",
+    "src/resume_ranker/models",
+    "src/resume_ranker/extract",
+    "src/resume_ranker/extract/pdf",
+    "src/resume_ranker/extract/ocr",
+    "src/resume_ranker/extract/office",
+    "src/resume_ranker/extract/plain",
+    "src/resume_ranker/ingest",
+    "src/resume_ranker/ontology",
+    "src/resume_ranker/llm",
+    "src/resume_ranker/llm/prompts",
+    "src/resume_ranker/llm/schemas",
+    "src/resume_ranker/integrity",
+    "src/resume_ranker/report",
+    "src/resume_ranker/structure",
+    "src/resume_ranker/jobspec",
+    "src/resume_ranker/embeddings",
+    "src/resume_ranker/scoring",
+    "src/resume_ranker/scoring/dimensions",
+    "src/resume_ranker/fairness",
+    "src/resume_ranker/config",
+    "src/resume_ranker/cli",
 
     # Tests
     "tests",
@@ -111,84 +111,84 @@ DIRS = [
 # Source module stubs owned by component agents (will be overwritten by W0 where needed).
 STUB_MODULES = {
     # C-01
-    "src/ats_scan/ingest/__init__.py": None,
-    "src/ats_scan/ingest/manifest.py": None,
+    "src/resume_ranker/ingest/__init__.py": None,
+    "src/resume_ranker/ingest/manifest.py": None,
     # C-02
-    "src/ats_scan/extract/pdf/__init__.py": None,
-    "src/ats_scan/extract/pdf/extractor.py": None,
-    "src/ats_scan/extract/ocr/__init__.py": None,
-    "src/ats_scan/extract/ocr/extractor.py": None,
+    "src/resume_ranker/extract/pdf/__init__.py": None,
+    "src/resume_ranker/extract/pdf/extractor.py": None,
+    "src/resume_ranker/extract/ocr/__init__.py": None,
+    "src/resume_ranker/extract/ocr/extractor.py": None,
     # C-03
-    "src/ats_scan/extract/office/__init__.py": None,
-    "src/ats_scan/extract/office/extractor.py": None,
-    "src/ats_scan/extract/plain/__init__.py": None,
-    "src/ats_scan/extract/plain/extractor.py": None,
+    "src/resume_ranker/extract/office/__init__.py": None,
+    "src/resume_ranker/extract/office/extractor.py": None,
+    "src/resume_ranker/extract/plain/__init__.py": None,
+    "src/resume_ranker/extract/plain/extractor.py": None,
     # C-04
-    "src/ats_scan/ontology/__init__.py": None,
-    "src/ats_scan/ontology/loader.py": None,
-    "src/ats_scan/ontology/match.py": None,
-    "src/ats_scan/ontology/titles.py": None,
+    "src/resume_ranker/ontology/__init__.py": None,
+    "src/resume_ranker/ontology/loader.py": None,
+    "src/resume_ranker/ontology/match.py": None,
+    "src/resume_ranker/ontology/titles.py": None,
     # C-05
-    "src/ats_scan/llm/__init__.py": None,
-    "src/ats_scan/llm/adapter.py": None,
-    "src/ats_scan/llm/cache.py": None,
-    "src/ats_scan/llm/budget.py": None,
+    "src/resume_ranker/llm/__init__.py": None,
+    "src/resume_ranker/llm/adapter.py": None,
+    "src/resume_ranker/llm/cache.py": None,
+    "src/resume_ranker/llm/budget.py": None,
     # C-06
-    "src/ats_scan/integrity/__init__.py": None,
-    "src/ats_scan/integrity/hidden_text.py": None,
-    "src/ats_scan/integrity/stuffing.py": None,
-    "src/ats_scan/integrity/injection.py": None,
+    "src/resume_ranker/integrity/__init__.py": None,
+    "src/resume_ranker/integrity/hidden_text.py": None,
+    "src/resume_ranker/integrity/stuffing.py": None,
+    "src/resume_ranker/integrity/injection.py": None,
     # C-07
-    "src/ats_scan/report/__init__.py": None,
-    "src/ats_scan/report/csv.py": None,
-    "src/ats_scan/report/xlsx.py": None,
-    "src/ats_scan/report/html.py": None,
-    "src/ats_scan/report/explain.py": None,
-    "src/ats_scan/report/audit.py": None,
+    "src/resume_ranker/report/__init__.py": None,
+    "src/resume_ranker/report/csv.py": None,
+    "src/resume_ranker/report/xlsx.py": None,
+    "src/resume_ranker/report/html.py": None,
+    "src/resume_ranker/report/explain.py": None,
+    "src/resume_ranker/report/audit.py": None,
     # C-08
-    "src/ats_scan/structure/__init__.py": None,
-    "src/ats_scan/structure/sections.py": None,
-    "src/ats_scan/structure/dates.py": None,
-    "src/ats_scan/structure/entities.py": None,
-    "src/ats_scan/structure/llm_parse.py": None,
+    "src/resume_ranker/structure/__init__.py": None,
+    "src/resume_ranker/structure/sections.py": None,
+    "src/resume_ranker/structure/dates.py": None,
+    "src/resume_ranker/structure/entities.py": None,
+    "src/resume_ranker/structure/llm_parse.py": None,
     # C-09
-    "src/ats_scan/jobspec/__init__.py": None,
-    "src/ats_scan/jobspec/compile.py": None,
-    "src/ats_scan/jobspec/schema.py": None,
-    "src/ats_scan/jobspec/review.py": None,
+    "src/resume_ranker/jobspec/__init__.py": None,
+    "src/resume_ranker/jobspec/compile.py": None,
+    "src/resume_ranker/jobspec/schema.py": None,
+    "src/resume_ranker/jobspec/review.py": None,
     # C-10
-    "src/ats_scan/scoring/evidence.py": None,
-    "src/ats_scan/scoring/dimensions/s1_required_skills.py": None,
-    "src/ats_scan/scoring/dimensions/s2_preferred_skills.py": None,
-    "src/ats_scan/scoring/dimensions/s8_skill_recency.py": None,
+    "src/resume_ranker/scoring/evidence.py": None,
+    "src/resume_ranker/scoring/dimensions/s1_required_skills.py": None,
+    "src/resume_ranker/scoring/dimensions/s2_preferred_skills.py": None,
+    "src/resume_ranker/scoring/dimensions/s8_skill_recency.py": None,
     # C-11
-    "src/ats_scan/embeddings/__init__.py": None,
-    "src/ats_scan/embeddings/client.py": None,
-    "src/ats_scan/scoring/dimensions/s3_semantic.py": None,
+    "src/resume_ranker/embeddings/__init__.py": None,
+    "src/resume_ranker/embeddings/client.py": None,
+    "src/resume_ranker/scoring/dimensions/s3_semantic.py": None,
     # C-12
-    "src/ats_scan/scoring/dimensions/s4_experience.py": None,
-    "src/ats_scan/scoring/dimensions/s5_title.py": None,
-    "src/ats_scan/scoring/dimensions/s6_domain.py": None,
-    "src/ats_scan/scoring/dimensions/s7_education.py": None,
-    "src/ats_scan/scoring/dimensions/s9_trajectory.py": None,
-    "src/ats_scan/scoring/dimensions/s10_parseability.py": None,
+    "src/resume_ranker/scoring/dimensions/s4_experience.py": None,
+    "src/resume_ranker/scoring/dimensions/s5_title.py": None,
+    "src/resume_ranker/scoring/dimensions/s6_domain.py": None,
+    "src/resume_ranker/scoring/dimensions/s7_education.py": None,
+    "src/resume_ranker/scoring/dimensions/s9_trajectory.py": None,
+    "src/resume_ranker/scoring/dimensions/s10_parseability.py": None,
     # C-13
-    "src/ats_scan/scoring/aggregate.py": None,
-    "src/ats_scan/scoring/confidence.py": None,
-    "src/ats_scan/scoring/bands.py": None,
-    "src/ats_scan/scoring/tiebreak.py": None,
-    "src/ats_scan/scoring/filters.py": None,
+    "src/resume_ranker/scoring/aggregate.py": None,
+    "src/resume_ranker/scoring/confidence.py": None,
+    "src/resume_ranker/scoring/bands.py": None,
+    "src/resume_ranker/scoring/tiebreak.py": None,
+    "src/resume_ranker/scoring/filters.py": None,
     # C-14
-    "src/ats_scan/fairness/__init__.py": None,
-    "src/ats_scan/fairness/redaction.py": None,
-    "src/ats_scan/fairness/proxies.py": None,
-    "src/ats_scan/fairness/impact.py": None,
+    "src/resume_ranker/fairness/__init__.py": None,
+    "src/resume_ranker/fairness/redaction.py": None,
+    "src/resume_ranker/fairness/proxies.py": None,
+    "src/resume_ranker/fairness/impact.py": None,
     # C-15
-    "src/ats_scan/config/__init__.py": None,
-    "src/ats_scan/config/root.py": None,
-    "src/ats_scan/cli/__init__.py": None,
-    "src/ats_scan/cli/main.py": None,
-    "src/ats_scan/pipeline.py": None,
+    "src/resume_ranker/config/__init__.py": None,
+    "src/resume_ranker/config/root.py": None,
+    "src/resume_ranker/cli/__init__.py": None,
+    "src/resume_ranker/cli/main.py": None,
+    "src/resume_ranker/pipeline.py": None,
 }
 
 # Test directories where we want a conftest.py and a stub test module.
@@ -249,27 +249,27 @@ def main() -> None:
             changelog.write_text(f"# {cid} feature newsfragment\n\n", encoding="utf-8")
 
     # Root package init
-    (ROOT / "src/ats_scan/__init__.py").write_text(
+    (ROOT / "src/resume_ranker/__init__.py").write_text(
         "from __future__ import annotations\n\n__version__ = \"0.1.0\"\n",
         encoding="utf-8",
     )
 
     # Models package init
-    (ROOT / "src/ats_scan/models/__init__.py").write_text(
+    (ROOT / "src/resume_ranker/models/__init__.py").write_text(
         "from __future__ import annotations\n",
         encoding="utf-8",
     )
 
     # Extract/scoring package inits owned by W0
-    (ROOT / "src/ats_scan/extract/__init__.py").write_text(
-        "from __future__ import annotations\n\nfrom ats_scan.extract.registry import load_extractors\n\n__all__ = [\"load_extractors\"]\n",
+    (ROOT / "src/resume_ranker/extract/__init__.py").write_text(
+        "from __future__ import annotations\n\nfrom resume_ranker.extract.registry import load_extractors\n\n__all__ = [\"load_extractors\"]\n",
         encoding="utf-8",
     )
-    (ROOT / "src/ats_scan/scoring/__init__.py").write_text(
-        "from __future__ import annotations\n\nfrom ats_scan.scoring.registry import load_dimensions\n\n__all__ = [\"load_dimensions\"]\n",
+    (ROOT / "src/resume_ranker/scoring/__init__.py").write_text(
+        "from __future__ import annotations\n\nfrom resume_ranker.scoring.registry import load_dimensions\n\n__all__ = [\"load_dimensions\"]\n",
         encoding="utf-8",
     )
-    (ROOT / "src/ats_scan/scoring/dimensions/__init__.py").write_text(
+    (ROOT / "src/resume_ranker/scoring/dimensions/__init__.py").write_text(
         "from __future__ import annotations\n",
         encoding="utf-8",
     )

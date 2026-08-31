@@ -5,12 +5,12 @@ import json
 from hypothesis import given
 from hypothesis import strategies as st
 
-from ats_scan.fairness.redaction import (
+from resume_ranker.fairness.redaction import (
     BlindRedactor,
     redact_text,
     write_reidentification_sidecar,
 )
-from ats_scan.models.resume import (
+from resume_ranker.models.resume import (
     CanonicalResume,
     DatePrecision,
     DateValue,
@@ -20,9 +20,9 @@ from ats_scan.models.resume import (
     Location,
     ProjectEntry,
 )
-from ats_scan.models.run import ScoringContext
-from ats_scan.models.source import SourceDocument
-from ats_scan.protocols import Redactor
+from resume_ranker.models.run import ScoringContext
+from resume_ranker.models.source import SourceDocument
+from resume_ranker.protocols import Redactor
 
 
 def _make_resume(

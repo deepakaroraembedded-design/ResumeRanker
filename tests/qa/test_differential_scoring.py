@@ -9,15 +9,15 @@ import pytest
 from tests.fakes import FakeEmbeddingClient, FakeOntology, FakeTitleTaxonomy
 from tests.qa.strategies import skill_case
 
-from ats_scan.models.common import IntegrityFinding, StageResult
-from ats_scan.models.config import (
+from resume_ranker.models.common import IntegrityFinding, StageResult
+from resume_ranker.models.config import (
     IntegrityConfig,
     OverqualificationConfig,
     RecencyFactors,
     ScoringConfig,
     SelectionConfig,
 )
-from ats_scan.models.jobspec import (
+from resume_ranker.models.jobspec import (
     DomainRequirement,
     EducationRequirement,
     ExperienceRequirement,
@@ -26,8 +26,8 @@ from ats_scan.models.jobspec import (
     RequiredSkill,
     ResponsibilityChunk,
 )
-from ats_scan.models.llm import LLMResult
-from ats_scan.models.resume import (
+from resume_ranker.models.llm import LLMResult
+from resume_ranker.models.resume import (
     Bullet,
     CanonicalResume,
     Certification,
@@ -42,8 +42,8 @@ from ats_scan.models.resume import (
     SkillMention,
     Timeline,
 )
-from ats_scan.models.run import ScoringContext
-from ats_scan.models.scoring import (
+from resume_ranker.models.run import ScoringContext
+from resume_ranker.models.scoring import (
     GapDetail,
     MatchDetail,
     MatchRoute,
@@ -51,128 +51,128 @@ from ats_scan.models.scoring import (
     ScoreCard,
     SubScore,
 )
-from ats_scan.scoring.aggregate import aggregate
-from ats_scan.scoring.confidence import confidence
-from ats_scan.scoring.dimensions.s1_required_skills import S1RequiredSkills
-from ats_scan.scoring.dimensions.s2_preferred_skills import S2PreferredSkills
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.aggregate import aggregate
+from resume_ranker.scoring.confidence import confidence
+from resume_ranker.scoring.dimensions.s1_required_skills import S1RequiredSkills
+from resume_ranker.scoring.dimensions.s2_preferred_skills import S2PreferredSkills
+from resume_ranker.scoring.dimensions.s3_semantic import (
     S3Semantic,
     SemanticRubricOutput,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _calibrate as s3_calibrate,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _Chunk as S3Chunk,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _evidence_from_best_match as s3_evidence_from_best_match,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _from_skill as s3_from_skill,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _jd_chunks as s3_jd_chunks,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _llm_rubric_score as s3_llm_rubric_score,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _raw_similarity as s3_raw_similarity,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _resume_chunks as s3_resume_chunks,
 )
-from ats_scan.scoring.dimensions.s3_semantic import (
+from resume_ranker.scoring.dimensions.s3_semantic import (
     _run as s3_run,
 )
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import (
     S4Experience,
 )
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import (
     _build_intervals as s4_build_intervals,
 )
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import (
     _domain_similarity as s4_domain_similarity,
 )
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import (
     _Interval as S4Interval,
 )
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import (
     _raw_years as s4_raw_years,
 )
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import (
     _relevant_years as s4_relevant_years,
 )
-from ats_scan.scoring.dimensions.s4_experience import _resolve_date as s4_resolve_date
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import _resolve_date as s4_resolve_date
+from resume_ranker.scoring.dimensions.s4_experience import (
     _s4_from_years as s4_from_years,
 )
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import (
     _skill_overlap as s4_skill_overlap,
 )
-from ats_scan.scoring.dimensions.s4_experience import (
+from resume_ranker.scoring.dimensions.s4_experience import (
     _title_similarity as s4_title_similarity,
 )
-from ats_scan.scoring.dimensions.s5_title import (
+from resume_ranker.scoring.dimensions.s5_title import (
     S5Title,
 )
-from ats_scan.scoring.dimensions.s5_title import (
+from resume_ranker.scoring.dimensions.s5_title import (
     _recency_weight as s5_recency_weight,
 )
-from ats_scan.scoring.dimensions.s5_title import _resolve_date as s5_resolve_date
-from ats_scan.scoring.dimensions.s5_title import (
+from resume_ranker.scoring.dimensions.s5_title import _resolve_date as s5_resolve_date
+from resume_ranker.scoring.dimensions.s5_title import (
     _role_alignment as s5_role_alignment,
 )
-from ats_scan.scoring.dimensions.s6_domain import (
+from resume_ranker.scoring.dimensions.s6_domain import (
     S6Domain,
 )
-from ats_scan.scoring.dimensions.s6_domain import (
+from resume_ranker.scoring.dimensions.s6_domain import (
     _domain_match as s6_domain_match,
 )
-from ats_scan.scoring.dimensions.s6_domain import (
+from resume_ranker.scoring.dimensions.s6_domain import (
     _recency_weight as s6_recency_weight,
 )
-from ats_scan.scoring.dimensions.s6_domain import _resolve_date as s6_resolve_date
-from ats_scan.scoring.dimensions.s7_education import (
+from resume_ranker.scoring.dimensions.s6_domain import _resolve_date as s6_resolve_date
+from resume_ranker.scoring.dimensions.s7_education import (
     S7Education,
 )
-from ats_scan.scoring.dimensions.s7_education import (
+from resume_ranker.scoring.dimensions.s7_education import (
     _cert_name as s7_cert_name,
 )
-from ats_scan.scoring.dimensions.s7_education import (
+from resume_ranker.scoring.dimensions.s7_education import (
     _certification_component as s7_certification_component,
 )
-from ats_scan.scoring.dimensions.s7_education import (
+from resume_ranker.scoring.dimensions.s7_education import (
     _degree_ordinal as s7_degree_ordinal,
 )
-from ats_scan.scoring.dimensions.s7_education import (
+from resume_ranker.scoring.dimensions.s7_education import (
     _education_component as s7_education_component,
 )
-from ats_scan.scoring.dimensions.s7_education import (
+from resume_ranker.scoring.dimensions.s7_education import (
     _match_certification as s7_match_certification,
 )
-from ats_scan.scoring.dimensions.s7_education import _parse_date as s7_parse_date
-from ats_scan.scoring.dimensions.s8_skill_recency import S8SkillRecency
-from ats_scan.scoring.dimensions.s9_trajectory import (
+from resume_ranker.scoring.dimensions.s7_education import _parse_date as s7_parse_date
+from resume_ranker.scoring.dimensions.s8_skill_recency import S8SkillRecency
+from resume_ranker.scoring.dimensions.s9_trajectory import (
     S9Trajectory,
 )
-from ats_scan.scoring.dimensions.s9_trajectory import _resolve_date as s9_resolve_date
-from ats_scan.scoring.dimensions.s9_trajectory import (
+from resume_ranker.scoring.dimensions.s9_trajectory import _resolve_date as s9_resolve_date
+from resume_ranker.scoring.dimensions.s9_trajectory import (
     _role_months as s9_role_months,
 )
-from ats_scan.scoring.dimensions.s9_trajectory import (
+from resume_ranker.scoring.dimensions.s9_trajectory import (
     _seniority_ordinal as s9_seniority_ordinal,
 )
-from ats_scan.scoring.dimensions.s9_trajectory import (
+from resume_ranker.scoring.dimensions.s9_trajectory import (
     _stability_component as s9_stability_component,
 )
-from ats_scan.scoring.dimensions.s9_trajectory import (
+from resume_ranker.scoring.dimensions.s9_trajectory import (
     _trajectory_component as s9_trajectory_component,
 )
-from ats_scan.scoring.dimensions.s10_parseability import S10Parseability
-from ats_scan.scoring.dimensions.s10_parseability import _is_unparseable as s10_is_unparseable
-from ats_scan.scoring.evidence import (
+from resume_ranker.scoring.dimensions.s10_parseability import S10Parseability
+from resume_ranker.scoring.dimensions.s10_parseability import _is_unparseable as s10_is_unparseable
+from resume_ranker.scoring.evidence import (
     ProficiencyKind,
     _best_match_value,
     _evidence_from_entry,
@@ -188,7 +188,7 @@ from ats_scan.scoring.evidence import (
     score_skill_coverage,
     years_since,
 )
-from ats_scan.scoring.selection import select
+from resume_ranker.scoring.selection import select
 
 DIMENSIONS: dict[str, Any] = {
     "S1": S1RequiredSkills,
@@ -944,7 +944,7 @@ def test_s7_certification_component() -> None:
 
 def test_s4_from_years() -> None:
     """S4 piecewise mapping must cover all branches from zero to overqualified."""
-    from ats_scan.models.config import OverqualificationConfig
+    from resume_ranker.models.config import OverqualificationConfig
 
     no_overqual = OverqualificationConfig(enabled=False)
     assert s4_from_years(0.0, 5, 8, no_overqual) == pytest.approx(0.0, abs=1e-6)

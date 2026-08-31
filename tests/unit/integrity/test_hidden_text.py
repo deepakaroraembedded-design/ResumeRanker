@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 from tests.unit.integrity.conftest import extracted_text, source_doc
 
-from ats_scan.integrity.hidden_text import HiddenTextDetector
-from ats_scan.models.config import IntegrityConfig
-from ats_scan.models.source import TextBlock
+from resume_ranker.integrity.hidden_text import HiddenTextDetector
+from resume_ranker.models.config import IntegrityConfig
+from resume_ranker.models.source import TextBlock
 
 
 def _visible_block(text: str) -> TextBlock:

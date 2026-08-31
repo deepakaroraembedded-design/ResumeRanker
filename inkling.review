@@ -1,9 +1,9 @@
-# ATS-Scan — Independent Code Review & Algorithmic Enhancement Notes
+# RESUME-RANKER — Independent Code Review & Algorithmic Enhancement Notes
 
 Date: 2026-08-30
 Reviewer: opencode (independent agent, not component owner)
 Scope: Source files edited in the current session plus the core frozen contracts that govern them.
-Files inspected: `docs/TRD.md`, `docs/QA_PLAN.md`, `AGENTS.md`, `Makefile`, all `src/ats_scan/scoring/*.py`, `src/ats_scan/scoring/dimensions/*.py`, `src/ats_scan/structure/*.py`, `src/ats_scan/jobspec/compile.py`, `src/ats_scan/embeddings/client.py`, `src/ats_scan/integrity/stuffing.py`, `tests/unit/jobspec/test_compile.py`, latest `README.md`.
+Files inspected: `docs/TRD.md`, `docs/QA_PLAN.md`, `AGENTS.md`, `Makefile`, all `src/resume_ranker/scoring/*.py`, `src/resume_ranker/scoring/dimensions/*.py`, `src/resume_ranker/structure/*.py`, `src/resume_ranker/jobspec/compile.py`, `src/resume_ranker/embeddings/client.py`, `src/resume_ranker/integrity/stuffing.py`, `tests/unit/jobspec/test_compile.py`, latest `README.md`.
 
 ---
 
@@ -24,7 +24,7 @@ The gate (`ruff`, `mypy --strict`, `lint-imports`, `pytest -m "not slow"`) passe
 
 ## 2. Per-Component Review (with line references)
 
-### Job description compiler — `src/ats_scan/jobspec/compile.py`
+### Job description compiler — `src/resume_ranker/jobspec/compile.py`
 
 - **Positive:** The prose-to-skill extraction (`_skill_candidates`, lines 733–759) is now robust. It strips the whole line of lead noise first, then splits on `,`, `;`, `and`, `or`, `like`, `such as` outside parentheses. The parenthetical removal (`_strip_skill_noise`, line 692) drops long acronym groups (e.g. `(BGP, OSPF, PIM)`). The lead-phrase list now includes `prior experience with`, `foundational understanding of`, `experience integrating`, etc., which prevents broken fragments like `ity with ...`.
 - **Positive:** The `_SKILL_STOP_WORDS` set (line 625) includes `alongside`, `various`, `protocols`, `technologies`, etc., reducing generic noise in normalised canonicals.
@@ -33,7 +33,7 @@ The gate (`ruff`, `mypy --strict`, `lint-imports`, `pytest -m "not slow"`) passe
 - **Suggestion (algorithmic enhancement):** The compiler could benefit from a **dependency-parse or sequence-tag based skill extractor** rather than regex splitting. A small CRF or BiLSTM tagger (or even a lightweight LLM call like `E-JD`) could identify skill entities in prose lines, handle nested parentheticals precisely, and avoid splitting `Routing protocols(BGP, OSPF, PIM)` incorrectly. Given the TRD allows LLM-assisted parsing (`E-JD`, TRD §6.1), this is an acceptable enhancement.
 - **Suggestion:** Add a **minimum-qualification gate** to the output. The external report highlights that 3 of 5 minimum qualifications are met. The current `JobSpec` has `knockout_rules`, but there is no automated gate that reports how many of the required skills (or experience/education items) are present. A post-compile gate function (`_minimum_qualification_gate`) could compute `passed / total` and emit a `diagnostic` or `warning`, which would make the scorecard explainable for recruiters.
 
-### Resume structuring — `src/ats_scan/structure/entities.py` and `sections.py`
+### Resume structuring — `src/resume_ranker/structure/entities.py` and `sections.py`
 
 - **Positive:** `_skill_tokens_from_list` (line ~350?) handles comma, semicolon, slash, `and`, `or`, `&`, bullet, and parenthetical items. It excludes common stop words (`system`, `technical`, `core`). The `CORE TECHNICAL SKILLS` heading in Deepak’s resume is now recognised by the skills-section detector (`_looks_like_skills_list`, line ~240) and parsed correctly.
 - **Positive:** The `_SKILLS_LIST_STOP_WORDS` (line ~340) excludes `core`, `technical`, `platform`, `general`, etc., reducing generic tokens.
@@ -44,7 +44,7 @@ The gate (`ruff`, `mypy --strict`, `lint-imports`, `pytest -m "not slow"`) passe
 - **Suggestion (algorithmic enhancement):** Implement a **full-text skill scanner** in the structurer that scans the entire `ExtractedText.text` against a curated taxonomy (derived from the ontology or a supplemental file) and produces additional `SkillMention` objects with spans into the raw text. This would improve S1 and S2 significantly without changing the scoring formulas. The scanner can use the ontology’s aliases and child/parent relations, plus a static list of common acronyms (`TCP/IP`, `IPsec`, `WireGuard`, `BGP`, etc.), and emit mentions with section labels (`experience`, `summary`, `project`). This aligns with the external report’s 53-term keyword-coverage approach.
 - **Suggestion:** Add a `skills_from_text` method to `Structurer` that uses the ontology index (`OntologyIndex`) to scan text blocks for any canonical skill or alias and creates `SkillMention` objects. This would make the system more resilient to resumes that do not have a dedicated skills section.
 
-### JobSpec compiler — `src/ats_scan/jobspec/compile.py`
+### JobSpec compiler — `src/resume_ranker/jobspec/compile.py`
 
 - **Positive:** The compiled `JobSpec` for the Zscaler JD (tested with `TESTDATA/jd.txt`) now produces a clean set of required skills (`routing`, `linux kernel-based networking l2/l3`, `nat`, `network drivers`, `dns`, `ai/ml`, `go`, etc.) and preferred skills (`advanced virtualization`, `cloud computing`, `docker`, `kubernetes`, `security`, etc.). The broken fragments (`ity with cloud ...`) are eliminated.
 - **Positive:** The parenthetical list (`Routing protocols(BGP, OSPF, PIM)`) is stripped correctly, and the `routing` skill is kept. The `protocols` stop word is removed from the canonical, so `routing protocols` becomes `routing`, which matches the ontology.
@@ -55,7 +55,7 @@ The gate (`ruff`, `mypy --strict`, `lint-imports`, `pytest -m "not slow"`) passe
 - **Suggestion (algorithmic enhancement):** Add a **minimum-qualification gate** to the compiler. The external report highlights that 3 of 5 minimum qualifications are met. The compiler could compute a gate metric (`passed / total` minimum qualifications) by comparing required skills to the resume skills (or even to the JD text itself for self-check). This would provide a recruiter-facing signal (`3/5 met`) directly in the `JobSpec` or in the `ScoreCard`. The gate could be implemented as a `StageResult` in `compile()` or as a post-compile diagnostic (`JD_GATE` with detail `{"passed": 3, "total": 5, "missing": ["Go", "stateful firewalls"]}`).
 - **Suggestion:** The compiler could also extract **experience targets** (e.g., `10+ years`, `5+ years`) more precisely. Currently `_extract_experience` (line ~250) uses regex for `years of experience` and `10+ years`. It could be enhanced to extract numeric targets and compare them to `CanonicalResume.timeline` directly, reducing ambiguity.
 
-### Evidence / scoring core — `src/ats_scan/scoring/evidence.py`
+### Evidence / scoring core — `src/resume_ranker/scoring/evidence.py`
 
 - **Positive:** `_best_match_value` (line 573) selects the best evidence by `f_match * f_prof * f_recency`. The `Evidence` model requires `quote == text[span[0]:span[1]]` (TRD §4.3). The current code produces quotes that match the source text spans.
 - **Positive:** The new `cosine` field (line 420) is carried through `_semantic_skill_evidence` and used in `f_match`. The `f_match` for `EMBEDDING` uses `cosine` when available; without it (`EMBEDDING` with no cosine), it remains `0.0` as specified in the contract.
@@ -71,7 +71,7 @@ The gate (`ruff`, `mypy --strict`, `lint-imports`, `pytest -m "not slow"`) passe
 - **Suggestion:** Improve the keyword fallback by scanning the **full resume text** (not just structured `skills_evidenced`) for the target canonical phrase, using word-boundary anchoring for short acronyms. This would catch skills like `TCP/IP`, `IPsec`, `BGP` if they appear in experience bullets but are not in the structured skills list. The evidence span would be the span in the raw text. This aligns with the external report’s 53-term keyword-coverage approach.
 - **Suggestion:** The semantic fallback (`_semantic_skill_evidence`) uses the `all-MiniLM-L6-v2` model (384 dims). Upgrading to a stronger model (e.g., `all-mpnet-base-v2`) could improve S3 calibration and match quality, but it would require a new embedding run and may change the pool calibration anchors. Any upgrade should be done with a version tag (`data/ontology/`) and recorded in the manifest.
 
-### Semantic relevance dimension — `src/ats_scan/scoring/dimensions/s3_semantic.py`
+### Semantic relevance dimension — `src/resume_ranker/scoring/dimensions/s3_semantic.py`
 
 - **Positive:** The dimension is well-structured: it chunks JD requirements and resume evidence, embeds them, computes max cosine similarity per JD chunk, calibrates against the pool (percentiles or fixed anchors `0.25`/`0.70`), and blends with the LLM rubric (`share = 0.6`). The `prepare()` method computes pool statistics in a two-pass design (`jd_vectors` computed once, reused for all resumes).
 - **Positive:** The `_Chunk` dataclass carries `span`, `weight`, and `origin_id`, making evidence traceable.
@@ -79,28 +79,28 @@ The gate (`ruff`, `mypy --strict`, `lint-imports`, `pytest -m "not slow"`) passe
 - **Risk:** The pool calibration is relative to the batch. Running the same resume against a different pool (e.g., one with very strong candidates vs. one with weak candidates) will change the calibrated score. This is documented and accepted per TRD, but it means that comparing composites across separate requisitions is not valid. The manifest records `pool_size`, `p10`, `p90`, `anchor_low`, `anchor_high` for audit.
 - **Suggestion:** Add an optional `benchmark` mode that computes S3 against a fixed reference pool (e.g., the 60 synthetic resumes in `tests/corpus/`). This would make S3 comparable across runs and address the external report’s concern about cross-run comparability.
 
-### Integrity detectors — `src/ats_scan/integrity/stuffing.py`
+### Integrity detectors — `src/resume_ranker/integrity/stuffing.py`
 
 - **Positive:** The detector excludes the skills-section span from the token-share calculation and uses `effective_threshold = 0.35`. This removes the false `KEYWORD_STUFFING` penalty on Deepak’s dense skills section (previous run showed `10.0` penalty; current run shows `0`).
 - **Positive:** The hidden-text detector (`hidden_text.py`, line ~50) checks colour proximity (`ΔE < 5`), font size (< 4 pt), render mode 3, and text outside the media box, which covers most common hidden-text vectors.
 - **Risk:** The keyword-stuffing detector relies on token-share ratios, which can be gamed by inserting high-frequency non-skill words. A statistical outlier approach (e.g., z-score of token density relative to the pool) would be more robust.
 - **Suggestion:** Add a **token-frequency comparison** step: for each skill-section word, compare its frequency in the resume’s skills section to its frequency in a reference corpus. If a word’s frequency is an outlier (e.g., > 3σ above the pool mean), flag it as stuffing. This is more robust than a fixed share threshold.
 
-### Embeddings — `src/ats_scan/embeddings/client.py`
+### Embeddings — `src/resume_ranker/embeddings/client.py`
 
 - **Positive:** The `LocalEmbeddingClient` loads `all-MiniLM-L6-v2` lazily (`_load_model`), caches by SHA-256, batches at size 64, and runs encoding in a worker thread to keep the async API non-blocking.
 - **Positive:** The `HostedEmbeddingClient` placeholder exists for future cloud deployments.
 - **Risk:** The model is fixed at 384 dimensions. Changing the model requires updating `models/embeddings.py` and possibly re-running the pool calibration. There is no version pinning of the embedding model file; the model is downloaded from Hugging Face at first use, which introduces reproducibility risk (the download could change). The manifest does not currently record the model version hash.
 - **Suggestion:** Add `embedding_model_version` to the run manifest and pin the exact model file hash or local path. If the project is deployed in an environment without internet access, the model should be included in the container/image or downloaded during Wave 0.
 
-### Pipeline / CLI — `src/ats_scan/cli/main.py` and `pipeline.py`
+### Pipeline / CLI — `src/resume_ranker/cli/main.py` and `pipeline.py`
 
 - **Positive:** The CLI supports `run`, `parse`, `compile-jd`, `explain`, `validate-config`, `calibrate`, and `audit`, matching TRD §7.1.
 - **Positive:** The `run` command supports `offline` (no LLM/network) and `hybrid` modes, with `blind`, `force`, `dry-run`, and `review-jobspec` flags.
 - **Risk:** The `calibrate` command (`calibrate` subcommand, line ~269) is mentioned in `docs/IMPLEMENTATION_PLAN.md` but the CLI help does not describe its output or purpose in detail. The user may not know how to use it.
 - **Suggestion:** Add documentation to `README.md` for `calibrate` (it tunes scoring weights) and `audit` (it produces adverse-impact reports). Currently these are only mentioned in the CLI help.
 
-### Report / fairness — `src/ats_scan/report/` and `fairness/`
+### Report / fairness — `src/resume_ranker/report/` and `fairness/`
 
 - Not inspected in detail during this session, but the `docs/QA_PLAN.md` reference shows that fairness is verified via counterfactual pairs, synthetic cohorts, impact ratios, and leave-one-dimension-out recomputation. The `tests/fairness/` directory exists but may not be fully implemented.
 - The `Redactor` protocol (TRD §11.1) redacts identity, graduation years (replaced with intervals), and other protected attributes. The `ReidentificationMap` is kept separate with restrictive permissions.

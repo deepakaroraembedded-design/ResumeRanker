@@ -6,14 +6,14 @@
 
 ------------------------------------------------------------------------
 
-ATS-Scan --- Resume Screening & Scoring Engine
+RESUME-RANKER --- Resume Screening & Scoring Engine
 
 *Input: a directory of resumes and a job description. Output: a ranked, explained shortlist with ATS-style 0--100 scores.*
 
   ----------------------------------------------------------------------------------------------------
   **Field**            **Value**
   -------------------- -------------------------------------------------------------------------------
-  Document title       Technical Requirements & Design Document --- ATS-Scan Resume Screening Engine
+  Document title       Technical Requirements & Design Document --- RESUME-RANKER Resume Screening Engine
 
   Version              1.0 (Draft for review)
 
@@ -45,7 +45,7 @@ Contents
 
 1.1 Purpose
 
-This document specifies the technical requirements and the design of ATS-Scan, a batch resume screening engine. The system consumes a directory of candidate resumes and a single job description, and produces a ranked, explained and auditable shortlist with ATS-style scores on a 0--100 scale.
+This document specifies the technical requirements and the design of RESUME-RANKER, a batch resume screening engine. The system consumes a directory of candidate resumes and a single job description, and produces a ranked, explained and auditable shortlist with ATS-style scores on a 0--100 scale.
 
 It is written to be directly implementable: every scoring dimension is defined by an explicit formula, every interface has a declared contract, and every requirement carries a stable identifier that test cases and the traceability matrix can reference.
 
@@ -143,7 +143,7 @@ It is written to be directly implementable: every scoring dimension is defined b
 
 A recruiter facing several hundred resumes for one opening spends most of the effort on the first pass --- separating plausible candidates from implausible ones. That pass is slow, inconsistent between reviewers and between the first and the hundredth resume, and it is rarely documented. Keyword search speeds it up but is brittle: it rewards resumes written to game keyword filters and penalises strong candidates who use different vocabulary.
 
-ATS-Scan targets exactly that first pass. It must be fast enough to run on the whole pile, consistent enough that the same resume scores the same way twice, transparent enough that a recruiter can see why a candidate scored what they scored, and conservative enough that it never removes a candidate without saying so.
+RESUME-RANKER targets exactly that first pass. It must be fast enough to run on the whole pile, consistent enough that the same resume scores the same way twice, transparent enough that a recruiter can see why a candidate scored what they scored, and conservative enough that it never removes a candidate without saying so.
 
 2.2 Objectives and success criteria
 
@@ -1267,27 +1267,27 @@ Deterministic mode is a supported operating mode, not a failure state. It is sel
 
 > \# Standard run: 1,200 resumes against a job description, top 25 shortlisted
 >
-> ats-scan run \--resumes ./req-4821/resumes \--jd ./req-4821/jd.md \\
+> resume-ranker run \--resumes ./req-4821/resumes \--jd ./req-4821/jd.md \\
 >
 > \--out ./req-4821/out \--top-n 25 \--threshold 65
 >
 > \# Review the machine reading of the JD before committing to it
 >
-> ats-scan compile-jd \--jd ./req-4821/jd.md \--out ./req-4821/jobspec.yaml
+> resume-ranker compile-jd \--jd ./req-4821/jd.md \--out ./req-4821/jobspec.yaml
 >
-> ats-scan run \--resumes ./req-4821/resumes \--jd ./req-4821/jobspec.yaml \--out ./out
+> resume-ranker run \--resumes ./req-4821/resumes \--jd ./req-4821/jobspec.yaml \--out ./out
 >
 > \# Fully offline, no network, no LLM calls
 >
-> ats-scan run \--resumes ./resumes \--jd ./jd.txt \--out ./out \--mode offline
+> resume-ranker run \--resumes ./resumes \--jd ./jd.txt \--out ./out \--mode offline
 >
 > \# Why did this candidate score 62?
 >
-> ats-scan explain \--out ./req-4821/out \--candidate c_8f3a1b9e
+> resume-ranker explain \--out ./req-4821/out \--candidate c_8f3a1b9e
 >
 > \# Post-run fairness and integrity report
 >
-> ats-scan audit \--out ./req-4821/out \--demographics ./req-4821/self-reported.csv
+> resume-ranker audit \--out ./req-4821/out \--demographics ./req-4821/self-reported.csv
 
 8\. Configuration
 
@@ -1797,11 +1797,11 @@ audit.jsonl holds one append-only record per candidate, carrying: run and candid
 
 15\. Repository structure
 
-> ats-scan/
+> resume-ranker/
 >
 > pyproject.toml uv.lock Dockerfile README.md
 >
-> src/ats_scan/
+> src/resume_ranker/
 >
 > cli/ typer commands, progress display, exit-code mapping
 >

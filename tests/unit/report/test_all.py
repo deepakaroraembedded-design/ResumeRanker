@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from ats_scan.models.common import StageResult
-from ats_scan.models.run import RunResult
-from ats_scan.report import write_all_reports
+from resume_ranker.models.common import StageResult
+from resume_ranker.models.run import RunResult
+from resume_ranker.report import write_all_reports
 
 
 def test_write_all_reports_writes_all_artefacts(tmp_path: Path, sample_run: RunResult) -> None:
@@ -38,7 +38,7 @@ def test_write_all_reports_isolates_failures(
         def write(self, run: RunResult, out_dir: Path) -> StageResult[Path]:
             raise RuntimeError("simulated CSV failure")
 
-    monkeypatch.setattr("ats_scan.report.CsvWriter", FailingCsvWriter)
+    monkeypatch.setattr("resume_ranker.report.CsvWriter", FailingCsvWriter)
     results = write_all_reports(sample_run, tmp_path)
     assert not results["scores.csv"].ok
     assert results["scores.xlsx"].ok

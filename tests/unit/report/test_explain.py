@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ats_scan.models.scoring import ScoreCard
-from ats_scan.report.explain import format_explanation_text, format_score_derivation
+from resume_ranker.models.scoring import ScoreCard
+from resume_ranker.report.explain import format_explanation_text, format_score_derivation
 
 
 def test_format_explanation_text(scorecard_one: ScoreCard) -> None:

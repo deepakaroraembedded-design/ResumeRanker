@@ -9,7 +9,7 @@
   },
   "agent": {
     "component-builder": {
-      "description": "Implements one ATS-Scan component inside its own git worktree, against frozen contracts.",
+      "description": "Implements one RESUME-RANKER component inside its own git worktree, against frozen contracts.",
       "mode": "primary",
       "temperature": 0.1,
       "prompt": "{file:./.opencode/prompts/component-builder.md}",
@@ -59,9 +59,9 @@
   },
   "command": {
     "build-component": {
-      "description": "Implement one ATS-Scan component end to end",
+      "description": "Implement one RESUME-RANKER component end to end",
       "agent": "component-builder",
-      "template": "Implement component $1.\n\nRead docs/IMPLEMENTATION_PLAN.md — §2.2 for your owned paths and §4 for your component block. Read src/ats_scan/protocols.py and src/ats_scan/models/ for the frozen contracts, and tests/fakes/ for the doubles you must test against.\n\nWork in this order:\n1. Restate your owned paths and your Definition of Done checklist. If anything is ambiguous, say so before writing code.\n2. Find every test in the repository that covers your component, including xfail-marked ones. These are your acceptance criteria — read them first.\n3. Implement. Small commits. Never touch a file outside your owned paths.\n4. Run `make gate` until green, then `make own` to confirm you stayed in your lane.\n5. Post a summary: what you implemented, which DoD boxes are ticked, which are not and why, and any contract-change requests you filed.\n\nStop and report rather than guessing if a frozen contract appears wrong."
+      "template": "Implement component $1.\n\nRead docs/IMPLEMENTATION_PLAN.md — §2.2 for your owned paths and §4 for your component block. Read src/resume_ranker/protocols.py and src/resume_ranker/models/ for the frozen contracts, and tests/fakes/ for the doubles you must test against.\n\nWork in this order:\n1. Restate your owned paths and your Definition of Done checklist. If anything is ambiguous, say so before writing code.\n2. Find every test in the repository that covers your component, including xfail-marked ones. These are your acceptance criteria — read them first.\n3. Implement. Small commits. Never touch a file outside your owned paths.\n4. Run `make gate` until green, then `make own` to confirm you stayed in your lane.\n5. Post a summary: what you implemented, which DoD boxes are ticked, which are not and why, and any contract-change requests you filed.\n\nStop and report rather than guessing if a frozen contract appears wrong."
     },
     "review-branch": {
       "description": "Contract-guard review of a component branch",

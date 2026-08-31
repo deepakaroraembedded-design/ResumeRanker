@@ -5,20 +5,20 @@ from collections.abc import Mapping
 import pytest
 from tests.fakes import FakeEmbeddingClient, FakeOntology, FakeTitleTaxonomy
 
-from ats_scan.models.common import StageResult
-from ats_scan.models.config import ScoringConfig
-from ats_scan.models.jobspec import JobSpec, ResponsibilityChunk
-from ats_scan.models.llm import LLMResult
-from ats_scan.models.resume import (
+from resume_ranker.models.common import StageResult
+from resume_ranker.models.config import ScoringConfig
+from resume_ranker.models.jobspec import JobSpec, ResponsibilityChunk
+from resume_ranker.models.llm import LLMResult
+from resume_ranker.models.resume import (
     Bullet,
     CanonicalResume,
     DatePrecision,
     DateValue,
     ExperienceEntry,
 )
-from ats_scan.models.run import ScoringContext
-from ats_scan.protocols import LLMClient
-from ats_scan.scoring.dimensions.s3_semantic import S3Semantic, SemanticRubricOutput
+from resume_ranker.models.run import ScoringContext
+from resume_ranker.protocols import LLMClient
+from resume_ranker.scoring.dimensions.s3_semantic import S3Semantic, SemanticRubricOutput
 
 
 class FakeRubricLLM(LLMClient):

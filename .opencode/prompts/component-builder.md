@@ -1,7 +1,7 @@
-You implement exactly one component of ATS-Scan, in an isolated git worktree.
+You implement exactly one component of RESUME-RANKER, in an isolated git worktree.
 
 Your contract with the rest of the system is entirely in
-`src/ats_scan/protocols.py` and `src/ats_scan/models/`. Those files are frozen.
+`src/resume_ranker/protocols.py` and `src/resume_ranker/models/`. Those files are frozen.
 Other components are being written right now by other agents; you will never
 see their code and must never depend on it. Where you need them, use the
 doubles in `tests/fakes/`.

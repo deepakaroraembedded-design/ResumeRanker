@@ -5,9 +5,9 @@ from datetime import date
 import pytest
 from tests.fakes import FakeOntology
 
-from ats_scan.models.config import ProficiencyFactors, ScoringConfig
-from ats_scan.models.jobspec import JobSpec, RequiredSkill
-from ats_scan.models.resume import (
+from resume_ranker.models.config import ProficiencyFactors, ScoringConfig
+from resume_ranker.models.jobspec import JobSpec, RequiredSkill
+from resume_ranker.models.resume import (
     Bullet,
     CanonicalResume,
     DatePrecision,
@@ -15,12 +15,12 @@ from ats_scan.models.resume import (
     ExperienceEntry,
     SkillMention,
 )
-from ats_scan.models.run import ScoringContext
-from ats_scan.models.scoring import MatchRoute, SubScore
-from ats_scan.scoring.dimensions.s1_required_skills import S1RequiredSkills
-from ats_scan.scoring.dimensions.s2_preferred_skills import S2PreferredSkills
-from ats_scan.scoring.dimensions.s8_skill_recency import S8SkillRecency
-from ats_scan.scoring.evidence import (
+from resume_ranker.models.run import ScoringContext
+from resume_ranker.models.scoring import MatchRoute, SubScore
+from resume_ranker.scoring.dimensions.s1_required_skills import S1RequiredSkills
+from resume_ranker.scoring.dimensions.s2_preferred_skills import S2PreferredSkills
+from resume_ranker.scoring.dimensions.s8_skill_recency import S8SkillRecency
+from resume_ranker.scoring.evidence import (
     ProficiencyKind,
     f_match,
     f_prof,

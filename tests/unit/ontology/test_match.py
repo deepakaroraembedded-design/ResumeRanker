@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from ats_scan.models.ontology import SkillRelation
-from ats_scan.ontology import SkillOntology
+from resume_ranker.models.ontology import SkillRelation
+from resume_ranker.ontology import SkillOntology
 
 
 class _SameVectorEmbeddingClient:

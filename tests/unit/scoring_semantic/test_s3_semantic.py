@@ -7,12 +7,12 @@ from typing import Any
 import pytest
 from tests.fakes import FakeEmbeddingClient
 
-from ats_scan.models.config import ScoringConfig
-from ats_scan.models.jobspec import JobSpec, ResponsibilityChunk
-from ats_scan.models.resume import CanonicalResume
-from ats_scan.models.run import ScoringContext
-from ats_scan.models.scoring import SubScore
-from ats_scan.scoring.dimensions.s3_semantic import S3Semantic
+from resume_ranker.models.config import ScoringConfig
+from resume_ranker.models.jobspec import JobSpec, ResponsibilityChunk
+from resume_ranker.models.resume import CanonicalResume
+from resume_ranker.models.run import ScoringContext
+from resume_ranker.models.scoring import SubScore
+from resume_ranker.scoring.dimensions.s3_semantic import S3Semantic
 
 
 def test_s3_returns_subscore_offline(
@@ -92,7 +92,7 @@ def test_s3_llm_degrade(
     embedding_client: FakeEmbeddingClient,
     scoring_config: ScoringConfig,
 ) -> None:
-    from ats_scan.models.common import StageResult
+    from resume_ranker.models.common import StageResult
 
     class FailingLLM:
         async def structured(self, **kwargs: object) -> StageResult:

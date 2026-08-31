@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ats_scan.models.scoring import ScoreCard, SubScore
-from ats_scan.report._helpers import preferred_gate, required_gate
+from resume_ranker.models.scoring import ScoreCard, SubScore
+from resume_ranker.report._helpers import preferred_gate, required_gate
 
 
 def test_required_gate_from_s1_detail() -> None:

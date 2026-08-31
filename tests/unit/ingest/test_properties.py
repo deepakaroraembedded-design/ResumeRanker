@@ -5,8 +5,8 @@ from pathlib import Path
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from ats_scan.ingest.manifest import build_manifest
-from ats_scan.models.config import IngestConfig
+from resume_ranker.ingest.manifest import build_manifest
+from resume_ranker.models.config import IngestConfig
 
 _PATH_CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789_"
 

@@ -5,12 +5,12 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel
 
-from ats_scan.llm.adapter import LLMAdapter
-from ats_scan.llm.budget import UsageTracker
-from ats_scan.llm.cache import Cache
-from ats_scan.llm.transport import RecordedTransport
-from ats_scan.models.config import LLMConfig
-from ats_scan.models.run import RunContext
+from resume_ranker.llm.adapter import LLMAdapter
+from resume_ranker.llm.budget import UsageTracker
+from resume_ranker.llm.cache import Cache
+from resume_ranker.llm.transport import RecordedTransport
+from resume_ranker.models.config import LLMConfig
+from resume_ranker.models.run import RunContext
 
 
 class SampleModel(BaseModel):

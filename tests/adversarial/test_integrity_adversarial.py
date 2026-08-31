@@ -9,12 +9,12 @@ from tests.unit.integrity.conftest import (
     source_doc,
 )
 
-from ats_scan.integrity import (
+from resume_ranker.integrity import (
     HiddenTextDetector,
     InjectionDetector,
     KeywordStuffingDetector,
 )
-from ats_scan.models.source import ExtractedText, ExtractionMetadata, TextBlock
+from resume_ranker.models.source import ExtractedText, ExtractionMetadata, TextBlock
 
 
 def _read_plain(path: Path) -> ExtractedText:

@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from ats_scan.jobspec import JobSpecCompiler
-from ats_scan.models.jobspec import (
+from resume_ranker.jobspec import JobSpecCompiler
+from resume_ranker.models.jobspec import (
     ExperienceRequirement,
     PreferredSkill,
     RequiredSkill,
 )
-from ats_scan.models.run import RunContext
-from ats_scan.protocols import JobSpecCompiler as JobSpecCompilerProtocol
+from resume_ranker.models.run import RunContext
+from resume_ranker.protocols import JobSpecCompiler as JobSpecCompilerProtocol
 
 JD_FIXTURES = [
     (

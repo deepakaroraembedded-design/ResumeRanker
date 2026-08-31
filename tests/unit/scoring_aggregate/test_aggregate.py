@@ -5,27 +5,27 @@ from types import SimpleNamespace
 
 import pytest
 
-from ats_scan.errors import ConfigurationError
-from ats_scan.models.common import IntegrityFinding
-from ats_scan.models.config import (
+from resume_ranker.errors import ConfigurationError
+from resume_ranker.models.common import IntegrityFinding
+from resume_ranker.models.config import (
     BandConfig,
     FairnessConfig,
     IntegrityConfig,
     ScoringConfig,
 )
-from ats_scan.models.jobspec import JobSpec, KnockoutRule
-from ats_scan.models.resume import CanonicalResume, ExtractionMetadata
-from ats_scan.models.scoring import Band, Evidence, KnockoutResult, ScoreCard, SubScore
-from ats_scan.scoring.aggregate import Aggregation, aggregate
-from ats_scan.scoring.bands import band
-from ats_scan.scoring.confidence import (
+from resume_ranker.models.jobspec import JobSpec, KnockoutRule
+from resume_ranker.models.resume import CanonicalResume, ExtractionMetadata
+from resume_ranker.models.scoring import Band, Evidence, KnockoutResult, ScoreCard, SubScore
+from resume_ranker.scoring.aggregate import Aggregation, aggregate
+from resume_ranker.scoring.bands import band
+from resume_ranker.scoring.confidence import (
     _evidence_density,
     _extraction_quality,
     _model_agreement,
     confidence,
 )
-from ats_scan.scoring.filters import evaluate_knockouts
-from ats_scan.scoring.tiebreak import _sub_score_value, rank
+from resume_ranker.scoring.filters import evaluate_knockouts
+from resume_ranker.scoring.tiebreak import _sub_score_value, rank
 
 
 @pytest.fixture

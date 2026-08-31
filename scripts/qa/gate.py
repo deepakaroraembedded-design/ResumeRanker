@@ -52,7 +52,7 @@ def main() -> int:
         checks.append(
             (
                 "mutation entry point",
-                ["python", "scripts/qa/mutate.py", "--package", "ats_scan/scoring"],
+                ["python", "scripts/qa/mutate.py", "--package", "resume_ranker/scoring"],
             )
         )
 

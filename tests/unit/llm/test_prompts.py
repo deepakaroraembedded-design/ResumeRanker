@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import pytest
 
-from ats_scan.llm.prompts import (
+from resume_ranker.llm.prompts import (
     PromptTemplate,
     list_templates,
     load_template,
     render,
 )
-from ats_scan.llm.security import remove_quarantined_spans, strip_control_chars
+from resume_ranker.llm.security import remove_quarantined_spans, strip_control_chars
 
 
 class TestListTemplates:

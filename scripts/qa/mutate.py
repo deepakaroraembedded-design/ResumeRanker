@@ -21,7 +21,7 @@ REPORT = Path("docs/qa/mutants-QG2.md")
 
 # QA_PLAN §4.2 thresholds.
 THRESHOLDS: dict[str, float] = {
-    "ats_scan.scoring": 0.90,
+    "resume_ranker.scoring": 0.90,
 }
 DEFAULT_THRESHOLD = 0.60
 
@@ -87,7 +87,7 @@ def _classify(line: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run mutation testing for a package")
-    parser.add_argument("--package", default="ats_scan/scoring", help="package path")
+    parser.add_argument("--package", default="resume_ranker/scoring", help="package path")
     args = parser.parse_args()
 
     tool = shutil.which("mutmut")

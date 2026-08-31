@@ -7,10 +7,10 @@ from typing import Any
 import pymupdf as fitz
 import pytest
 
-from ats_scan.extract.pdf import PdfExtractor
-from ats_scan.extract.pdf._config import PdfExtractionConfig
-from ats_scan.models.run import RunContext
-from ats_scan.models.source import SourceDocument
+from resume_ranker.extract.pdf import PdfExtractor
+from resume_ranker.extract.pdf._config import PdfExtractionConfig
+from resume_ranker.models.run import RunContext
+from resume_ranker.models.source import SourceDocument
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 

@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from tests.unit.integrity.conftest import extracted_text, source_doc
 
-from ats_scan.integrity.stuffing import KeywordStuffingDetector
-from ats_scan.models.config import IntegrityConfig
-from ats_scan.models.resume import (
+from resume_ranker.integrity.stuffing import KeywordStuffingDetector
+from resume_ranker.models.config import IntegrityConfig
+from resume_ranker.models.resume import (
     Bullet,
     CanonicalResume,
     ExperienceEntry,
     SkillMention,
 )
-from ats_scan.models.source import ExtractedText
+from resume_ranker.models.source import ExtractedText
 
 
 def _plain_text(text: str) -> ExtractedText:

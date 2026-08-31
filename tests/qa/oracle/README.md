@@ -1,8 +1,8 @@
 # Reference oracle
 
-This is an independent second implementation of the ATS-Scan scoring model,
+This is an independent second implementation of the RESUME-RANKER scoring model,
 written directly from `docs/TRD.md` §5 without consulting the corresponding
-`src/ats_scan/scoring/dimensions/*` files.
+`src/resume_ranker/scoring/dimensions/*` files.
 
 ## Derivation rules
 

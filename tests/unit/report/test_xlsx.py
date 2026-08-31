@@ -6,8 +6,8 @@ import pytest
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 
-from ats_scan.models.run import RunResult
-from ats_scan.report.xlsx import XlsxWriter
+from resume_ranker.models.run import RunResult
+from resume_ranker.report.xlsx import XlsxWriter
 
 
 @pytest.fixture

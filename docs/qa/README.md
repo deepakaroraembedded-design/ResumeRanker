@@ -1,6 +1,6 @@
 # C-QA — Independent verification layer
 
-This directory contains the QA agent assets for ATS-Scan.
+This directory contains the QA agent assets for RESUME-RANKER.
 
 - `read-log.md` — oracle blind-derivation log (commits vs. implementation reads).
 - `defects/` — QA-NNNN defect records routed to owning components.

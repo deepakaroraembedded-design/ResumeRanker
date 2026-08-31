@@ -6,7 +6,7 @@ import json
 import sys
 from pathlib import Path
 
-from ats_scan.models import (
+from resume_ranker.models import (
     CanonicalResume,
     ExtractedText,
     JobSpec,

@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "run_id": "run_bb53d31c617f15f5",
+  "config_hash": "bb53d31c617f15f53b50ac69c60c8f304ea03fd525817015a902be57e47dba82",
+  "ontology_version": "2026.07",
+  "code_version": "0.1.0",
+  "model_identifiers": {
+    "embedding": "all-MiniLM-L6-v2",
+    "llm": null,
+    "ontology": "2026.07"
+  },
+  "started_at": "2026-08-30T11:58:30+00:00",
+  "finished_at": "2026-08-30T11:58:30+00:00",
+  "documents_in": 1,
+  "documents_failed": 0,
+  "cache_hits": 0,
+  "llm_calls": 0,
+  "tokens_in": 0,
+  "tokens_out": 0,
+  "retries": 0,
+  "timings": {},
+  "calibration_anchors": {
+    "anchor_low": 0.25,
+    "anchor_high": 0.7,
+    "p10": null,
+    "p90": null
+  },
+  "flags": [
+    "HIGH_SELECTION_SHARE"
+  ]
+}

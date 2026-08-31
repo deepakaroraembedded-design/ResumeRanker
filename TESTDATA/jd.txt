@@ -1,0 +1,77 @@
+Principal Software Development Engineer
+San Jose, California, USA
+About Zscaler
+
+Zscaler accelerates digital transformation to ensure our customers can be more agile, efficient, resilient, and secure. As an AI-forward enterprise, we are constantly pushing the envelope, leveraging the world’s largest security data lake to power our cloud-native Zero Trust Exchange platform. This innovation protects our customers from cyberattacks and data loss by securely connecting users, devices, and applications in any location.
+
+Here, impact in your role matters more than title and trust is built on results. We say, impact over activity. We seek innovators who actively use AI to amplify their impact and who thrive in an environment where we leverage intelligent systems to stay ahead of evolving threats. We believe in transparency and value constructive, honest debate—we’re focused on getting to the best ideas, faster. We build high-performing teams that can make an impact quickly and with high quality. To do this, we are building a culture of execution centered on customer obsession, collaboration, ownership, and accountability.
+
+We value high-impact, high-accountability with a sense of urgency where you’re enabled to do your best work and embrace your potential. If you’re driven by purpose, thrive on solving complex challenges, and want to be part of the team that’s helping to secure the AI age, we invite you to bring your talents to Zscaler and help shape the future of cybersecurity.
+
+Role
+
+We are looking for a Principal Software Development Engineer to join our team. This is a hybrid role based in San Jose, CA, reporting to the Director, Software Engineering in the Engineering department. You will join the team that built the world’s largest cloud security platform from the ground up, enabling organizations worldwide to harness speed and agility with a cloud-first strategy. With more than 100 patents and 15 million users across 185 countries, you will bring your vision to a team of experts dedicated to enhancing our multitenant architecture and global footprint.
+
+What you’ll do (Role Expectations)
+
+Designing, developing, and optimizing the system, including networking and security features, to support high-performance applications. Creating design and functional specification documents while performing unit testing and automation to ensure quality
+Applying strong software design principles and deep troubleshooting expertise to deliver scalable, resilient, and impactful improvements to Zscaler’s Zero Trust Security Services
+Work directly with Engineering Architects, Product Managers, Customers, Solution Architects to understand customer use cases. Review PRDs. Collaborating with cross-functional teams to identify and resolve system-related issues, optimize system performance, and innovate features
+Coach and mentor junior team members and ensure highest level of quality deliverables 
+Ensuring federal certifications such as FIPS, FedRAMP, Common Criteria, and SOC2 compliance
+
+Who You Are (Success Profile)
+
+You thrive in ambiguity. You're comfortable building the path as you walk it. You thrive in a dynamic environment, seeing ambiguity not as a hindrance, but as the raw material to build something meaningful.
+You act like an owner. Your passion for the mission fuels your bias for action. You operate with integrity because you genuinely care about the outcome. True ownership involves leveraging dynamic range: the ability to navigate seamlessly between high-level strategy and hands-on execution.
+You are a problem-solver. You love running towards the challenges because you are laser-focused on finding the solution, knowing that solving the hard problems delivers the biggest impact.
+You are a high-trust collaborator. You are ambitious for the team, not just yourself. You embrace our challenge culture by giving and receiving ongoing feedback—knowing that candor delivered with clarity and respect is the truest form of teamwork and the fastest way to earn trust.
+You are a learner. You have a true growth mindset and are obsessed with your own development, actively seeking feedback to become a better partner and a stronger teammate. You love what you do and you do it with purpose.
+
+What We’re Looking for (Minimum Qualifications)
+
+Bachelor's or Master's (preferred) degree in Computer Science or a related field with 10+ years of experience in system engineering for high-performance networking
+Expertise in Linux kernel-based networking (L2/L3), stateful firewalls, NAT, network drivers, Routing protocols(BGP, OSPF, PIM), and protocols like VLANs, DHCP, DNS, SSL, DTLS, QUIC, IPsec, GRE and Wireguard
+Proficiency in Go and Python programming languages with excellent problem-solving skills for debugging complex data path issues
+Foundational understanding of AI/ML technologies and experience leveraging, securing, or positioning AI-driven solutions to optimize outcomes within your functional domain
+Strong communication and collaboration skills to work effectively with cross-functional teams in a high-accountability environment while designing scalable systems
+
+What Will Make You Stand Out (Preferred Qualifications)
+
+Experience integrating AI/ML frameworks or intelligent data path analysis models to optimize kernel-level networking performance and automate predictive threat detection
+Experience in technologies such as wireguard, various tunneling protocols such as GRE, L2VPN, HA protocols such as VRRP alongside certifications like FIPS or FedRAMP and prior experience with TLS, DTLS, QUIC
+Familiarity with cloud computing platforms like AWS or Azure, containerization technologies such as Docker and Kubernetes, and advanced virtualization or security solutions
+
+#LI-Hybrid
+
+#LI-CM3
+
+Zscaler’s salary ranges are benchmarked and are determined by role and level. The range displayed on each job posting reflects the minimum and maximum target for new hire salaries for the position across all US locations and could be higher or lower based on a multitude of factors, including job-related skills, experience, and relevant education or training.
+
+The base salary range listed for this full-time position excludes commission/ bonus/ equity (if applicable) + benefits.
+
+Base Pay Range
+
+$185,500 - $265,000 USD
+
+At Zscaler, we are committed to building a team that reflects the communities we serve and the customers we work with. We foster an inclusive environment that values all backgrounds and perspectives, emphasizing collaboration and belonging. Join us in our mission to make doing business seamless and secure.
+
+Our Benefits program is one of the most important ways we support our employees. Zscaler proudly offers comprehensive and inclusive benefits to meet the diverse needs of our employees and their families throughout their life stages, including:
+
+Various health plans
+Time off plans for vacation and sick time
+Parental leave options
+Retirement options
+Education reimbursement
+In-office perks, and more!
+Learn more about Zscaler's hybrid working model and benefits here.
+
+By applying for this role, you adhere to applicable laws, regulations, and Zscaler policies, including those related to security and privacy standards and guidelines.
+
+Zscaler is committed to providing equal employment opportunities to all individuals. We strive to create a workplace where employees are treated with respect and have the chance to succeed. All qualified applicants will be considered for employment without regard to race, color, religion, sex (including pregnancy or related medical conditions), age, national origin, sexual orientation, gender identity or expression, genetic information, disability status, protected veteran status, or any other characteristic protected by federal, state, or local laws. See more information by clicking on the Know Your Rights: Workplace Discrimination is Illegal link.
+
+Pay Transparency
+
+Zscaler complies with all applicable federal, state, and local pay transparency rules.
+
+Zscaler is committed to providing reasonable support (called accommodations or adjustments) in our recruiting processes for candidates who are differently abled, have long term conditions, mental health conditions or sincerely held religious beliefs, or who are neurodivergent or require pregnancy-related support.

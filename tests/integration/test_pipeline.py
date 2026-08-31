@@ -14,15 +14,15 @@ from tests.fakes import (
     FakeTitleTaxonomy,
 )
 
-from ats_scan.models.common import StageResult
-from ats_scan.models.config import RootConfig
-from ats_scan.models.jobspec import JobSpec
-from ats_scan.models.resume import CanonicalResume
-from ats_scan.models.run import RunContext
-from ats_scan.models.scoring import Band, ScoreCard
-from ats_scan.models.source import SourceDocument
-from ats_scan.pipeline import Pipeline
-from ats_scan.pipeline import RunSettings as PipelineRunSettings
+from resume_ranker.models.common import StageResult
+from resume_ranker.models.config import RootConfig
+from resume_ranker.models.jobspec import JobSpec
+from resume_ranker.models.resume import CanonicalResume
+from resume_ranker.models.run import RunContext
+from resume_ranker.models.scoring import Band, ScoreCard
+from resume_ranker.models.source import SourceDocument
+from resume_ranker.pipeline import Pipeline
+from resume_ranker.pipeline import RunSettings as PipelineRunSettings
 
 
 def _make_scorecard(resume: CanonicalResume, spec: JobSpec, ctx: object) -> ScoreCard:
@@ -134,7 +134,7 @@ def test_explain_scorecard(pipeline: Pipeline) -> None:
 
 
 def test_audit_run(pipeline: Pipeline) -> None:
-    from ats_scan.models.run import RunManifest, RunResult
+    from resume_ranker.models.run import RunManifest, RunResult
 
     result = RunResult(
         manifest=RunManifest(
@@ -178,7 +178,7 @@ def test_run_pipeline_fails_when_jd_compilation_fails(
 ) -> None:
     class FailingCompiler(FakeJobSpecCompiler):
         def compile(self, source: str, ctx: RunContext) -> StageResult[JobSpec]:
-            from ats_scan.models.common import Diagnostic, StageResult
+            from resume_ranker.models.common import Diagnostic, StageResult
 
             return StageResult(
                 value=None, diagnostics=(Diagnostic(stage="S5", code="JD_FAIL", message="fail"),)

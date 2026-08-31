@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from ats_scan.fairness.proxies import (
+from resume_ranker.fairness.proxies import (
     FairnessConfigError,
     forbidden_knockout_attributes,
     validate_knockout_rule,
 )
-from ats_scan.models.config import FairnessConfig
+from resume_ranker.models.config import FairnessConfig
 
 DEFAULT_FORBIDDEN = frozenset(
     ["age", "gender", "nationality", "marital_status", "employment_gaps", "graduation_year"]

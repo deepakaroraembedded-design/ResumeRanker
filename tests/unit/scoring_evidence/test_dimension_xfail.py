@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 from tests.fakes import FakeEmbeddingClient, FakeOntology, FakeTitleTaxonomy
 
-from ats_scan.models.config import ScoringConfig
-from ats_scan.models.jobspec import JobSpec, PreferredSkill, RequiredSkill
-from ats_scan.models.resume import (
+from resume_ranker.models.config import ScoringConfig
+from resume_ranker.models.jobspec import JobSpec, PreferredSkill, RequiredSkill
+from resume_ranker.models.resume import (
     Bullet,
     CanonicalResume,
     DatePrecision,
@@ -13,18 +13,18 @@ from ats_scan.models.resume import (
     ExperienceEntry,
     SkillMention,
 )
-from ats_scan.models.run import ScoringContext
-from ats_scan.models.scoring import SubScore
-from ats_scan.scoring.dimensions.s1_required_skills import S1RequiredSkills
-from ats_scan.scoring.dimensions.s2_preferred_skills import S2PreferredSkills
-from ats_scan.scoring.dimensions.s3_semantic import S3Semantic
-from ats_scan.scoring.dimensions.s4_experience import S4Experience
-from ats_scan.scoring.dimensions.s5_title import S5Title
-from ats_scan.scoring.dimensions.s6_domain import S6Domain
-from ats_scan.scoring.dimensions.s7_education import S7Education
-from ats_scan.scoring.dimensions.s8_skill_recency import S8SkillRecency
-from ats_scan.scoring.dimensions.s9_trajectory import S9Trajectory
-from ats_scan.scoring.dimensions.s10_parseability import S10Parseability
+from resume_ranker.models.run import ScoringContext
+from resume_ranker.models.scoring import SubScore
+from resume_ranker.scoring.dimensions.s1_required_skills import S1RequiredSkills
+from resume_ranker.scoring.dimensions.s2_preferred_skills import S2PreferredSkills
+from resume_ranker.scoring.dimensions.s3_semantic import S3Semantic
+from resume_ranker.scoring.dimensions.s4_experience import S4Experience
+from resume_ranker.scoring.dimensions.s5_title import S5Title
+from resume_ranker.scoring.dimensions.s6_domain import S6Domain
+from resume_ranker.scoring.dimensions.s7_education import S7Education
+from resume_ranker.scoring.dimensions.s8_skill_recency import S8SkillRecency
+from resume_ranker.scoring.dimensions.s9_trajectory import S9Trajectory
+from resume_ranker.scoring.dimensions.s10_parseability import S10Parseability
 
 
 @pytest.fixture

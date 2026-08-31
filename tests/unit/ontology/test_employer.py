@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from ats_scan.ontology import EmployerNormalizer
+from resume_ranker.ontology import EmployerNormalizer
 
 
 @pytest.fixture

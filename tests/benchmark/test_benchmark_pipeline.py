@@ -13,11 +13,11 @@ from tests.fakes import (
     FakeTitleTaxonomy,
 )
 
-from ats_scan.models.config import RootConfig
-from ats_scan.models.resume import CanonicalResume
-from ats_scan.models.scoring import ScoreCard
-from ats_scan.models.source import SourceDocument
-from ats_scan.pipeline import Pipeline, RunSettings
+from resume_ranker.models.config import RootConfig
+from resume_ranker.models.resume import CanonicalResume
+from resume_ranker.models.scoring import ScoreCard
+from resume_ranker.models.source import SourceDocument
+from resume_ranker.pipeline import Pipeline, RunSettings
 
 
 def _make_scorecard(resume: CanonicalResume, spec: object, ctx: object) -> ScoreCard:

@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from hypothesis import HealthCheck, given, settings, strategies
 
-from ats_scan.models.ontology import TitleMatch
-from ats_scan.ontology import SkillOntology, TitleTaxonomy
+from resume_ranker.models.ontology import TitleMatch
+from resume_ranker.ontology import SkillOntology, TitleTaxonomy
 
 
 @pytest.fixture

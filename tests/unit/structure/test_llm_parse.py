@@ -4,13 +4,13 @@ from typing import Any
 
 import pytest
 
-from ats_scan.models.common import StageResult
-from ats_scan.models.llm import LLMResult
-from ats_scan.models.resume import DateValue
-from ats_scan.models.run import RunContext
-from ats_scan.models.source import ExtractedText, ExtractionMetadata
-from ats_scan.protocols import LLMClient, Structurer
-from ats_scan.structure.llm_parse import (
+from resume_ranker.models.common import StageResult
+from resume_ranker.models.llm import LLMResult
+from resume_ranker.models.resume import DateValue
+from resume_ranker.models.run import RunContext
+from resume_ranker.models.source import ExtractedText, ExtractionMetadata
+from resume_ranker.protocols import LLMClient, Structurer
+from resume_ranker.structure.llm_parse import (
     HeuristicStructurer,
     HybridStructurer,
     _LLMCertification,

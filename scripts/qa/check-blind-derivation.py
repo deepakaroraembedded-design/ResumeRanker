@@ -15,20 +15,20 @@ READ_LOG = Path("docs/qa/read-log.md")
 
 # Map oracle module -> the implementation files the QA agent must not read first.
 IMPLEMENTATION_FILES: dict[str, list[str]] = {
-    "s1.py": ["src/ats_scan/scoring/dimensions/s1_required_skills.py"],
-    "s2.py": ["src/ats_scan/scoring/dimensions/s2_preferred_skills.py"],
-    "s3.py": ["src/ats_scan/scoring/dimensions/s3_semantic.py"],
-    "s4.py": ["src/ats_scan/scoring/dimensions/s4_experience.py"],
-    "s5.py": ["src/ats_scan/scoring/dimensions/s5_title.py"],
-    "s6.py": ["src/ats_scan/scoring/dimensions/s6_domain.py"],
-    "s7.py": ["src/ats_scan/scoring/dimensions/s7_education.py"],
-    "s8.py": ["src/ats_scan/scoring/dimensions/s8_skill_recency.py"],
-    "s9.py": ["src/ats_scan/scoring/dimensions/s9_trajectory.py"],
-    "s10.py": ["src/ats_scan/scoring/dimensions/s10_parseability.py"],
-    "aggregate.py": ["src/ats_scan/scoring/aggregate.py"],
-    "confidence.py": ["src/ats_scan/scoring/confidence.py"],
-    "bands.py": ["src/ats_scan/scoring/bands.py"],
-    "tiebreak.py": ["src/ats_scan/scoring/tiebreak.py"],
+    "s1.py": ["src/resume_ranker/scoring/dimensions/s1_required_skills.py"],
+    "s2.py": ["src/resume_ranker/scoring/dimensions/s2_preferred_skills.py"],
+    "s3.py": ["src/resume_ranker/scoring/dimensions/s3_semantic.py"],
+    "s4.py": ["src/resume_ranker/scoring/dimensions/s4_experience.py"],
+    "s5.py": ["src/resume_ranker/scoring/dimensions/s5_title.py"],
+    "s6.py": ["src/resume_ranker/scoring/dimensions/s6_domain.py"],
+    "s7.py": ["src/resume_ranker/scoring/dimensions/s7_education.py"],
+    "s8.py": ["src/resume_ranker/scoring/dimensions/s8_skill_recency.py"],
+    "s9.py": ["src/resume_ranker/scoring/dimensions/s9_trajectory.py"],
+    "s10.py": ["src/resume_ranker/scoring/dimensions/s10_parseability.py"],
+    "aggregate.py": ["src/resume_ranker/scoring/aggregate.py"],
+    "confidence.py": ["src/resume_ranker/scoring/confidence.py"],
+    "bands.py": ["src/resume_ranker/scoring/bands.py"],
+    "tiebreak.py": ["src/resume_ranker/scoring/tiebreak.py"],
 }
 
 
@@ -73,17 +73,17 @@ def _parse_read_log() -> dict[str, datetime | None]:
 
 
 def _check_oracle_imports(module: Path) -> list[str]:
-    """Return violations if the oracle imports anything outside ats_scan.models."""
+    """Return violations if the oracle imports anything outside resume_ranker.models."""
     tree = ast.parse(module.read_text(), filename=str(module))
     violations = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                if alias.name.startswith("ats_scan") and alias.name != "ats_scan.models":
+                if alias.name.startswith("resume_ranker") and alias.name != "resume_ranker.models":
                     violations.append(f"{module.name}: import {alias.name}")
         elif isinstance(node, ast.ImportFrom):
             module_name = node.module or ""
-            if module_name.startswith("ats_scan") and module_name != "ats_scan.models":
+            if module_name.startswith("resume_ranker") and module_name != "resume_ranker.models":
                 violations.append(f"{module.name}: from {module_name}")
     return violations
 

@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0",
+  "candidate_id": "c_37ebe551",
+  "job_id": "principal-software-development-engineer",
+  "run_id": "run_5e4e8d40baeadbbe",
+  "eligible": true,
+  "knockout_results": [],
+  "sub_scores": {
+    "S10": {
+      "dimension": "S10",
+      "value": 100.0,
+      "evidence": [],
+      "detail": {
+        "deductions": 0,
+        "parse_completeness": 1.0
+      },
+      "notes": []
+    },
+    "S1": {
+      "dimension": "S1",
+      "value": 100.0,
+      "evidence": [],
+      "detail": {},
+      "notes": []
+    },
+    "S2": {
+      "dimension": "S2",
+      "value": null,
+      "evidence": [],
+      "detail": {},
+      "notes": []
+    },
+    "S3": {
+      "dimension": "S3",
+      "value": null,
+      "evidence": [],
+      "detail": {},
+      "notes": [
+        "S3_NO_JD_CHUNKS"
+      ]
+    },
+    "S4": {
+      "dimension": "S4",
+      "value": 100.0,
+      "evidence": [],
+      "detail": {
+        "relevant_years": 20.19,
+        "raw_years": 21.58
+      },
+      "notes": []
+    },
+    "S5": {
+      "dimension": "S5",
+      "value": 91.79,
+      "evidence": [],
+      "detail": {
+        "best_role_score": 0.9179
+      },
+      "notes": []
+    },
+    "S6": {
+      "dimension": "S6",
+      "value": 100.0,
+      "evidence": [],
+      "detail": {
+        "best_domain_match": 1.0
+      },
+      "notes": []
+    },
+    "S7": {
+      "dimension": "S7",
+      "value": 88.0,
+      "evidence": [],
+      "detail": {
+        "edu": 0.8,
+        "cert": 1.0
+      },
+      "notes": []
+    },
+    "S8": {
+      "dimension": "S8",
+      "value": null,
+      "evidence": [],
+      "detail": {},
+      "notes": []
+    },
+    "S9": {
+      "dimension": "S9",
+      "value": 70.0,
+      "evidence": [],
+      "detail": {
+        "trajectory": 0.4,
+        "stability": 1.0
+      },
+      "notes": []
+    }
+  },
+  "base_score": 96.97,
+  "integrity_penalty": 0.0,
+  "composite": 96.97,
+  "band": "strong",
+  "rank": 1,
+  "selected": true,
+  "confidence": 0.75,
+  "matched": [],
+  "gaps": [],
+  "flags": [],
+  "reason_codes": [],
+  "explanation": "Composite 97.0 (strong). Strongest matches: none. Key gaps: none. Flags: none.",
+  "provenance": {
+    "config_sha256": "5e4e8d40baeadbbe75b9cde6465f522264899a7c6dabbc11751a03383df39836",
+    "ontology_version": "2026.07",
+    "code_version": "0.1.0",
+    "models": {
+      "embedding": "all-MiniLM-L6-v2",
+      "llm": null,
+      "ontology": "2026.07"
+    },
+    "scored_at": "2026-08-30T11:48:55+00:00"
+  }
+}

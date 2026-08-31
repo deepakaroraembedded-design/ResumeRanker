@@ -112,7 +112,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ats-scan"
+name = "resume-ranker"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

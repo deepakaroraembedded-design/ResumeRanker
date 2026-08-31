@@ -1,0 +1,791 @@
+{
+  "schema_version": "1.0",
+  "candidate_id": "c_a0bd7152",
+  "job_id": "principal-software-development-engineer",
+  "run_id": "run_2503ef897cd9efda",
+  "eligible": true,
+  "knockout_results": [],
+  "sub_scores": {
+    "S10": {
+      "dimension": "S10",
+      "value": 100.0,
+      "evidence": [],
+      "detail": {
+        "deductions": 0,
+        "parse_completeness": 0.5
+      },
+      "notes": []
+    },
+    "S1": {
+      "dimension": "S1",
+      "value": 0.0,
+      "evidence": [],
+      "detail": {
+        "matches": [],
+        "gaps": [
+          {
+            "criterion": "linux kernel-based networking (l2/l3)",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "linux kernel-based networking (l2/l3)"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "stateful firewalls",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "stateful firewalls"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "nat",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "nat"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "network drivers",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "network drivers"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "routing protocols(bgp",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "routing protocols(bgp"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "ospf",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "ospf"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "pim)",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "pim)"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "and protocols like vlans",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "and protocols like vlans"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "dhcp",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "dhcp"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "dns",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "dns"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "ssl",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "ssl"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "dtls",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "dtls"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "quic",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "quic"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "ipsec",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "ipsec"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "gre",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "gre"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "wireguard",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "wireguard"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "in go",
+            "weight": 4,
+            "match": 0.0,
+            "searched": [
+              "in go"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "understanding of ai/ml technologies",
+            "weight": 3,
+            "match": 0.0,
+            "searched": [
+              "understanding of ai/ml technologies"
+            ],
+            "note": "no evidence found"
+          }
+        ]
+      },
+      "notes": []
+    },
+    "S2": {
+      "dimension": "S2",
+      "value": 0.0,
+      "evidence": [],
+      "detail": {
+        "matches": [],
+        "gaps": [
+          {
+            "criterion": "experience integrating ai/ml frameworks",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "experience integrating ai/ml frameworks"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "intelligent data path analysis models to optimize kernel-level networking performance",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "intelligent data path analysis models to optimize kernel-level networking performance"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "automate predictive threat detection",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "automate predictive threat detection"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "technologies such as wireguard",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "technologies such as wireguard"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "various tunneling protocols such as gre",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "various tunneling protocols such as gre"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "l2vpn",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "l2vpn"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "ha protocols such as vrrp alongside certifications like fips",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "ha protocols such as vrrp alongside certifications like fips"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "fedramp",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "fedramp"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "prior  tls",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "prior  tls"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "dtls",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "dtls"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "quic",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "quic"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "ity with cloud computing platforms like aws",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "ity with cloud computing platforms like aws"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "azure",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "azure"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "containerization technologies such as docker",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "containerization technologies such as docker"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "kubernetes",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "kubernetes"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "and advanced virtualization",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "and advanced virtualization"
+            ],
+            "note": "no evidence found"
+          },
+          {
+            "criterion": "security solutions",
+            "weight": 2,
+            "match": 0.0,
+            "searched": [
+              "security solutions"
+            ],
+            "note": "no evidence found"
+          }
+        ]
+      },
+      "notes": []
+    },
+    "S3": {
+      "dimension": "S3",
+      "value": 6.020366139853795,
+      "evidence": [
+        {
+          "span": [
+            1876,
+            1985
+          ],
+          "quote": "engineering and UX teams to translate PRDs, user pain points, and acceptance criteria into functional designs",
+          "page": null,
+          "source": "resume"
+        }
+      ],
+      "detail": {
+        "raw": 0.2770916476293421,
+        "calibrated": 0.06020366139853795,
+        "pool_size": 0,
+        "p10": null,
+        "p90": null,
+        "anchors": [
+          0.25,
+          0.7
+        ],
+        "rubric_mean": null,
+        "rubric_stdev": 0.0,
+        "chunk_counts": {
+          "jd": 40,
+          "resume": 29
+        },
+        "mode": "offline"
+      },
+      "notes": []
+    },
+    "S4": {
+      "dimension": "S4",
+      "value": 20.06666666666667,
+      "evidence": [],
+      "detail": {
+        "relevant_years": 2.51,
+        "raw_years": 6.42
+      },
+      "notes": []
+    },
+    "S5": {
+      "dimension": "S5",
+      "value": 33.35,
+      "evidence": [],
+      "detail": {
+        "best_role_score": 0.3335
+      },
+      "notes": []
+    },
+    "S6": {
+      "dimension": "S6",
+      "value": 100.0,
+      "evidence": [],
+      "detail": {
+        "best_domain_match": 1.0
+      },
+      "notes": []
+    },
+    "S7": {
+      "dimension": "S7",
+      "value": 52.0,
+      "evidence": [],
+      "detail": {
+        "edu": 0.2,
+        "cert": 1.0
+      },
+      "notes": []
+    },
+    "S8": {
+      "dimension": "S8",
+      "value": 0.0,
+      "evidence": [],
+      "detail": {
+        "top_skills": [
+          "in go",
+          "and protocols like vlans",
+          "dhcp"
+        ]
+      },
+      "notes": []
+    },
+    "S9": {
+      "dimension": "S9",
+      "value": 87.5,
+      "evidence": [],
+      "detail": {
+        "trajectory": 1.0,
+        "stability": 0.75
+      },
+      "notes": []
+    }
+  },
+  "base_score": 19.15,
+  "integrity_penalty": 0.0,
+  "composite": 19.15,
+  "band": "not_a_match",
+  "rank": 1,
+  "selected": false,
+  "confidence": 0.625,
+  "matched": [],
+  "gaps": [
+    {
+      "criterion": "linux kernel-based networking (l2/l3)",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "linux kernel-based networking (l2/l3)"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "stateful firewalls",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "stateful firewalls"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "nat",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "nat"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "network drivers",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "network drivers"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "routing protocols(bgp",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "routing protocols(bgp"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "ospf",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "ospf"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "pim)",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "pim)"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "and protocols like vlans",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "and protocols like vlans"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "dhcp",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "dhcp"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "dns",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "dns"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "ssl",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "ssl"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "dtls",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "dtls"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "quic",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "quic"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "ipsec",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "ipsec"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "gre",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "gre"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "wireguard",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "wireguard"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "in go",
+      "weight": 4,
+      "match": 0.0,
+      "searched": [
+        "in go"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "understanding of ai/ml technologies",
+      "weight": 3,
+      "match": 0.0,
+      "searched": [
+        "understanding of ai/ml technologies"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "experience integrating ai/ml frameworks",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "experience integrating ai/ml frameworks"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "intelligent data path analysis models to optimize kernel-level networking performance",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "intelligent data path analysis models to optimize kernel-level networking performance"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "automate predictive threat detection",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "automate predictive threat detection"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "technologies such as wireguard",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "technologies such as wireguard"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "various tunneling protocols such as gre",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "various tunneling protocols such as gre"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "l2vpn",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "l2vpn"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "ha protocols such as vrrp alongside certifications like fips",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "ha protocols such as vrrp alongside certifications like fips"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "fedramp",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "fedramp"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "prior  tls",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "prior  tls"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "dtls",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "dtls"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "quic",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "quic"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "ity with cloud computing platforms like aws",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "ity with cloud computing platforms like aws"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "azure",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "azure"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "containerization technologies such as docker",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "containerization technologies such as docker"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "kubernetes",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "kubernetes"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "and advanced virtualization",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "and advanced virtualization"
+      ],
+      "note": "no evidence found"
+    },
+    {
+      "criterion": "security solutions",
+      "weight": 2,
+      "match": 0.0,
+      "searched": [
+        "security solutions"
+      ],
+      "note": "no evidence found"
+    }
+  ],
+  "flags": [],
+  "reason_codes": [],
+  "explanation": "Composite 19.1 (not_a_match). Strongest matches: none. Key gaps: linux kernel-based networking (l2/l3), stateful firewalls, nat. Flags: none.",
+  "provenance": {
+    "config_sha256": "2503ef897cd9efdaeed8680cabe655b1c3ae465a56900f68c3cd978330105c72",
+    "ontology_version": "2026.07",
+    "code_version": "0.1.0",
+    "models": {
+      "embedding": "all-MiniLM-L6-v2",
+      "llm": null,
+      "ontology": "2026.07"
+    },
+    "scored_at": "2026-08-30T12:02:52+00:00"
+  }
+}

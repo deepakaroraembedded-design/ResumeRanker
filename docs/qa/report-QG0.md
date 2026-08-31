@@ -26,7 +26,7 @@ I001 [*] Import block is un-sorted or un-formatted
 15 | |     StubDimension,
 16 | | )
 17 | |
-18 | | from ats_scan.protocols import (
+18 | | from resume_ranker.protocols import (
 19 | |     Dimension,
 20 | |     EmbeddingClient,
 21 | |     IntegrityDetector,

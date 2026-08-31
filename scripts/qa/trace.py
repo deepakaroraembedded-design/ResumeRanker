@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Requirement traceability audit scaffold for ATS-Scan.
+"""Requirement traceability audit scaffold for RESUME-RANKER.
 
 Parses the TRD for FR/NFR identifiers, collects ``@pytest.mark.covers`` markers
 from the test tree, and emits ``docs/qa/traceability.md``.

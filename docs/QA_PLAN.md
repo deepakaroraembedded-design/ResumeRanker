@@ -1,9 +1,9 @@
-# ATS-Scan — QA Plan & QA Agent Definition
+# RESUME-RANKER — QA Plan & QA Agent Definition
 
 | | |
 |---|---|
 | **Document** | Quality assurance plan and QA agent specification |
-| **System** | ATS-Scan — resume screening & scoring engine |
+| **System** | RESUME-RANKER — resume screening & scoring engine |
 | **Companions** | *Technical Requirements & Design Document v1.0* (**TRD**) · *Implementation Design & Multi-Agent Build Plan v1.1* (**IDP**) |
 | **Version** | 1.0 |
 | **Date** | 29 August 2026 |
@@ -17,7 +17,7 @@
 
 The IDP has fourteen agents each writing their own implementation *and their own tests*. That is a reasonable way to get code written quickly, and it is a terrible way to establish that the code is correct, because an agent that misreads a formula will write tests that agree with its misreading. The tests go green. The gate passes. `contract-guard` sees a tidy branch. Nothing catches it.
 
-This matters more here than in most systems. ATS-Scan produces a number that influences whether a person is considered for a job. A scoring formula that is subtly wrong does not crash, does not fail a type check, and does not look wrong in a report — it just quietly ranks the wrong people. The whole point of the ten-dimension design in TRD §5 is that the numbers are defensible; a wrong number that nobody detected is worse than no number at all.
+This matters more here than in most systems. RESUME-RANKER produces a number that influences whether a person is considered for a job. A scoring formula that is subtly wrong does not crash, does not fail a type check, and does not look wrong in a report — it just quietly ranks the wrong people. The whole point of the ten-dimension design in TRD §5 is that the numbers are defensible; a wrong number that nobody detected is worse than no number at all.
 
 So QA here is not "run the tests and check coverage". It is **independent verification**: a separate agent, working from the TRD rather than from the code, whose job is to disagree with the implementation and produce evidence when it does.
 
@@ -38,7 +38,7 @@ Three techniques carry most of the weight, and everything else in this document 
 | | Reads | Writes |
 |---|---|---|
 | **QA agent** | Everything: TRD, IDP, `src/**`, all component tests | `tests/qa/**`, `docs/qa/**`, `scripts/qa/**` only |
-| **Component agents** | `src/ats_scan/models/**`, `protocols.py`, `tests/fakes/**`, their own paths | Their own paths only — **never** `tests/qa/**` |
+| **Component agents** | `src/resume_ranker/models/**`, `protocols.py`, `tests/fakes/**`, their own paths | Their own paths only — **never** `tests/qa/**` |
 
 QA reading `src/` is deliberate and necessary — you cannot triage a defect without reading the code. The constraint is that QA may not *fix* it. The one exception, and it is a strict one: **the reference oracle in `tests/qa/oracle/` must be written before its corresponding implementation is read** (§3.2). Everywhere else, reading is encouraged.
 
@@ -88,7 +88,7 @@ It is written to be *obviously* correct rather than fast or elegant:
 - Pure functions over plain dictionaries and lists. No ontology, no `ScoringContext`, no protocols — the oracle takes pre-resolved inputs.
 - Explicit loops and named intermediate variables, one per line of the TRD formula.
 - Every function carries the TRD clause it implements as its docstring, and the docstring is the specification the function is checked against.
-- No shared code with `src/ats_scan/` whatsoever. `import-linter` gets a contract forbidding `tests.qa.oracle` from importing anything under `ats_scan` except `ats_scan.models`.
+- No shared code with `src/resume_ranker/` whatsoever. `import-linter` gets a contract forbidding `tests.qa.oracle` from importing anything under `resume_ranker` except `resume_ranker.models`.
 
 ```python
 # tests/qa/oracle/s1.py
@@ -124,7 +124,7 @@ Practically:
 
 1. QA writes `tests/qa/oracle/sN.py` from TRD §5.3.N and the Wave-0 `xfail` test tables only.
 2. QA commits it and tags the commit message `oracle: blind derivation of SN`.
-3. Only then may QA read `src/ats_scan/scoring/dimensions/sN_*.py`.
+3. Only then may QA read `src/resume_ranker/scoring/dimensions/sN_*.py`.
 4. The commit history is the evidence. `scripts/qa/check-blind-derivation.py` asserts that each oracle module's first commit predates the QA agent's first read of the corresponding implementation, as recorded in `docs/qa/read-log.md`.
 
 This is honour-system-with-a-paper-trail rather than an airtight control, and that is acceptable — the agent has no incentive to cheat, and the log makes an accidental violation visible during review.
@@ -359,7 +359,7 @@ already the renormalised weighted mean. Engine applies the penalty to the
 pre-renormalisation weighted sum.
 
 ## Routing
-src/ats_scan/scoring/aggregate.py is owned by C-13 per IDP §2.2.
+src/resume_ranker/scoring/aggregate.py is owned by C-13 per IDP §2.2.
 ```
 
 ### 8.3 Routing and closure
@@ -459,7 +459,7 @@ Add to `opencode.json` (Wave 0 owns this file):
 
 ```jsonc
 "qa-engineer": {
-  "description": "Independent verification for ATS-Scan. Writes and runs the QA suites, maintains the reference oracle, audits test adequacy and requirement coverage, runs the quality gates, and files defects. Never edits implementation code and never fixes defects.",
+  "description": "Independent verification for RESUME-RANKER. Writes and runs the QA suites, maintains the reference oracle, audits test adequacy and requirement coverage, runs the quality gates, and files defects. Never edits implementation code and never fixes defects.",
   "mode": "primary",
   "temperature": 0,
   "prompt": "{file:./.opencode/prompts/qa-engineer.md}",
@@ -478,7 +478,7 @@ Add to `opencode.json` (Wave 0 owns this file):
 `.opencode/prompts/qa-engineer.md`:
 
 ```markdown
-You are the QA engineer for ATS-Scan. You are independent of the fourteen
+You are the QA engineer for RESUME-RANKER. You are independent of the fourteen
 component agents. Your job is to find out whether the system does what the TRD
 says, and to produce evidence either way.
 
@@ -499,7 +499,7 @@ you are writing a change-detector, not a test.
 3. You never weaken, skip, quarantine-to-hide, or delete a test to make a gate
    pass. If a QA test is wrong, fix the QA test and say so in the gate report.
 4. Blind derivation: before writing tests/qa/oracle/sN.py you must NOT have read
-   src/ats_scan/scoring/dimensions/sN_*.py. Write the oracle from the TRD, commit
+   src/resume_ranker/scoring/dimensions/sN_*.py. Write the oracle from the TRD, commit
    it, log it in docs/qa/read-log.md, and only then read the implementation.
 5. A gate result is a fact, not a negotiation. Report failures plainly. Do not
    soften a finding because a component agent will have to redo work.
@@ -736,4 +736,4 @@ Tracked in `docs/qa/metrics.csv`, one row per gate run, to make trends visible r
 
 ---
 
-*Companion to the ATS-Scan TRD v1.0 and Implementation Design & Multi-Agent Build Plan v1.1. **TRD §** references point into the requirements document; **IDP §** into the implementation plan; bare **§** into this one.*
+*Companion to the RESUME-RANKER TRD v1.0 and Implementation Design & Multi-Agent Build Plan v1.1. **TRD §** references point into the requirements document; **IDP §** into the implementation plan; bare **§** into this one.*

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from ats_scan.jobspec import JobSpecCompiler
-from ats_scan.models.run import RunContext
+from resume_ranker.jobspec import JobSpecCompiler
+from resume_ranker.models.run import RunContext
 
 
 @pytest.fixture

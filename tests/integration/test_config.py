@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import yaml  # type: ignore[import-untyped]
 
-from ats_scan.config import ConfigResolver
-from ats_scan.errors import ConfigurationError
+from resume_ranker.config import ConfigResolver
+from resume_ranker.errors import ConfigurationError
 
 
 @pytest.fixture

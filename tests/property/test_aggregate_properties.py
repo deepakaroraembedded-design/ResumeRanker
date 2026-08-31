@@ -3,11 +3,11 @@ from __future__ import annotations
 from hypothesis import given
 from hypothesis import strategies as st
 
-from ats_scan.models.config import BandConfig, IntegrityConfig, ScoringConfig
-from ats_scan.models.scoring import Band, ScoreCard, SubScore
-from ats_scan.scoring.aggregate import aggregate
-from ats_scan.scoring.bands import band
-from ats_scan.scoring.tiebreak import rank
+from resume_ranker.models.config import BandConfig, IntegrityConfig, ScoringConfig
+from resume_ranker.models.scoring import Band, ScoreCard, SubScore
+from resume_ranker.scoring.aggregate import aggregate
+from resume_ranker.scoring.bands import band
+from resume_ranker.scoring.tiebreak import rank
 
 
 class TestAggregateProperties:

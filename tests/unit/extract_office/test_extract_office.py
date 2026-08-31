@@ -9,18 +9,22 @@ from typing import TYPE_CHECKING
 import pytest
 from docx import Document
 
-from ats_scan.codes import ReasonCode
-from ats_scan.extract.office.extractor import DocxExtractor, LegacyOfficeExtractor
-from ats_scan.extract.plain._html import html_to_text
-from ats_scan.extract.plain._langdetect import detect_language
-from ats_scan.extract.plain._normalise import normalise_text
-from ats_scan.extract.plain.extractor import HtmlExtractor, MarkdownExtractor, PlainTextExtractor
-from ats_scan.extract.registry import load_extractors
-from ats_scan.models.run import RunContext
-from ats_scan.models.source import SourceDocument
+from resume_ranker.codes import ReasonCode
+from resume_ranker.extract.office.extractor import DocxExtractor, LegacyOfficeExtractor
+from resume_ranker.extract.plain._html import html_to_text
+from resume_ranker.extract.plain._langdetect import detect_language
+from resume_ranker.extract.plain._normalise import normalise_text
+from resume_ranker.extract.plain.extractor import (
+    HtmlExtractor,
+    MarkdownExtractor,
+    PlainTextExtractor,
+)
+from resume_ranker.extract.registry import load_extractors
+from resume_ranker.models.run import RunContext
+from resume_ranker.models.source import SourceDocument
 
 if TYPE_CHECKING:
-    from ats_scan.protocols import TextExtractor
+    from resume_ranker.protocols import TextExtractor
 
 
 @pytest.fixture

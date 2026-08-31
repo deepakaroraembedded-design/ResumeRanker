@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from ats_scan.models.run import RunResult
-from ats_scan.report.csv import CsvWriter
+from resume_ranker.models.run import RunResult
+from resume_ranker.report.csv import CsvWriter
 
 GOLDEN_DIR = Path(__file__).parent / "golden"
 

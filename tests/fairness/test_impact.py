@@ -6,10 +6,10 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from ats_scan.fairness.impact import (
+from resume_ranker.fairness.impact import (
     compute_adverse_impact_report,
 )
-from ats_scan.models.scoring import ScoreCard, SubScore
+from resume_ranker.models.scoring import ScoreCard, SubScore
 
 
 def _card(

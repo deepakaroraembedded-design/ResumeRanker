@@ -15,11 +15,11 @@ from tests.fakes import (
 )
 from typer.testing import CliRunner
 
-from ats_scan.cli.main import app
-from ats_scan.models.jobspec import JobSpec
-from ats_scan.models.resume import CanonicalResume
-from ats_scan.models.scoring import ScoreCard
-from ats_scan.pipeline import Pipeline
+from resume_ranker.cli.main import app
+from resume_ranker.models.jobspec import JobSpec
+from resume_ranker.models.resume import CanonicalResume
+from resume_ranker.models.scoring import ScoreCard
+from resume_ranker.pipeline import Pipeline
 
 runner = CliRunner()
 
@@ -88,7 +88,7 @@ def test_validate_config_rejects_missing_file() -> None:
 def test_compile_jd_command(
     jd_file: Path, tmp_path: Path, fake_pipeline: Pipeline, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr("ats_scan.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
+    monkeypatch.setattr("resume_ranker.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
     out = tmp_path / "jobspec.yaml"
     result = runner.invoke(app, ["compile-jd", "--jd", str(jd_file), "--out", str(out)])
     assert result.exit_code == 0, result.output
@@ -102,7 +102,7 @@ def test_run_command(
     fake_pipeline: Pipeline,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr("ats_scan.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
+    monkeypatch.setattr("resume_ranker.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
     out = tmp_path / "out"
     result = runner.invoke(
         app,
@@ -129,7 +129,7 @@ def test_run_command_rejects_input_as_output(
     fake_pipeline: Pipeline,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr("ats_scan.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
+    monkeypatch.setattr("resume_ranker.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
     result = runner.invoke(
         app,
         [
@@ -153,7 +153,7 @@ def test_parse_command(
     fake_pipeline: Pipeline,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr("ats_scan.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
+    monkeypatch.setattr("resume_ranker.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
     out = tmp_path / "parsed"
     result = runner.invoke(
         app,
@@ -185,7 +185,7 @@ def test_explain_command(tmp_path: Path) -> None:
 
 
 def test_audit_command(tmp_path: Path) -> None:
-    from ats_scan.models.run import RunManifest
+    from resume_ranker.models.run import RunManifest
 
     manifest = RunManifest(
         run_id="run_e2e",
@@ -207,7 +207,7 @@ def test_audit_command_with_scorecards_and_demographics(tmp_path: Path) -> None:
     """Audit loads per-candidate scorecards and computes adverse impact."""
     import csv
 
-    from ats_scan.models.run import RunManifest
+    from resume_ranker.models.run import RunManifest
 
     manifest = RunManifest(
         run_id="run_e2e",
@@ -251,7 +251,7 @@ def test_calibrate_command(
     fake_pipeline: Pipeline,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr("ats_scan.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
+    monkeypatch.setattr("resume_ranker.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
     out = tmp_path / "calibration.json"
     result = runner.invoke(app, ["calibrate", "--resumes", str(tmp_path), "--out", str(out)])
     assert result.exit_code == 0, result.output

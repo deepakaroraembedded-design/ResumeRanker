@@ -1,0 +1,58 @@
+Software Engineer L5 - Audio/Video Tools and Tests
+Los Gatos, California, United States of America
+
+Job Posting Date
+06-17-2026
+Job Requisition ID
+JR41108
+Teams
+Engineering
+Work Type
+Onsite
+At Netflix, our mission is to entertain the world. Together, we are writing the next episode - pushing the boundaries of storytelling, global fandom and making the unimaginable a reality. We are a dream team obsessed with the uncomfortable excitement of discovering what happens when you merge creativity, intuition and cutting-edge technology. Come be a part of what’s next.
+
+Our TV-Media organization is focused on helping engineers around the world deploy the Netflix application quickly and with the highest quality. 
+
+About the Team
+The Audio Video (AV) Tools & Tests team focuses on developing automation tools (HW/SW) to enable device audio/video quality characterization at scale for the diverse device ecosystem. Using our tools and test automation, both external partner developers and internal Netflix engineers can ensure every device delivers the best possible Netflix experience. Our team works with 3rd party manufacturers to develop platforms that enable audio/video capture over HDMI, SDI, and SMPTE 2110. We also build tools measuring playback performance. This team is involved with all the core products at Netflix (Live, Streaming, Ads, Games…)
+
+This team's products enable hundreds of millions of devices worldwide with Netflix and are used by all the major smart TV and set-top box device manufacturers like Samsung, Sony, Google, and Amazon around the world.
+
+We are looking for a strong generalist Software Engineer to drive innovation in the audio/video quality monitoring space to enable new engineering solutions for a wide spectrum of functions, ranging from initial device integration with Netflix to validating new TV user experiences. In this role, you will experiment with new ideas with stunning colleagues across different domains such as gaming, audio/video technologies, and security. 
+
+What you will/may do:
+Driving the evolution of Audio/Video automation and measurement products by building robust front-end and backend services for distributed testing platforms, such as EyePatch.
+
+Improving system reliability and efficiency by enhancing CI/CD and regression infrastructure as needs grow.
+
+Leverage in-house data solutions to operationalize the AV data metric pipeline for insight exploration  
+
+Develop and maintain AV automated tests to objectively measure and validate device AV capabilities for the Netflix TV application (HDMI - Scaling Netflix Certification tells you how we approach some of these challenges)
+
+Implement new applications from ideation to product rollout through iterative experimentation with stakeholders in an agile manner 
+
+Operate in a cross-functional environment where you can learn from other AV subject matter experts and drive multiple teams to achieve common quality goals
+
+Work on live audio/video signal processing, encoder, decoder and related transport technologies(2110, SDI, TR-07, HDMI etc).
+
+What we are looking for:
+7+ years of experience in a software development role, shipping products
+
+Strong in Python/Javascript or C/C++ 
+
+Ability to work closely with internal stakeholders and external vendors to understand and leverage their software framework/components/service to build solutions
+
+An outstanding communicator who is curious, flexible, and selfless; a maker at heart
+
+Passion for automation and system reliability.
+
+ 
+
+Generally, our compensation structure consists solely of an annual salary; we do not have bonuses. You choose each year how much of your compensation you want in salary versus stock options. To determine your personal top of market compensation, we rely on market indicators and consider your specific job family, background, skills, and experience to determine your compensation in the market range. The range for this role is $388,000.00 - $558,000.00.
+Netflix provides comprehensive benefits including Health Plans, Mental Health support, a 401(k) Retirement Plan with employer match, Stock Option Program, Disability Programs, Health Savings and Flexible Spending Accounts, Family-forming benefits, and Life and Serious Injury Benefits. We also offer paid leave of absence programs. Full-time hourly employees accrue 35 days annually for paid time off to be used for vacation, holidays, and sick paid time off. Full-time salaried employees are immediately entitled to flexible time off. See more details about our Benefits here.
+
+Netflix is a unique culture and environment. Learn more here.
+
+Inclusion is a Netflix value and we strive to host a meaningful interview experience for all candidates. If you want an accommodation/adjustment for a disability or any other reason during the hiring process, please send a request to your recruiting partner.
+
+We are an equal-opportunity employer and celebrate diversity, recognizing that diversity builds stronger teams. We approach diversity and inclusion seriously and thoughtfully. We do not discriminate on the basis of race, religion, color, ancestry, national origin, caste, sex, sexual orientation, gender, gender identity or expression, age, disability, medical condition, pregnancy, genetic makeup, marital status, or military service.

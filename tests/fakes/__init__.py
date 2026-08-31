@@ -4,16 +4,16 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from ats_scan.models.common import IntegrityFinding, StageResult
-from ats_scan.models.embeddings import Vector
-from ats_scan.models.jobspec import JobSpec
-from ats_scan.models.llm import LLMResult
-from ats_scan.models.ontology import SkillMatch, SkillRelation, TitleMatch
-from ats_scan.models.resume import CanonicalResume, Identity, IntegritySummary
-from ats_scan.models.run import RunContext, RunResult, ScoringContext
-from ats_scan.models.scoring import SubScore
-from ats_scan.models.source import ExtractedText, ExtractionMetadata, SourceDocument, TextBlock
-from ats_scan.protocols import (
+from resume_ranker.models.common import IntegrityFinding, StageResult
+from resume_ranker.models.embeddings import Vector
+from resume_ranker.models.jobspec import JobSpec
+from resume_ranker.models.llm import LLMResult
+from resume_ranker.models.ontology import SkillMatch, SkillRelation, TitleMatch
+from resume_ranker.models.resume import CanonicalResume, Identity, IntegritySummary
+from resume_ranker.models.run import RunContext, RunResult, ScoringContext
+from resume_ranker.models.scoring import SubScore
+from resume_ranker.models.source import ExtractedText, ExtractionMetadata, SourceDocument, TextBlock
+from resume_ranker.protocols import (
     Dimension,
     EmbeddingClient,
     IntegrityDetector,

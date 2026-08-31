@@ -1,6 +1,6 @@
-# ATS-Scan — rules for all agents
+# RESUME-RANKER — rules for all agents
 
-You are implementing ONE component of ATS-Scan. Read `docs/IMPLEMENTATION_PLAN.md`
+You are implementing ONE component of RESUME-RANKER. Read `docs/IMPLEMENTATION_PLAN.md`
 §2.2 (ownership) and your own block in §4 before writing any code.
 
 ## Hard rules
@@ -8,7 +8,7 @@ You are implementing ONE component of ATS-Scan. Read `docs/IMPLEMENTATION_PLAN.m
 1. Write ONLY inside your component's owned paths. Creating or editing a file outside
 them fails the build and the branch is rejected.
 
-2. NEVER modify `src/ats_scan/models/`, `protocols.py`, `errors.py`, `codes.py`,
+2. NEVER modify `src/resume_ranker/models/`, `protocols.py`, `errors.py`, `codes.py`,
 `pyproject.toml`, `uv.lock`, `Makefile`, `.importlinter`, or anything under `tests/fakes/`.
 These are frozen. If one is wrong, write `docs/contract-change/<ID>-NNN.md` describing
 the problem and STOP. Do not work around it by editing it.

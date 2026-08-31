@@ -15,7 +15,7 @@ from tests.qa.oracle.s9 import s9_trajectory
 from tests.qa.oracle.s10 import s10_parseability
 from tests.qa.oracle.tiebreak import rank_candidates
 
-"""Blind-derived reference oracle for the ATS-Scan scoring model."""
+"""Blind-derived reference oracle for the RESUME-RANKER scoring model."""
 
 __all__ = [
     "aggregate",

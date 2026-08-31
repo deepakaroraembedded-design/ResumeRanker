@@ -1,0 +1,933 @@
+{
+  "schema_version": "1.0",
+  "candidate_id": "c_unknown",
+  "source": null,
+  "extraction": {
+    "method": "pdfplumber",
+    "chars_per_page": 5077.0,
+    "ocr_confidence": null,
+    "columns_detected": null,
+    "language": "en",
+    "language_confidence": 0.9,
+    "quality": 1.0
+  },
+  "identity": {
+    "full_name": "DEEPAK ARORA",
+    "emails": [
+      "deepakarora.embedded@gmail.com"
+    ],
+    "phones": [
+      "503-719-9375"
+    ],
+    "links": {},
+    "location": null
+  },
+  "summary": {},
+  "experience": [
+    {
+      "employer": "SwifTrade",
+      "employer_normalised": null,
+      "title_raw": "Senior AI Systems Architect",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2026-08-29",
+        "precision": "present"
+      },
+      "end": {
+        "value": null,
+        "precision": "unknown"
+      },
+      "months": 1,
+      "bullets": [
+        {
+          "text": "Platform architecture owner for a greenfield AI-native B2B marketplace; leads a 10-person engineering team and a product manager.",
+          "span": [
+            1805,
+            1934
+          ]
+        },
+        {
+          "text": "PLATFORM & GPU INFRASTRUCTURE",
+          "span": [
+            1935,
+            1964
+          ]
+        },
+        {
+          "text": "Architected and launched SwifTradeSupply.com end to end — system decomposition, data model, integration and security architecture, launch",
+          "span": [
+            1967,
+            2104
+          ]
+        },
+        {
+          "text": "sequencing — taking it from zero to production in five months; shipped July 2026.",
+          "span": [
+            2105,
+            2186
+          ]
+        },
+        {
+          "text": "Selected the GPU and AI compute substrate on benchmarked stability, cost per GPU-hour, model support and API-driven provisioning; that",
+          "span": [
+            2189,
+            2323
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        1733,
+        7341
+      ]
+    },
+    {
+      "employer": null,
+      "employer_normalised": null,
+      "title_raw": "decision",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2026-08-29",
+        "precision": "present"
+      },
+      "end": {
+        "value": null,
+        "precision": "unknown"
+      },
+      "months": 1,
+      "bullets": [
+        {
+          "text": "Engineered cost per unit of work directly into the datapath: cheapest-first source layering that reaches paid APIs only after free sources are",
+          "span": [
+            1800,
+            1942
+          ]
+        },
+        {
+          "text": "exhausted, response caching with in-flight request coalescing, and per-run unit-cost accounting.",
+          "span": [
+            1943,
+            2039
+          ]
+        },
+        {
+          "text": "AI SYSTEMS IN PRODUCTION",
+          "span": [
+            2040,
+            2064
+          ]
+        },
+        {
+          "text": "Built GPU-accelerated catalog automation — multi-storefront listing generation via lexical and semantic matching with GPU image similarity,",
+          "span": [
+            2067,
+            2206
+          ]
+        },
+        {
+          "text": "plus master-category classification using embeddings and clustering — cutting supplier onboarding from days to minutes.",
+          "span": [
+            2207,
+            2326
+          ]
+        },
+        {
+          "text": "Architected a multi-agent buyer-acquisition pipeline on a LangGraph state machine — geo-targeted discovery, multi-source contact",
+          "span": [
+            2329,
+            2457
+          ]
+        },
+        {
+          "text": "enrichment, explainable lead scoring, personalized outreach — instrumented with LangSmith tracing for run-level observability and failure",
+          "span": [
+            2458,
+            2595
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        1733,
+        7341
+      ]
+    },
+    {
+      "employer": "379-business pilot and",
+      "employer_normalised": null,
+      "title_raw": "triage; validated on a 1",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2026-08-29",
+        "precision": "present"
+      },
+      "end": {
+        "value": null,
+        "precision": "unknown"
+      },
+      "months": 1,
+      "bullets": [
+        {
+          "text": "Designed the output-governance layer for generated outbound: constrained assembly keeping every claim traceable to a verified source,",
+          "span": [
+            1817,
+            1950
+          ]
+        },
+        {
+          "text": "deterministic pre-send validation with a human review queue, a readiness gate that halts unsafe configuration, and automated reply",
+          "span": [
+            1951,
+            2081
+          ]
+        },
+        {
+          "text": "classification driving suppression.",
+          "span": [
+            2082,
+            2117
+          ]
+        },
+        {
+          "text": "Scaled Amazon-channel fulfillment 6.6× (300 → 2,000 orders/day) on the automation layer built in-house, delivering ~300K incremental orders",
+          "span": [
+            2120,
+            2259
+          ]
+        },
+        {
+          "text": "over the following six months against a platform lifetime total past 1M.",
+          "span": [
+            2260,
+            2332
+          ]
+        },
+        {
+          "text": "ENGINEERING LEADERSHIP",
+          "span": [
+            2333,
+            2355
+          ]
+        },
+        {
+          "text": "Led and developed a 10-person engineering team, establishing architecture review practice, AI-assisted development standards and QA",
+          "span": [
+            2358,
+            2489
+          ]
+        },
+        {
+          "text": "automation that measurably accelerated production delivery.",
+          "span": [
+            2490,
+            2549
+          ]
+        },
+        {
+          "text": "Built a company-wide model-benchmark framework scoring coding models and agentic harnesses on cost, code correctness, iterations to",
+          "span": [
+            2552,
+            2683
+          ]
+        },
+        {
+          "text": "convergence and latency, then standardized the toolchain and an automated code-review loop on the results.",
+          "span": [
+            2684,
+            2790
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        1733,
+        7341
+      ]
+    },
+    {
+      "employer": "Principal Engineer",
+      "employer_normalised": null,
+      "title_raw": "Verizon — Irving, TX 2017 – Dec 2025",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2017-01-01",
+        "precision": "year"
+      },
+      "end": {
+        "value": "2025-12-01",
+        "precision": "month"
+      },
+      "months": 108,
+      "bullets": [
+        {
+          "text": "Architecture lead for consumer video and edge platforms; 3M+ Fios Video and 1M+ OTT devices in the field.",
+          "span": [
+            1825,
+            1930
+          ]
+        },
+        {
+          "text": "GPU INFRASTRUCTURE & AI PIPELINES",
+          "span": [
+            1931,
+            1964
+          ]
+        },
+        {
+          "text": "Architected a Whisper ASR and LLM analysis pipeline on NVIDIA Tesla GPUs for early field-issue detection, processing 2,000+ hours of noisy",
+          "span": [
+            1967,
+            2105
+          ]
+        },
+        {
+          "text": "narrowband telephony at 75% transcription accuracy with CUDA workloads tuned for throughput and cost per hour of audio; authored the",
+          "span": [
+            2106,
+            2238
+          ]
+        },
+        {
+          "text": "business case quantifying a ~25% call-deflection opportunity.",
+          "span": [
+            2239,
+            2300
+          ]
+        },
+        {
+          "text": "Ran the comparative datapath analysis for high-rate packet ingestion into GPU-accelerated pipelines — DPDK kernel-bypass versus",
+          "span": [
+            2303,
+            2430
+          ]
+        },
+        {
+          "text": "SmartNIC/DPU offload — scored against latency budgets, throughput ceilings and per-node hardware cost; the result set the platform's offload",
+          "span": [
+            2431,
+            2571
+          ]
+        },
+        {
+          "text": "direction.",
+          "span": [
+            2572,
+            2582
+          ]
+        },
+        {
+          "text": "Diagnosed DGX A100 (8×A100, 640 GB) multi-GPU server and ProLiant DL385 subsystem failures via BMC/iLO and IPMI, hardening the GPU",
+          "span": [
+            2585,
+            2715
+          ]
+        },
+        {
+          "text": "compute tier.",
+          "span": [
+            2716,
+            2729
+          ]
+        },
+        {
+          "text": "PLATFORM ARCHITECTURE & TECHNICAL LEADERSHIP",
+          "span": [
+            2730,
+            2774
+          ]
+        },
+        {
+          "text": "Led 25+ cross-functional HW/FW/SW engineering teams delivering quarterly releases across Stream TV, set-top boxes, soundbars, remote",
+          "span": [
+            2777,
+            2909
+          ]
+        },
+        {
+          "text": "devices and CE applications; developed engineers through architecture review.",
+          "span": [
+            2910,
+            2987
+          ]
+        },
+        {
+          "text": "Authored the production-grade architecture and design specifications for thin-client hardware, MEC deployment, security and A/V pipelines —",
+          "span": [
+            2990,
+            3129
+          ]
+        },
+        {
+          "text": "the reference documents ODM and internal teams built against.",
+          "span": [
+            3130,
+            3191
+          ]
+        },
+        {
+          "text": "Architected an edge-native virtual mobile computing platform (independent R&D): thin-client hardware, Android containerization at the MEC",
+          "span": [
+            3194,
+            3331
+          ]
+        },
+        {
+          "text": "tier, latency-sensitive A/V transport and zero-trust security; advanced through prototyping, published as a whitepaper, provisional patent",
+          "span": [
+            3332,
+            3470
+          ]
+        },
+        {
+          "text": "application filed.",
+          "span": [
+            3471,
+            3489
+          ]
+        },
+        {
+          "text": "Owned regulatory and industry certification programs end to end — FCC Part 15 (B/C/E), UL 62368-1, Wi-Fi Alliance, Bluetooth SIG, Energy",
+          "span": [
+            3492,
+            3628
+          ]
+        },
+        {
+          "text": "Star — from design review through lab submission and grant.",
+          "span": [
+            3629,
+            3688
+          ]
+        },
+        {
+          "text": "PLATFORM RELIABILITY & NON-FUNCTIONAL REQUIREMENTS",
+          "span": [
+            3689,
+            3739
+          ]
+        },
+        {
+          "text": "Root-caused systemic field failures across a 4M+ device fleet — MoCA link instability, 802.11 interference, A/V dropouts, DVR faults, update",
+          "span": [
+            3742,
+            3882
+          ]
+        },
+        {
+          "text": "freezes — driving causes back into platform architecture rather than point fixes.",
+          "span": [
+            3883,
+            3964
+          ]
+        },
+        {
+          "text": "Designed the DVR high-throughput storage datapath sustaining 24 parallel I/O streams under heavy disk contention, with fragmentation",
+          "span": [
+            3967,
+            4099
+          ]
+        },
+        {
+          "text": "mitigation and write-coalescence algorithms for real-time record and playback.",
+          "span": [
+            4100,
+            4178
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        1733,
+        7341
+      ]
+    },
+    {
+      "employer": "Principal Engineer",
+      "employer_normalised": null,
+      "title_raw": "Verizon — San Jose, CA 2014 – 2017",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2014-01-01",
+        "precision": "year"
+      },
+      "end": {
+        "value": "2017-01-01",
+        "precision": "year"
+      },
+      "months": 37,
+      "bullets": [
+        {
+          "text": "Designed eMMC flash layouts, boot state machines and update frameworks, cutting field update time by ~15 seconds.",
+          "span": [
+            1810,
+            1923
+          ]
+        },
+        {
+          "text": "Built bootloaders, device drivers, IR firmware and platform diagnostics that measurably improved field reliability.",
+          "span": [
+            1926,
+            2041
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        1733,
+        7341
+      ]
+    },
+    {
+      "employer": "Intel Corporation",
+      "employer_normalised": null,
+      "title_raw": "Senior Embedded Platform Engineer (Contract)",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2010-01-01",
+        "precision": "year"
+      },
+      "end": {
+        "value": "2014-01-01",
+        "precision": "year"
+      },
+      "months": 49,
+      "bullets": [
+        {
+          "text": "Engineered Linux kernel modules and high-performance middleware tuned for memory, IPC, networking and real-time constraints.",
+          "span": [
+            1827,
+            1951
+          ]
+        },
+        {
+          "text": "Executed ARM/x86 board bring-up, MoCA 2.0 PHY/MAC driver debugging and eMMC flash architecture.",
+          "span": [
+            1954,
+            2049
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        1733,
+        7341
+      ]
+    },
+    {
+      "employer": "HCL Technologies (",
+      "employer_normalised": null,
+      "title_raw": "• Technical Lead",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2008-01-01",
+        "precision": "year"
+      },
+      "end": {
+        "value": "2010-01-01",
+        "precision": "year"
+      },
+      "months": 25,
+      "bullets": [
+        {
+          "text": "classification and forwarding offload; built an enterprise Windows security platform for 500–1,000 network endpoints.",
+          "span": [
+            7474,
+            7591
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        7341,
+        7931
+      ]
+    },
+    {
+      "employer": "GlobalLogic (",
+      "employer_normalised": null,
+      "title_raw": "• Senior Software Engineer",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2007-01-01",
+        "precision": "year"
+      },
+      "end": {
+        "value": "2008-01-01",
+        "precision": "year"
+      },
+      "months": 13,
+      "bullets": [
+        {
+          "text": "caching.",
+          "span": [
+            7471,
+            7479
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        7341,
+        7931
+      ]
+    },
+    {
+      "employer": "Conexant Systems (",
+      "employer_normalised": null,
+      "title_raw": "• Software Engineer",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": {
+        "value": "2005-01-01",
+        "precision": "year"
+      },
+      "end": {
+        "value": "2007-01-01",
+        "precision": "year"
+      },
+      "months": 25,
+      "bullets": [
+        {
+          "text": "RTOS; improved 802.11 PHY/MAC performance.",
+          "span": [
+            7479,
+            7521
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        7341,
+        7931
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "MCA, Master of Computer Applications — GGSIP University (2004) · B.Sc. Mathematics — Hansraj College, Delhi University (2001)",
+      "degree_level": null,
+      "field": null,
+      "start": null,
+      "end": {
+        "value": "2004-01-01",
+        "precision": "year"
+      },
+      "span": [
+        9872,
+        10154
+      ]
+    },
+    {
+      "institution": "Quantitative Modeling (UPenn, 2025) · GenAI Ready (Verizon, 2024) · Strategic Thinking (Harvard, 2021) · Business Case Development (Harvard,",
+      "degree_level": null,
+      "field": null,
+      "start": null,
+      "end": {
+        "value": "2025-01-01",
+        "precision": "year"
+      },
+      "span": [
+        9872,
+        10154
+      ]
+    },
+    {
+      "institution": "2021)",
+      "degree_level": null,
+      "field": null,
+      "start": null,
+      "end": {
+        "value": "2021-01-01",
+        "precision": "year"
+      },
+      "span": [
+        9872,
+        10154
+      ]
+    }
+  ],
+  "certifications": [],
+  "skills": [
+    {
+      "raw": "Linux",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "contact",
+        "experience",
+        "skills",
+        "summary"
+      ],
+      "mentions": 5,
+      "first_used": "Principal Systems & Platform Architect · Linux Kernel & Network Datapath · GPU/AI Compute",
+      "last_used": "• Platforms, Cloud & Tooling: C, C++, Python, Bash, ARM/x86 assembly; Linux kernel, Yocto/BitBake, U-Boot and bootloaders, BSPs and board",
+      "evidence_spans": [
+        [
+          13,
+          102
+        ],
+        [
+          239,
+          381
+        ],
+        [
+          7092,
+          7218
+        ],
+        [
+          8236,
+          8369
+        ],
+        [
+          8886,
+          9023
+        ]
+      ]
+    },
+    {
+      "raw": "C++",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "• Platforms, Cloud & Tooling: C, C++, Python, Bash, ARM/x86 assembly; Linux kernel, Yocto/BitBake, U-Boot and bootloaders, BSPs and board",
+      "last_used": "• Platforms, Cloud & Tooling: C, C++, Python, Bash, ARM/x86 assembly; Linux kernel, Yocto/BitBake, U-Boot and bootloaders, BSPs and board",
+      "evidence_spans": [
+        [
+          8886,
+          9023
+        ]
+      ]
+    },
+    {
+      "raw": "Python",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "• Platforms, Cloud & Tooling: C, C++, Python, Bash, ARM/x86 assembly; Linux kernel, Yocto/BitBake, U-Boot and bootloaders, BSPs and board",
+      "last_used": "• Platforms, Cloud & Tooling: C, C++, Python, Bash, ARM/x86 assembly; Linux kernel, Yocto/BitBake, U-Boot and bootloaders, BSPs and board",
+      "evidence_spans": [
+        [
+          8886,
+          9023
+        ]
+      ]
+    },
+    {
+      "raw": "Bash",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "• Platforms, Cloud & Tooling: C, C++, Python, Bash, ARM/x86 assembly; Linux kernel, Yocto/BitBake, U-Boot and bootloaders, BSPs and board",
+      "last_used": "• Platforms, Cloud & Tooling: C, C++, Python, Bash, ARM/x86 assembly; Linux kernel, Yocto/BitBake, U-Boot and bootloaders, BSPs and board",
+      "evidence_spans": [
+        [
+          8886,
+          9023
+        ]
+      ]
+    },
+    {
+      "raw": "AWS",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "last_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "evidence_spans": [
+        [
+          9024,
+          9153
+        ]
+      ]
+    },
+    {
+      "raw": "Docker",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "last_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "evidence_spans": [
+        [
+          9024,
+          9153
+        ]
+      ]
+    },
+    {
+      "raw": "Kubernetes",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "last_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "evidence_spans": [
+        [
+          9024,
+          9153
+        ]
+      ]
+    },
+    {
+      "raw": "Git",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "last_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "evidence_spans": [
+        [
+          9024,
+          9153
+        ]
+      ]
+    },
+    {
+      "raw": "Jenkins",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "last_used": "bring-up, OpenBMC, BIOS, Android/HAL, RTOS (Nucleus, Quantum); AWS, GCP, Azure, Docker, Kubernetes; Git, Gerrit, Jenkins CI, GDB,",
+      "evidence_spans": [
+        [
+          9024,
+          9153
+        ]
+      ]
+    },
+    {
+      "raw": "roadmapping",
+      "canonical": null,
+      "match_route": null,
+      "sections": [
+        "skills"
+      ],
+      "mentions": 1,
+      "first_used": "technology roadmapping, vendor and ODM management, cross-functional team leadership, engineer development",
+      "last_used": "technology roadmapping, vendor and ODM management, cross-functional team leadership, engineer development",
+      "evidence_spans": [
+        [
+          9339,
+          9444
+        ]
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "• Granted patent — US 10,606,605 B2: Software Upgrade & Disaster Recovery (2020).",
+      "title_canonical": null,
+      "title_family": null,
+      "seniority": null,
+      "employment_type": "full_time",
+      "location": null,
+      "start": null,
+      "end": null,
+      "months": null,
+      "bullets": [
+        {
+          "text": "Whitepaper / provisional — Virtual Mobile Computing via Ultra-High-Speed, Low-Latency 5G MEC (whitepaper 2022; provisional application",
+          "span": [
+            9551,
+            9685
+          ]
+        },
+        {
+          "text": "filed 2026).",
+          "span": [
+            9686,
+            9698
+          ]
+        },
+        {
+          "text": "Open source — github.com/deepakaroraembedded-design — noun-rank cross-model summary validation · stock-market analysis ·",
+          "span": [
+            9701,
+            9821
+          ]
+        },
+        {
+          "text": "ResumeRanker.",
+          "span": [
+            9822,
+            9835
+          ]
+        }
+      ],
+      "skills_evidenced": [],
+      "span": [
+        9467,
+        9872
+      ]
+    }
+  ],
+  "timeline": {
+    "total_months_covered": 252,
+    "gaps": [],
+    "median_tenure_months": 25,
+    "role_count": 9
+  },
+  "integrity": null,
+  "parse_completeness": 0.94,
+  "diagnostics": []
+}

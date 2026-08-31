@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import date
 
-from ats_scan.models.resume import EmploymentType, ExperienceEntry
-from ats_scan.models.source import ExtractedText, ExtractionMetadata
-from ats_scan.structure.entities import (
+from resume_ranker.models.resume import EmploymentType, ExperienceEntry
+from resume_ranker.models.source import ExtractedText, ExtractionMetadata
+from resume_ranker.structure.entities import (
     build_timeline,
     compute_parse_completeness,
     detect_multi_resume,
@@ -15,7 +15,7 @@ from ats_scan.structure.entities import (
     extract_skills,
     structure_from_sections,
 )
-from ats_scan.structure.sections import Section, SectionType, segment_sections
+from resume_ranker.structure.sections import Section, SectionType, segment_sections
 
 
 class TestExtractIdentity:
@@ -265,7 +265,7 @@ Python, AWS
         extracted = ExtractedText(text=text, metadata=ExtractionMetadata(method="test"))
         sections = segment_sections(text)
         resume = structure_from_sections(extracted, sections, date(2026, 8, 29))
-        from ats_scan.models.resume import CanonicalResume
+        from resume_ranker.models.resume import CanonicalResume
 
         canonical = CanonicalResume(
             candidate_id="c_test",
@@ -281,7 +281,7 @@ Python, AWS
         assert score >= 0.5
 
     def test_empty_resume(self) -> None:
-        from ats_scan.models.resume import CanonicalResume
+        from resume_ranker.models.resume import CanonicalResume
 
         resume = CanonicalResume(candidate_id="c_empty", parse_completeness=None)
         score = compute_parse_completeness(resume)
@@ -311,7 +311,7 @@ class TestExtractProjects:
     """Tests for project extraction."""
 
     def test_project_with_dates(self) -> None:
-        from ats_scan.structure.entities import _extract_projects
+        from resume_ranker.structure.entities import _extract_projects
 
         text = "Resume Parser\n- Built a parser.\n2020 – 2021"
         section = Section(
@@ -393,6 +393,6 @@ class TestIdentityVariations:
 
 
 def date_value(value: str) -> object:
-    from ats_scan.models.resume import DateValue
+    from resume_ranker.models.resume import DateValue
 
     return DateValue(value=value)

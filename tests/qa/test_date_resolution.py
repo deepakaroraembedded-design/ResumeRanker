@@ -5,11 +5,11 @@ from typing import Any
 
 import pytest
 
-from ats_scan.models.resume import DatePrecision, DateValue
+from resume_ranker.models.resume import DatePrecision, DateValue
 
 
 def _resolve_date_funcs() -> list[tuple[str, Any]]:
-    from ats_scan.scoring.dimensions import (
+    from resume_ranker.scoring.dimensions import (
         s4_experience,
         s5_title,
         s6_domain,

@@ -1,0 +1,143 @@
+schema_version: '1.0'
+job_id: principal-software-development-engineer
+title: Principal Software Development Engineer
+title_family: null
+target_seniority: lead
+domain: null
+experience:
+  min_years: 10
+  target_years: 13
+  count_internships: false
+education:
+  min_level: bachelors
+  fields:
+  - computer science
+  equivalent_experience_allowed: true
+  knockout: false
+required_skills:
+- canonical: linux kernel-based networking (l2/l3)
+  weight: 3
+  knockout: false
+- canonical: stateful firewalls
+  weight: 3
+  knockout: false
+- canonical: nat
+  weight: 3
+  knockout: false
+- canonical: network drivers
+  weight: 3
+  knockout: false
+- canonical: routing protocols(bgp
+  weight: 3
+  knockout: false
+- canonical: ospf
+  weight: 3
+  knockout: false
+- canonical: pim)
+  weight: 3
+  knockout: false
+- canonical: and protocols like vlans
+  weight: 3
+  knockout: false
+- canonical: dhcp
+  weight: 3
+  knockout: false
+- canonical: dns
+  weight: 3
+  knockout: false
+- canonical: ssl
+  weight: 3
+  knockout: false
+- canonical: dtls
+  weight: 3
+  knockout: false
+- canonical: quic
+  weight: 3
+  knockout: false
+- canonical: ipsec
+  weight: 3
+  knockout: false
+- canonical: gre
+  weight: 3
+  knockout: false
+- canonical: wireguard
+  weight: 3
+  knockout: false
+- canonical: in go
+  weight: 4
+  knockout: false
+- canonical: understanding of ai/ml technologies
+  weight: 3
+  knockout: false
+preferred_skills:
+- canonical: experience integrating ai/ml frameworks
+  weight: 2
+- canonical: intelligent data path analysis models to optimize kernel-level networking
+    performance
+  weight: 2
+- canonical: automate predictive threat detection
+  weight: 2
+- canonical: technologies such as wireguard
+  weight: 2
+- canonical: various tunneling protocols such as gre
+  weight: 2
+- canonical: l2vpn
+  weight: 2
+- canonical: ha protocols such as vrrp alongside certifications like fips
+  weight: 2
+- canonical: fedramp
+  weight: 2
+- canonical: prior  tls
+  weight: 2
+- canonical: dtls
+  weight: 2
+- canonical: quic
+  weight: 2
+- canonical: ity with cloud computing platforms like aws
+  weight: 2
+- canonical: azure
+  weight: 2
+- canonical: containerization technologies such as docker
+  weight: 2
+- canonical: kubernetes
+  weight: 2
+- canonical: and advanced virtualization
+  weight: 2
+- canonical: security solutions
+  weight: 2
+certifications: []
+knockouts: []
+responsibility_chunks:
+- id: r1
+  text: Designing, developing, and optimizing the system, including networking and
+    security features, to support high-performance applications. Creating design and
+    functional specification documents while performing unit testing and automation
+    to ensure quality
+  weight: 3
+- id: r2
+  text: "Applying strong software design principles and deep troubleshooting expertise\
+    \ to deliver scalable, resilient, and impactful improvements to Zscaler\u2019\
+    s Zero Trust Security Services"
+  weight: 3
+- id: r3
+  text: Work directly with Engineering Architects, Product Managers, Customers, Solution
+    Architects to understand customer use cases. Review PRDs. Collaborating with cross-functional
+    teams to identify and resolve system-related issues, optimize system performance,
+    and innovate features
+  weight: 3
+- id: r4
+  text: Coach and mentor junior team members and ensure highest level of quality deliverables
+  weight: 3
+- id: r5
+  text: Ensuring federal certifications such as FIPS, FedRAMP, Common Criteria, and
+    SOC2 compliance
+  weight: 3
+compiled_by: heuristic:rule
+reviewed_by: null
+review_state: null
+warnings:
+- 'Proxy language detected: ''gender'''
+- 'Proxy language detected: ''religion'''
+- 'Proxy language detected: ''disability'''
+- 'Proxy language detected: ''pregnancy'''
+- required_skill_count=18 (limit 12)

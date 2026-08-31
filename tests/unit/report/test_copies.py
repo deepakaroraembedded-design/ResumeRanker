@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from ats_scan.models.run import RunResult
-from ats_scan.report.copies import copy_selected_resumes
+from resume_ranker.models.run import RunResult
+from resume_ranker.report.copies import copy_selected_resumes
 
 
 @pytest.fixture

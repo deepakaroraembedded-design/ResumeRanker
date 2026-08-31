@@ -5,13 +5,13 @@ import asyncio
 import numpy as np
 import pytest
 
-from ats_scan.embeddings.client import (
+from resume_ranker.embeddings.client import (
     HostedEmbeddingClient,
     LocalEmbeddingClient,
     create_embedding_client,
 )
-from ats_scan.models.config import EmbeddingConfig
-from ats_scan.protocols import EmbeddingClient
+from resume_ranker.models.config import EmbeddingConfig
+from resume_ranker.protocols import EmbeddingClient
 
 
 class FakeSentenceTransformer:
@@ -35,7 +35,7 @@ class FakeSentenceTransformer:
 def patch_transformer(monkeypatch: pytest.MonkeyPatch) -> FakeSentenceTransformer:
     fake = FakeSentenceTransformer("all-MiniLM-L6-v2")
     monkeypatch.setattr(
-        "ats_scan.embeddings.client.SentenceTransformer",
+        "resume_ranker.embeddings.client.SentenceTransformer",
         lambda model_name: fake,
     )
     return fake

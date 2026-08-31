@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ats_scan.llm.cache import Cache
+from resume_ranker.llm.cache import Cache
 
 
 class TestCache:
