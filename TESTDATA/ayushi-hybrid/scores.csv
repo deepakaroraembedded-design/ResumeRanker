@@ -1,3 +1,0 @@
-# This output is decision support only. A human reviewer must confirm every advance or reject decision before any candidate is contacted or excluded.
-rank,candidate_id,file,name,composite,band,selected,eligible,confidence,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,matched_required,missing_required,relevant_years,flags,reason_codes,explanation
-1,c_a0bd7152,,AYUSHI RAJ,74.53,good,true,true,0.60,100.00,,,42.38,33.35,100.00,52.00,,87.50,100.00,,,5.40,,,Composite 74.5 (good). Strongest matches: none. Key gaps: none. Flags: none.
