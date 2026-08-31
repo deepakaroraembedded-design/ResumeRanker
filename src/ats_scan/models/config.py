@@ -175,7 +175,7 @@ class EmbeddingConfig(BaseModel):
     """Embedding client configuration."""
 
     local: bool = True
-    model: str | None = None
+    model: str | None = "Qwen/Qwen3-Embedding-8B"
     batch_size: int = 64
 
 

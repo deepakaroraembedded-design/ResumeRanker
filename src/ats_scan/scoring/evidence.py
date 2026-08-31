@@ -10,6 +10,9 @@ from datetime import date, datetime
 from enum import StrEnum
 from typing import Any, Protocol, cast
 
+import numpy as np
+
+from ats_scan.embeddings.classifier import KMeansClusterer
 from ats_scan.models.config import ProficiencyFactors, RecencyFactors, ScoringConfig
 from ats_scan.models.embeddings import Vector
 from ats_scan.models.jobspec import PreferredSkill, RequiredSkill
@@ -300,16 +303,6 @@ def _run_embed_sync(client: EmbeddingClient, texts: Sequence[str]) -> Sequence[V
         return executor.submit(asyncio.run, coro).result()
 
 
-def _cosine(a: Vector, b: Vector) -> float:
-    """Cosine similarity between two vectors."""
-    dot = sum(x * y for x, y in zip(a, b, strict=True))
-    norm_a = math.sqrt(sum(x * x for x in a))
-    norm_b = math.sqrt(sum(x * x for x in b))
-    if norm_a == 0.0 or norm_b == 0.0:
-        return 0.0
-    return dot / (norm_a * norm_b)
-
-
 def _has_semantic_overlap(a: str, b: str) -> bool:
     """Return True if two skill phrases share a meaningful token or stem."""
     a_words = set(re.findall(r"[a-z0-9]+", a.lower())) - _SEMANTIC_STOP_WORDS
@@ -328,10 +321,11 @@ def _semantic_skill_evidence(
 ) -> tuple[SkillEvidence, ...]:
     """Embeddings-based semantic fallback for skill coverage (S1/S2/S8).
 
-    Only used when the deterministic ontology cascade finds no evidence. It
-    compares the target skill phrase to raw skill mentions in the resume and
-    returns partial-credit EMBEDDING evidence when cosine similarity and a
-    token overlap are both high enough.
+    Only used when the deterministic ontology cascade finds no evidence. A
+    scikit-learn ``KMeans`` classifier is fit on the target phrase plus every
+    raw skill mention from the resume. Candidates that land in the same cluster
+    as the target, and also share a meaningful token overlap with it, are
+    returned as partial-credit ``EMBEDDING`` evidence.
     """
     embeddings = getattr(ctx, "embeddings", None)
     if embeddings is None:
@@ -398,23 +392,29 @@ def _semantic_skill_evidence(
     unique_texts = list({c[0] for c in candidates})
     try:
         vectors = _run_embed_sync(client, unique_texts)
+        target_vec = _run_embed_sync(client, [target])[0]
     except Exception:
         return ()
     vector_map = dict(zip(unique_texts, vectors, strict=True))
 
-    try:
-        target_vec = _run_embed_sync(client, [target])[0]
-    except Exception:
-        return ()
+    # Build a single clustering model on the target + all unique candidates.
+    features = np.asarray(
+        [target_vec] + [vector_map[text] for text in unique_texts], dtype=np.float64
+    )
+    clusterer = KMeansClusterer(n_clusters=2, random_state=0).fit(features)
+    target_label = int(clusterer.labels()[0])
+    max_center_dist = float(max(clusterer.center_distance(features))) or 1.0
 
     found: list[SkillEvidence] = []
     for raw, span, quote, kind, last_used in candidates:
-        cosine = _cosine(target_vec, vector_map[raw])
-        if cosine < _SEMANTIC_MATCH_THRESHOLD:
+        candidate_index = unique_texts.index(raw) + 1
+        if int(clusterer.labels()[candidate_index]) != target_label:
             continue
         if not _has_semantic_overlap(target, raw):
             continue
-        factor = min(_SEMANTIC_MATCH_MAX_FACTOR, f_match(MatchRoute.EMBEDDING, cosine))
+        dist = float(clusterer.center_distance(features[candidate_index : candidate_index + 1])[0])
+        score = max(0.0, 1.0 - dist / max_center_dist)
+        factor = min(_SEMANTIC_MATCH_MAX_FACTOR, f_match(MatchRoute.EMBEDDING, score))
         if factor <= 0.0:
             continue
         found.append(
@@ -426,7 +426,7 @@ def _semantic_skill_evidence(
                 quote=quote,
                 kind=kind,
                 last_used=last_used,
-                cosine=cosine,
+                cosine=score,
             )
         )
     return tuple(found)

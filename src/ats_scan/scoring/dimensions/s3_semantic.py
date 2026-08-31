@@ -9,6 +9,7 @@ from typing import Any, ClassVar
 import numpy as np
 from pydantic import BaseModel, Field
 
+from ats_scan.embeddings.classifier import KnnClassifier
 from ats_scan.models.embeddings import Vector
 from ats_scan.models.jobspec import JobSpec, PreferredSkill, RequiredSkill
 from ats_scan.models.resume import Bullet, CanonicalResume
@@ -244,35 +245,37 @@ def _from_skill(skill: RequiredSkill | PreferredSkill, route: str) -> _Chunk:
     )
 
 
-def _cosine_matrix(a: Sequence[Vector], b: Sequence[Vector]) -> np.ndarray:
-    """Pairwise cosine similarity matrix; row = a, col = b."""
-    if not a or not b:
-        return np.zeros((0, 0))
-    a_arr = np.asarray(a, dtype=np.float64)
-    b_arr = np.asarray(b, dtype=np.float64)
-    a_norm = np.linalg.norm(a_arr, axis=1, keepdims=True)
-    b_norm = np.linalg.norm(b_arr, axis=1, keepdims=True)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        cosine = (a_arr @ b_arr.T) / (a_norm * b_norm.T)
-    return np.nan_to_num(cosine, nan=0.0, posinf=0.0, neginf=0.0)
-
-
 def _raw_similarity(
     jd_chunks: Sequence[_Chunk],
     resume_chunks: Sequence[_Chunk],
     jd_vectors: Sequence[Vector],
     resume_vectors: Sequence[Vector],
 ) -> float:
-    """TRD §5.3.3 — asymmetric max-similarity, JD-weighted mean."""
+    """TRD §5.3.3 — classifier-based asymmetric similarity, JD-weighted mean.
+
+    Instead of a raw cosine matrix, a K-nearest-neighbour classifier is fit on
+    the resume chunks and each JD chunk is classified against them.  The maximum
+    predicted probability for a JD chunk is used as its relevance score.
+    """
     if not jd_chunks or not resume_chunks or not jd_vectors or not resume_vectors:
         return 0.0
-    matrix = _cosine_matrix(jd_vectors, resume_vectors)
-    max_sims = np.max(matrix, axis=1)
+    resume_features = np.asarray(resume_vectors, dtype=np.float64)
+    resume_labels = list(range(len(resume_chunks)))
+    classifier = KnnClassifier(
+        resume_features,
+        resume_labels,
+        n_neighbors=5,
+        weights="distance",
+        metric="cosine",
+    )
+    jd_features = np.asarray(jd_vectors, dtype=np.float64)
+    proba = classifier.predict_proba(jd_features)
+    max_proba = np.max(proba, axis=1)
     weights = np.asarray([chunk.weight for chunk in jd_chunks], dtype=np.float64)
     total = np.sum(weights)
     if total <= 0.0:
         return 0.0
-    return float(np.sum(weights * max_sims) / total)
+    return float(np.sum(weights * max_proba) / total)
 
 
 def _calibrate(raw: float, pool: PoolStatistics) -> float:
@@ -338,18 +341,38 @@ def _evidence_from_best_match(
     resume_chunks: Sequence[_Chunk],
     resume_vectors: Sequence[Vector],
 ) -> tuple[Evidence, ...]:
-    """Return the highest-similarity resume chunk with a verified span."""
+    """Return the highest-similarity resume chunk with a verified span.
+
+    A scikit-learn nearest-neighbour index fit on the resume chunks is used to
+    rank all (JD chunk, resume chunk) pairs by cosine distance.  The first pair
+    whose resume chunk has a verified span is returned as evidence.
+    """
     if not jd_chunks or not resume_chunks or not jd_vectors or not resume_vectors:
         return ()
-    matrix = _cosine_matrix(jd_vectors, resume_vectors)
-    if matrix.size == 0:
+    resume_features = np.asarray(resume_vectors, dtype=np.float64)
+    resume_labels = list(range(len(resume_chunks)))
+    classifier = KnnClassifier(
+        resume_features,
+        resume_labels,
+        n_neighbors=1,
+        weights="uniform",
+        metric="cosine",
+    )
+    jd_features = np.asarray(jd_vectors, dtype=np.float64)
+    distances, indices = classifier.nearest_neighbors(jd_features, n_neighbors=len(resume_chunks))
+    if distances.shape[1] == 0:
         return ()
 
-    # Prefer the single best pair; if it lacks a span, use the best pair that has one.
-    flat_order = np.argsort(matrix, axis=None)[::-1]
-    for flat_idx in flat_order:
-        jd_idx, resume_idx = np.unravel_index(flat_idx, matrix.shape)
-        chunk = resume_chunks[int(resume_idx)]
+    # Collect every (jd_idx, resume_idx) pair with its distance, then pick the
+    # closest pair whose resume chunk carries a verified span.
+    pairs = [
+        (float(distances[jd_idx, rank]), jd_idx, int(indices[jd_idx, rank]))
+        for jd_idx in range(len(jd_chunks))
+        for rank in range(indices.shape[1])
+    ]
+    pairs.sort()
+    for _, _jd_idx, resume_idx in pairs:
+        chunk = resume_chunks[resume_idx]
         if chunk.span is not None:
             return (Evidence(span=chunk.span, quote=chunk.text, source="resume"),)
     return ()

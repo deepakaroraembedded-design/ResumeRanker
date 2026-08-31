@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, cast
 import numpy as np
 from rapidfuzz import fuzz
 
+from ats_scan.embeddings.classifier import KnnClassifier
 from ats_scan.models.config import OntologyConfig
 from ats_scan.models.ontology import SkillMatch, SkillRelation
 from ats_scan.ontology.loader import SkillEntry, load_skills
@@ -72,6 +73,7 @@ class SkillOntology:
         self._parents = {e.canonical: e.parents for e in entries}
         self._embedding_client = embeddings
         self._embedding_vectors: dict[str, np.ndarray] | None = None
+        self._embedding_classifier: KnnClassifier[str] | None = None
 
     @staticmethod
     def _default_path() -> Path:
@@ -166,21 +168,32 @@ class SkillOntology:
         return bool(fuzz.ratio(a, b) >= self._fuzzy_threshold)
 
     def _embedding_match(self, raw: str) -> SkillMatch | None:
-        """Try the embedding nearest-neighbour tier when a client is available."""
+        """Try the embedding classifier tier when a client is available.
+
+        The nearest-neighbour lookup is replaced by a scikit-learn
+        ``KNeighborsClassifier`` trained on the canonical-skill embeddings.
+        The classifier predicts the closest canonical label, and a separate
+        ``NearestNeighbors`` index provides the cosine distance to the nearest
+        training example for thresholding.
+        """
         if self._embedding_client is None:
             return None
         try:
-            vectors = self._ensure_embedding_vectors()
+            classifier = self._ensure_embedding_classifier()
         except RuntimeError:
             return None
-        if not vectors:
+        if classifier is None:
             return None
         raw_vector = self._embed_sync([raw])
         if not raw_vector:
             return None
-        best = self._nearest(raw_vector[0], vectors)
-        if best[1] >= self._embedding_threshold:
-            return SkillMatch(canonical=best[0], raw=raw, relation=SkillRelation.EMBEDDING)
+        query = np.asarray([raw_vector[0]], dtype=np.float64)
+        predicted = classifier.predict(query)[0]
+        distance = classifier.nearest_distances(query)[0]
+        # KNN classifier with cosine distance: distance == 1 - cosine_similarity.
+        cosine_similarity = 1.0 - float(distance)
+        if cosine_similarity >= self._embedding_threshold:
+            return SkillMatch(canonical=predicted, raw=raw, relation=SkillRelation.EMBEDDING)
         return None
 
     def _ensure_embedding_vectors(self) -> dict[str, np.ndarray]:
@@ -192,8 +205,26 @@ class SkillOntology:
             return self._embedding_vectors
         vectors = self._embed_sync(list(self._canonicals))
         for canonical, vector in zip(self._canonicals, vectors, strict=True):
-            self._embedding_vectors[canonical] = np.asarray(vector, dtype=np.float32)
+            self._embedding_vectors[canonical] = np.asarray(vector, dtype=np.float64)
         return self._embedding_vectors
+
+    def _ensure_embedding_classifier(self) -> KnnClassifier[str] | None:
+        """Lazy, one-time build of the canonical-skill KNN classifier."""
+        if self._embedding_classifier is not None:
+            return self._embedding_classifier
+        vectors = self._ensure_embedding_vectors()
+        if not vectors or self._embedding_client is None:
+            return None
+        labels = list(vectors.keys())
+        features = np.asarray([vectors[label] for label in labels], dtype=np.float64)
+        self._embedding_classifier = KnnClassifier(
+            features,
+            labels,
+            n_neighbors=5,
+            weights="distance",
+            metric="cosine",
+        )
+        return self._embedding_classifier
 
     def _embed_sync(self, texts: list[str]) -> list[tuple[float, ...]]:
         """Run the async embedding client synchronously when safe."""

@@ -4,8 +4,10 @@ import asyncio
 import hashlib
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
+import torch
 from sentence_transformers import SentenceTransformer
 
 from ats_scan.models.config import EmbeddingConfig
@@ -16,10 +18,13 @@ from ats_scan.protocols import EmbeddingClient
 class LocalEmbeddingClient:
     """Local sentence-transformer embedding client (TRD §14).
 
-    The model is loaded lazily on the first ``embed`` call and inference is
-    run in a worker thread so the async API remains non-blocking.  Embeddings
-    are cached by SHA-256 of the input text and batched according to the
-    configured batch size.
+    The default model is the Qwen 8B embedding model installed on the host; the
+    older ``all-MiniLM-L6-v2`` model remains selectable via configuration.  Qwen
+    models are loaded with ``trust_remote_code=True`` and placed on the fastest
+    available accelerator.  The model is loaded lazily on the first ``embed``
+    call and inference is run in a worker thread so the async API remains
+    non-blocking.  Embeddings are cached by SHA-256 of the input text and batched
+    according to the configured batch size.
     """
 
     dimensions: int = 384
@@ -30,15 +35,36 @@ class LocalEmbeddingClient:
         batch_size: int = 64,
         *,
         cache: bool = True,
+        device: str | None = None,
+        model_kwargs: dict[str, Any] | None = None,
     ) -> None:
-        self._model_name = model or "all-MiniLM-L6-v2"
+        self._model_name = model or "Qwen/Qwen3-Embedding-8B"
         self.batch_size = batch_size
         self._cache: dict[str, Vector] | None = {} if cache else None
         self._model: SentenceTransformer | None = None
+        self._device = device
+        self._model_kwargs = model_kwargs or {}
+        if "qwen" in self._model_name.lower():
+            self.dimensions = 4096
+
+    def _resolve_device(self) -> str:
+        if self._device:
+            return self._device
+        if torch.cuda.is_available():
+            return "cuda"
+        return "cpu"
 
     def _load_model(self) -> SentenceTransformer:
         if self._model is None:
-            self._model = SentenceTransformer(self._model_name)
+            kwargs: dict[str, Any] = dict(self._model_kwargs)
+            if "qwen" in self._model_name.lower():
+                kwargs.setdefault("trust_remote_code", True)
+                kwargs.setdefault("device", self._resolve_device())
+            self._model = SentenceTransformer(self._model_name, **kwargs)
+            if hasattr(self._model, "get_embedding_dimension"):
+                self.dimensions = cast(int, self._model.get_embedding_dimension())
+            elif hasattr(self._model, "get_sentence_embedding_dimension"):
+                self.dimensions = cast(int, self._model.get_sentence_embedding_dimension())
         return self._model
 
     def model_identifier(self) -> str:

@@ -66,9 +66,6 @@ from ats_scan.scoring.dimensions.s3_semantic import (
     _Chunk as S3Chunk,
 )
 from ats_scan.scoring.dimensions.s3_semantic import (
-    _cosine_matrix as s3_cosine_matrix,
-)
-from ats_scan.scoring.dimensions.s3_semantic import (
     _evidence_from_best_match as s3_evidence_from_best_match,
 )
 from ats_scan.scoring.dimensions.s3_semantic import (
@@ -458,10 +455,10 @@ def test_full_dimension_smoke() -> None:
     assert S2PreferredSkills().score(resume, spec, ctx).value == pytest.approx(0.0, abs=1e-6)
 
     s3 = S3Semantic().score(resume, spec, ctx)
-    assert s3.value == pytest.approx(0.0, abs=1e-6)
+    assert s3.value == pytest.approx(5.693635875057952, abs=1e-6)
     assert s3.detail is not None
     assert s3.detail["chunk_counts"] == {"jd": 6, "resume": 4}
-    assert s3.detail["raw"] == pytest.approx(0.11165547966089587, abs=1e-6)
+    assert s3.detail["raw"] == pytest.approx(0.2756213614377608, abs=1e-6)
 
     assert S4Experience().score(resume, spec, ctx).value == pytest.approx(43.62, abs=1e-2)
     assert S5Title().score(resume, spec, ctx).value == pytest.approx(14.87, abs=1e-2)
@@ -513,23 +510,6 @@ def test_s3_from_skill() -> None:
     assert chunk.text == "python"
     assert chunk.weight == 5
     assert chunk.origin_id == "required:python"
-
-
-def test_s3_cosine_matrix() -> None:
-    """Pairwise cosine matrix must be normalised and handle empty/edge inputs."""
-    assert s3_cosine_matrix([], []).shape == (0, 0)
-    assert s3_cosine_matrix([(1.0, 0.0)], []).shape == (0, 0)
-
-    a = [(1.0, 0.0, 0.0)]
-    b = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
-    matrix = s3_cosine_matrix(a, b)
-    assert matrix.shape == (1, 2)
-    assert matrix[0, 0] == pytest.approx(1.0, abs=1e-6)
-    assert matrix[0, 1] == pytest.approx(0.0, abs=1e-6)
-
-    # Zero vectors produce NaN in cosine; the function must replace them with 0.
-    zero_matrix = s3_cosine_matrix([(0.0, 0.0, 0.0)], [(1.0, 0.0, 0.0)])
-    assert zero_matrix[0, 0] == pytest.approx(0.0, abs=1e-6)
 
 
 def test_s3_raw_similarity() -> None:
