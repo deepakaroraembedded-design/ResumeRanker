@@ -287,6 +287,7 @@ class Pipeline:
             candidate_id = self._candidate_id(doc, resume)
             if resume.candidate_id != candidate_id:
                 resume.candidate_id = candidate_id
+            resume.source = doc
 
             findings, integrity_diagnostics, _flags = self._inspect_integrity(doc, text, resume)
             all_diagnostics.extend(integrity_diagnostics)

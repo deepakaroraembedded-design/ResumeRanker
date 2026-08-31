@@ -41,6 +41,8 @@ The system is designed to **never raise on bad data**. Every stage returns a `St
 - **Pinned embedding model identifier** — the run manifest records the exact Hugging Face snapshot hash of the local embedding model (e.g., `Qwen/Qwen3-Embedding-8B@<snapshot_hash>`), making S3 reproducibility auditable.
 - **S3 restored to TRD max-cosine similarity** — S3 now uses `sim(r_j) = max_k cos(r_j, e_k)` per TRD §5.3.3 instead of classifier probabilities, which had compressed raw scores below the calibration floor and zeroed the dimension for every candidate.
 - **JD prose noise filtering** — the JobSpec compiler now rejects responsibility-like fragments ("shipping products", "external vendors understand") and sentence fragments that merely mention "certification", so only genuine skills and certifications enter the spec.
+- **Batch JD discovery (`run-all`)** — a single command discovers every `JD<index>` folder under a root, pairs each with its `RESUMESJD<index>` sibling, and runs the full pipeline once per pair into `<out>/<JDx>/`.
+- **Source filenames in results** — every `CanonicalResume` now carries its `SourceDocument`, so `scores.csv` reports the full candidate filename (in addition to candidate name) instead of a blank `file` column.
 
 ---
 
@@ -415,6 +417,23 @@ Key flags:
 - `--force` — overwrite an existing output directory
 - `--review-jobspec` — halt after compiling the JD so you can review the generated `JobSpec`
 - `--dry-run` — ingest and compile only; do not score
+
+### Run all JDs against their mapped resumes
+
+The `run-all` command discovers every JD folder and runs each against its
+mapped resume folder in one batch:
+
+```bash
+# Convention: ./TESTDATA/JD1/ contains the JD, ./TESTDATA/RESUMESJD1/ the resumes
+uv run resume-ranker run-all --root TESTDATA --out resume-ranker-out-all --force
+```
+
+Discovery rules:
+
+- A JD folder is any sibling directory named `JD<index>` (e.g. `JD1`, `JD2`, case-insensitive).
+- The JD file is the `JD`/`jd`/`job_description` text file inside it, or the single `.txt`/`.md` file in the folder.
+- The mapped resume folder is a sibling named `RESUMESJD<index>` (case-insensitive).
+- Each job's artefacts are written to `<out>/<JDx>/`. A JD without a mapped resume folder, an unreadable resume folder, or a pre-existing output (without `--force`) is skipped and reported; the batch exits with code 5 if any bundle failed.
 
 ### Parse resumes without scoring
 

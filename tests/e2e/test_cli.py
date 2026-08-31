@@ -300,6 +300,14 @@ def test_run_command_with_real_pipeline(tmp_path: Path) -> None:
     assert (out / "diagnostics").is_dir()
     assert (out / "selected").is_dir()
 
+    # The file column must carry the full source path for every candidate.
+    import csv as _csv
+
+    rows = list(_csv.DictReader((out / "scores.csv").read_text(encoding="utf-8").splitlines()[1:]))
+    assert len(rows) == 2
+    assert all(row["file"] for row in rows)
+    assert "alice.txt" in rows[0]["file"] or "bob.txt" in rows[0]["file"]
+
     manifest = json.loads((out / "run_manifest.json").read_text(encoding="utf-8"))
     assert manifest["documents_in"] == 2
     assert manifest["documents_failed"] == 0
@@ -495,3 +503,103 @@ def test_audit_command_incomplete_manifest(tmp_path: Path) -> None:
     (tmp_path / "run_manifest.json").write_text('{"run_id": "x"}', encoding="utf-8")
     result = runner.invoke(app, ["audit", "--out", str(tmp_path)])
     assert result.exit_code == 2, result.output
+
+
+def test_discover_job_bundles(tmp_path: Path) -> None:
+    """JDx folders pair with their RESUMESJDx siblings; unmatched folders are skipped."""
+    (tmp_path / "JD1").mkdir()
+    (tmp_path / "JD1" / "JD.txt").write_text("Role\nPython\n", encoding="utf-8")
+    (tmp_path / "RESUMESJD1").mkdir()
+    (tmp_path / "JD2").mkdir()
+    (tmp_path / "JD2" / "jd.md").write_text("Role\nGo\n", encoding="utf-8")
+    (tmp_path / "resumesjd2").mkdir()  # case-insensitive match
+    (tmp_path / "JD3").mkdir()  # no resume folder -> skipped
+    (tmp_path / "JD3" / "JD.txt").write_text("Role\n", encoding="utf-8")
+    (tmp_path / "NOT_A_JD").mkdir()  # not a JD folder -> skipped
+
+    from resume_ranker.cli.main import _discover_job_bundles
+
+    bundles = _discover_job_bundles(tmp_path)
+    names = {b.name for b in bundles}
+    assert names == {"JD1", "JD2"}
+    by_name = {b.name: b for b in bundles}
+    assert by_name["JD1"].jd_file.name == "JD.txt"
+    assert by_name["JD1"].resumes_dir.name == "RESUMESJD1"
+    assert by_name["JD2"].jd_file.name == "jd.md"
+    assert by_name["JD2"].resumes_dir.name == "resumesjd2"
+
+
+def test_run_all_command_requires_job_folders(tmp_path: Path) -> None:
+    """run-all with no JD folders exits 3."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    result = runner.invoke(app, ["run-all", "--root", str(empty)])
+    assert result.exit_code == 3, result.output
+
+
+def test_run_all_command_batch(
+    tmp_path: Path,
+    fake_pipeline: Pipeline,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """run-all processes every discovered bundle into its own output folder."""
+    monkeypatch.setattr("resume_ranker.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
+    (tmp_path / "JD1").mkdir()
+    (tmp_path / "JD1" / "JD.txt").write_text("Role\nPython\n", encoding="utf-8")
+    (tmp_path / "RESUMESJD1").mkdir()
+    (tmp_path / "RESUMESJD1" / "r1.txt").write_text("resume one", encoding="utf-8")
+    (tmp_path / "JD2").mkdir()
+    (tmp_path / "JD2" / "JD.txt").write_text("Role\nGo\n", encoding="utf-8")
+    (tmp_path / "RESUMESJD2").mkdir()
+    (tmp_path / "RESUMESJD2" / "r2.txt").write_text("resume two", encoding="utf-8")
+
+    out = tmp_path / "out"
+    result = runner.invoke(app, ["run-all", "--root", str(tmp_path), "--out", str(out), "--force"])
+    assert result.exit_code == 0, result.output
+    assert "Discovered 2 job bundle(s)" in result.output
+    assert "Batch complete" in result.output
+    assert (out / "JD1" / "fake.txt").exists()
+    assert (out / "JD2" / "fake.txt").exists()
+
+
+def test_run_all_command_skip_existing_output_without_force(
+    tmp_path: Path,
+    fake_pipeline: Pipeline,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """run-all skips a bundle whose output exists when --force is not given."""
+    monkeypatch.setattr("resume_ranker.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
+    (tmp_path / "JD1").mkdir()
+    (tmp_path / "JD1" / "JD.txt").write_text("Role\nPython\n", encoding="utf-8")
+    (tmp_path / "RESUMESJD1").mkdir()
+    (tmp_path / "RESUMESJD1" / "r1.txt").write_text("resume one", encoding="utf-8")
+
+    out = tmp_path / "out"
+    bundle_out = out / "JD1"
+    bundle_out.mkdir(parents=True)
+    (bundle_out / "existing.txt").write_text("keep", encoding="utf-8")
+
+    result = runner.invoke(app, ["run-all", "--root", str(tmp_path), "--out", str(out)])
+    assert result.exit_code == 5, result.output
+    assert "Skipping JD1" in result.output
+
+
+def test_run_all_command_dry_run(
+    tmp_path: Path,
+    fake_pipeline: Pipeline,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """run-all --dry-run reports bundles without scoring."""
+    monkeypatch.setattr("resume_ranker.cli.main.build_pipeline", lambda _cfg, _mode: fake_pipeline)
+    (tmp_path / "JD1").mkdir()
+    (tmp_path / "JD1" / "JD.txt").write_text("Role\nPython\n", encoding="utf-8")
+    (tmp_path / "RESUMESJD1").mkdir()
+    (tmp_path / "RESUMESJD1" / "r1.txt").write_text("resume one", encoding="utf-8")
+
+    out = tmp_path / "out"
+    result = runner.invoke(
+        app, ["run-all", "--root", str(tmp_path), "--out", str(out), "--dry-run"]
+    )
+    assert result.exit_code == 0, result.output
+    assert "[dry-run]" in result.output
+    assert not (out / "JD1").exists()
