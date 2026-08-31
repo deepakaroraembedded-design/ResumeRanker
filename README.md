@@ -4,7 +4,7 @@ Resume screening and scoring engine that turns a job description and a set of re
 
 The full specification lives in the companion documents:
 
-- `docs/TRD.md` — requirements, data model, formulas, LLM contracts, fairness rules
+- `docs/TRD.md` — requirements, data model, formulas, scoring contracts, fairness rules
 - `docs/IMPLEMENTATION_PLAN.md` — multi-agent build plan, component ownership map, merge order
 - `docs/QA_PLAN.md` — independent verification gates, reference oracle, mutation testing, traceability
 
@@ -14,7 +14,7 @@ This README focuses on the algorithmic core and how to run the code.
 
 ## What the engine does
 
-RESUME-RANKER is a deterministic, explainable pipeline:
+RESUME-RANKER is a deterministic, explainable, locally-run pipeline. It does not call LLM endpoints and loads its embedding model from the local Hugging Face cache:
 
 1. **Ingest** resumes and one job description per run.
 2. **Extract** text from PDF, Word, RTF and plain-text files, preserving reading order and page locations.
@@ -33,7 +33,7 @@ The system is designed to **never raise on bad data**. Every stage returns a `St
 
 - **Prose JD skill parsing** — the JobSpec compiler extracts required and preferred skills from free-text sections such as *Minimum Qualifications* and *Preferred Qualifications*, including parenthetical acronym lists and separators like `like` / `such as`.
 - **Robust skill-list extraction** — the resume structurer parses comma, semicolon, bullet, ampersand, and slash-delimited skill lines and ignores heading-style two-item lines (e.g., `SCOPE & AUTHORITY`).
-- **Keyword and semantic skill fallback** — when the ontology does not contain an exact match, the scorer falls back to keyword matching on extracted skills and, in hybrid mode, embedding-based semantic similarity.
+- **Keyword and semantic skill fallback** — when the ontology does not contain an exact match, the scorer falls back to keyword matching on extracted skills and, when embeddings are available, embedding-based semantic similarity.
 - **Context-aware integrity detection** — the keyword-stuffing detector excludes the dedicated skills section and uses a higher threshold, reducing false positives on dense but legitimate skills lists.
 - **Full-text skill scanner** — the resume structurer also scans the entire extracted text for known skill phrases and acronyms (e.g., `BGP`, `OSPF`, `WireGuard`, `containerization`) that may only appear in experience bullets, not in a dedicated skills list.
 - **Keyword overlap threshold fix** — multi-token skill targets such as `ai/ml` now require full token overlap, eliminating false matches against unrelated phrases like `AI governance`.
@@ -69,7 +69,6 @@ S1 = 100 × Σ(w_i × m_i) / Σ(w_i)
 | Ontology parent of required skill | 0.70 |
 | Fuzzy match ratio ≥ 92 | 0.85 |
 | Embedding cosine ≥ 0.82 | 0.60 + 0.75 × (cos − 0.82), capped at 0.85 |
-| LLM-adjudicated transferable | 0.50 |
 | No evidence | 0.00 |
 
 **`f_prof`** — strength of evidence:
@@ -114,11 +113,10 @@ if pool size >= 30:
 else:
     cal = clip( (raw - 0.25) / 0.45, 0, 1 )
 
-L = LLM rubric score in [0, 100] (R-SEM, 2 samples, mean)
-S3 = 0.6 × (100 × cal) + 0.4 × L
+S3 = 100 × cal
 ```
 
-In deterministic mode the LLM term is dropped and `S3 = 100 × cal`. Because S3 is calibrated against the pool, two runs over different pools are not directly comparable. The run manifest records the anchors so audits can detect this.
+Because S3 is calibrated against the pool, two runs over different pools are not directly comparable. The run manifest records the anchors so audits can detect this.
 
 #### S4 — Relevant experience depth (default weight 15)
 
@@ -296,7 +294,7 @@ Ranking is deterministic. The tie-break chain is applied in order:
 
 ## Fairness and integrity guardrails
 
-- **Blind mode** redacts name, email, phone, age proxies, gender and ethnicity signals from all text sent to scoring and to models.
+- **Blind mode** redacts name, email, phone, age proxies, gender and ethnicity signals from all text sent to scoring.
 - **Protected-attribute knockouts** are rejected; no knockout rule may reference protected or proxy-protected attributes.
 - **Integrity detectors** report `HIDDEN_TEXT`, `INJECTION_ATTEMPT` and `KEYWORD_STUFFING` with evidence spans; they add penalties but do not exclude.
 - **Adverse-impact checks** run before deployment and after weight calibration; a weight set that improves ranking while worsening group selection-rate ratios is rejected.
@@ -304,19 +302,19 @@ Ranking is deterministic. The tie-break chain is applied in order:
 
 ---
 
-## LLM usage
+## Local-first operation
 
-The engine uses an LLM only where deterministic alternatives are weak:
+This branch runs **without LLM calls**. All scoring is deterministic: rule-based parsing, ontology matching, embedding cosine similarity, and arithmetic. The embedding model is loaded from the local Hugging Face cache (`local_files_only=True`), so the first run after the model is cached needs no network access.
 
-| Call | Purpose | Input → output | Determinism controls |
-|---|---|---|---|
-| E-PARSE | Resume structuring | Extracted text → `CanonicalResume` JSON | temp 0, schema-constrained, evidence span per field, 2 repair attempts |
-| E-JD | Job description compilation | JD text → `JobSpec` JSON | temp 0, schema-constrained, human review gate before scoring |
-| R-SEM | Semantic rubric | JD criteria + evidence chunks → score 0–100 + rationale + spans | temp 0, 2 samples, agreement folded into confidence |
-| R-TRANS | Transferable-skill adjudication | Unmatched skill + evidence → match / no match + span | temp 0, single skill per call, must cite a span |
-| G-EXPL | Recruiter-facing explanation | `ScoreCard` → ≤120-word summary | temp 0.2, runs after scoring, cannot alter any value |
+| Stage | Mechanism | Determinism controls |
+|---|---|---|
+| Resume structuring | Heuristic section segmentation and entity extraction | Rule-based, reproducible over the same text |
+| Job description compilation | Heuristic skill/weight extraction from prose | Rule-based, no external model |
+| S3 semantic relevance | Local sentence-transformer embeddings + pool calibration | Anchored percentiles or fixed anchors recorded in the manifest |
+| Transferable skills | Not awarded; unmatched required skills are reported as gaps | — |
+| Explanations | Templated scorecard summary | Rule-based, cannot alter any score |
 
-Responses are validated against JSON schemas, cached by SHA-256 of (model id, prompt template version, rendered prompt), and retried on failure with the validation error appended. On persistent failure the stage degrades to its deterministic equivalent, sets `LLM_DEGRADED`, and lowers confidence rather than aborting.
+The `LLMClient` adapter, prompts, and cache remain in `src/resume_ranker/llm/` for future hybrid-mode work, but the pipeline never instantiates them.
 
 ---
 
@@ -351,7 +349,7 @@ Responses are validated against JSON schemas, cached by SHA-256 of (model id, pr
 │   ├── structure/                    # Resume structuring
 │   ├── jobspec/                      # JobSpec compilation
 │   ├── ontology/                     # ESCO + O*NET ontology + title taxonomy
-│   ├── llm/                          # LLM adapter, prompts, budget, cache
+│   ├── llm/                          # LLM adapter, prompts, budget, cache (currently unused)
 │   ├── embeddings/                   # Embedding client
 │   ├── integrity/                    # Injection, stuffing, hidden-text detectors
 │   ├── scoring/                      # Dimensions, aggregation, confidence, bands
@@ -400,19 +398,17 @@ uv run python scripts/validate_schemas.py docs/contracts src
 
 ```bash
 # Score a directory of resumes against a job description (offline / deterministic mode)
-uv run resume-ranker run --resumes path/to/resumes/ --jd path/to/jd.txt --out run-2026-08-30 --mode offline --force
-
-# Hybrid mode (uses LLM for structuring, S3 rubric, and explanations)
 uv run resume-ranker run --resumes path/to/resumes/ --jd path/to/jd.txt --out run-2026-08-30 --force
 ```
+
+The pipeline runs in **offline mode** by default. All scoring is deterministic; no LLM calls are made.
 
 Key flags:
 
 - `--resumes` — directory containing candidate resumes (PDF, Word, RTF, plain text, HTML)
 - `--jd` — path to a free-text job description or a pre-compiled `JobSpec` YAML file
 - `--out` — output directory (default: `resume-ranker-out`)
-- `--mode offline` — deterministic mode with local embeddings only
-- `--mode hybrid` — default; uses LLM where configured
+- `--mode offline` — deterministic mode with local embeddings only (default)
 - `--blind` / `--no-blind` — redact identity attributes before scoring (default: blind)
 - `--force` — overwrite an existing output directory
 - `--review-jobspec` — halt after compiling the JD so you can review the generated `JobSpec`
