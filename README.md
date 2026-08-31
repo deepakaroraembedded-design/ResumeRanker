@@ -39,6 +39,8 @@ The system is designed to **never raise on bad data**. Every stage returns a `St
 - **Keyword overlap threshold fix** — multi-token skill targets such as `ai/ml` now require full token overlap, eliminating false matches against unrelated phrases like `AI governance`.
 - **Minimum-qualification gate** — scorecard explanations now report `Required skills: X/Y` and `Preferred: X/Y` counts so recruiters can see a quick pass/fail summary.
 - **Pinned embedding model identifier** — the run manifest records the exact Hugging Face snapshot hash of the local embedding model (e.g., `Qwen/Qwen3-Embedding-8B@<snapshot_hash>`), making S3 reproducibility auditable.
+- **S3 restored to TRD max-cosine similarity** — S3 now uses `sim(r_j) = max_k cos(r_j, e_k)` per TRD §5.3.3 instead of classifier probabilities, which had compressed raw scores below the calibration floor and zeroed the dimension for every candidate.
+- **JD prose noise filtering** — the JobSpec compiler now rejects responsibility-like fragments ("shipping products", "external vendors understand") and sentence fragments that merely mention "certification", so only genuine skills and certifications enter the spec.
 
 ---
 
