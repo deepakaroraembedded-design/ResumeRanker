@@ -29,6 +29,8 @@ class S5Title:
         seniority gap to the TRD table. Recency uses a 6-year half-life and a 0.55
         floor.
         """
+        from resume_ranker.protocols import TitleTaxonomy
+
         titles = cast(TitleTaxonomy, ctx.titles)
         now = date.fromisoformat(ctx.now)
         target_match: TitleMatch | None = titles.normalise(spec.title) if spec.title else None

@@ -17,6 +17,7 @@ from resume_ranker.llm.budget import UsageTracker
 from resume_ranker.llm.cache import Cache
 from resume_ranker.llm.prompts import PromptTemplate, load_template, render
 from resume_ranker.llm.transport import (
+    FireworksAIHTTPTransport,
     LLMTransportError,
     OpenAIHTTPTransport,
     RecordedTransport,
@@ -611,6 +612,13 @@ def create_llm_adapter(
             transport = OpenAIHTTPTransport(
                 model=llm_config.model or "gpt-4o-mini",
                 api_key=os.environ.get("OPENAI_API_KEY"),
+            )
+        elif llm_config.provider.lower() == "fireworks":
+            import os
+
+            transport = FireworksAIHTTPTransport(
+                model=llm_config.model or "accounts/fireworks/models/nemotron-3-ultra-nvfp4",
+                api_key=os.environ.get("FIREWORKS_API_KEY"),
             )
         else:
             msg = f"Unsupported LLM provider: {llm_config.provider}"

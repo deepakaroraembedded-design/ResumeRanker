@@ -4,7 +4,7 @@ import asyncio
 import concurrent.futures
 from collections.abc import Coroutine, Sequence
 from dataclasses import dataclass
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TypeVar, cast
 
 import numpy as np
 from pydantic import BaseModel, Field
@@ -15,8 +15,10 @@ from resume_ranker.models.jobspec import JobSpec, PreferredSkill, RequiredSkill
 from resume_ranker.models.resume import Bullet, CanonicalResume
 from resume_ranker.models.run import ScoringContext
 from resume_ranker.models.scoring import Evidence, PoolStatistics, SubScore
-from resume_ranker.protocols import EmbeddingClient, LLMClient
+from resume_ranker.protocols import EmbeddingClient
 from resume_ranker.scoring.registry import dimension
+
+T = TypeVar("T")
 
 
 class SemanticRubricOutput(BaseModel):
@@ -55,13 +57,7 @@ class S3Semantic:
                 notes=("S3_EMBEDDING_UNAVAILABLE",),
             )
 
-        client = ctx.embeddings
-        if not isinstance(client, EmbeddingClient):
-            return SubScore(
-                dimension=self.id,
-                value=None,
-                notes=("S3_EMBEDDING_CLIENT_INVALID",),
-            )
+        client = cast(EmbeddingClient, ctx.embeddings)
 
         jd_chunks = sorted(_jd_chunks(spec), key=lambda chunk: chunk.text)
         if not jd_chunks:
@@ -90,19 +86,18 @@ class S3Semantic:
                 },
             )
 
-        jd_vectors = _run(client.embed([chunk.text for chunk in jd_chunks]))
-        resume_vectors = _run(client.embed([chunk.text for chunk in resume_chunks]))
+        # Use cached JD vectors from pool if available
+        if ctx.pool.jd_vectors is not None:
+            jd_vectors = [tuple(v) for v in ctx.pool.jd_vectors]
+        else:
+            jd_vectors = list(_run(client.embed([chunk.text for chunk in jd_chunks])))
+        resume_vectors = list(_run(client.embed([chunk.text for chunk in resume_chunks])))
 
         raw = _raw_similarity(jd_chunks, resume_chunks, jd_vectors, resume_vectors)
         calibrated = _calibrate(raw, ctx.pool)
-        rubric_mean, rubric_stdev = _llm_rubric_score(jd_chunks, resume_chunks, ctx)
 
-        if rubric_mean is not None:
-            share = ctx.config.semantic.embedding_share
-            value = share * (100.0 * calibrated) + (1.0 - share) * rubric_mean
-        else:
-            value = 100.0 * calibrated
-
+        # LLM rubric removed; S3 is computed entirely from local embeddings.
+        value = 100.0 * calibrated
         value = max(0.0, min(100.0, value))
 
         evidence = _evidence_from_best_match(jd_chunks, jd_vectors, resume_chunks, resume_vectors)
@@ -114,10 +109,10 @@ class S3Semantic:
             "p10": ctx.pool.p10,
             "p90": ctx.pool.p90,
             "anchors": (ctx.pool.anchor_low, ctx.pool.anchor_high),
-            "rubric_mean": rubric_mean,
-            "rubric_stdev": rubric_stdev,
+            "rubric_mean": None,
+            "rubric_stdev": 0.0,
             "chunk_counts": {"jd": len(jd_chunks), "resume": len(resume_chunks)},
-            "mode": "hybrid" if rubric_mean is not None else "offline",
+            "mode": "offline",
         }
 
         return SubScore(dimension=self.id, value=value, evidence=evidence, detail=detail)
@@ -136,15 +131,15 @@ class S3Semantic:
         if ctx.embeddings is None:
             return PoolStatistics(size=len(resumes), anchor_low=0.25, anchor_high=0.70)
 
-        client = ctx.embeddings
-        if not isinstance(client, EmbeddingClient):
-            return PoolStatistics(size=len(resumes), anchor_low=0.25, anchor_high=0.70)
+        client = cast(EmbeddingClient, ctx.embeddings)
 
         jd_chunks = sorted(_jd_chunks(spec), key=lambda chunk: chunk.text)
         if not jd_chunks:
             return PoolStatistics(size=len(resumes), anchor_low=0.25, anchor_high=0.70)
 
         jd_vectors = _run(client.embed([chunk.text for chunk in jd_chunks]))
+        # Store JD vectors as list of lists for JSON serialization
+        jd_vectors_list = [list(v) for v in jd_vectors]
         raw_values: list[float] = []
         for resume in resumes:
             resume_chunks = sorted(_resume_chunks(resume), key=lambda chunk: chunk.text)
@@ -166,19 +161,18 @@ class S3Semantic:
                 p90=p90,
                 anchor_low=0.25,
                 anchor_high=0.70,
+                jd_vectors=jd_vectors_list,
             )
 
-        return PoolStatistics(size=n, anchor_low=0.25, anchor_high=0.70)
+        return PoolStatistics(size=n, anchor_low=0.25, anchor_high=0.70, jd_vectors=jd_vectors_list)
 
 
-def _run[T](coro: Coroutine[Any, Any, T]) -> T:
-    """Run an async coroutine from a synchronous scoring call."""
-    try:
-        asyncio.get_running_loop()
-    except RuntimeError:
-        return asyncio.run(coro)
+def _run(coro: Coroutine[Any, Any, T]) -> T:  # noqa: UP047
+    """Run an async coroutine from a synchronous scoring call.
 
-    # If a loop is already running, run the coroutine in a fresh thread loop.
+    Always executes in a fresh thread with a new event loop to avoid
+    conflicts with any running loop in the calling thread.
+    """
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         return executor.submit(asyncio.run, coro).result()
 
@@ -292,47 +286,12 @@ def _calibrate(raw: float, pool: PoolStatistics) -> float:
 
 
 def _llm_rubric_score(
-    jd_chunks: Sequence[_Chunk],
-    resume_chunks: Sequence[_Chunk],
-    ctx: ScoringContext,
+    _jd_chunks: Sequence[_Chunk],
+    _resume_chunks: Sequence[_Chunk],
+    _ctx: ScoringContext,
 ) -> tuple[float | None, float]:
-    """TRD §5.3.3 / §6.1 — R-SEM rubric score, mean of two samples, stdev."""
-    if ctx.llm is None:
-        return None, 0.0
-    if not isinstance(ctx.llm, LLMClient):
-        return None, 0.0
-
-    variables: dict[str, object] = {
-        "job_chunks": [
-            {"id": chunk.origin_id, "text": chunk.text, "weight": chunk.weight}
-            for chunk in jd_chunks
-        ],
-        "resume_chunks": [
-            {"id": chunk.origin_id, "text": chunk.text, "span": chunk.span}
-            for chunk in resume_chunks
-        ],
-    }
-
-    result = _run(
-        ctx.llm.structured(
-            template="R-SEM",
-            variables=variables,
-            schema=SemanticRubricOutput,
-            samples=2,
-            trace="S3",
-        )
-    )
-    if result.value is None or not result.value.samples:
-        return None, 0.0
-
-    scores = [sample.score for sample in result.value.samples]
-
-    if not scores:
-        return None, 0.0
-
-    mean = float(sum(scores) / len(scores))
-    stdev = float(np.std(scores, ddof=1)) if len(scores) > 1 else 0.0
-    return mean, stdev
+    """R-SEM LLM rubric is disabled; only local embeddings are used for S3."""
+    return None, 0.0
 
 
 def _evidence_from_best_match(

@@ -1,5 +1,5 @@
 {
-  "skill_count": 1682,
+  "skill_count": 1723,
   "skills": [
     {
       "aliases": [],
@@ -20151,6 +20151,525 @@
         "java",
         "javascript"
       ],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "audio_video",
+      "aliases": [
+        "av",
+        "a/v",
+        "audio/video",
+        "audio video"
+      ],
+      "children": [],
+      "parents": [
+        "software_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "video_engineering",
+      "aliases": [
+        "video engineering"
+      ],
+      "children": [],
+      "parents": [
+        "software_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "audio_engineering",
+      "aliases": [
+        "audio engineering"
+      ],
+      "children": [],
+      "parents": [
+        "software_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "hdmi",
+      "aliases": [
+        "hdmi 2.0",
+        "hdmi 2.1",
+        "hdcp"
+      ],
+      "children": [],
+      "parents": [
+        "audio_video",
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "sdi",
+      "aliases": [
+        "3g-sdi",
+        "12g-sdi",
+        "sdi transport"
+      ],
+      "children": [],
+      "parents": [
+        "audio_video",
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "smpte_2110",
+      "aliases": [
+        "smpte st 2110",
+        "st 2110",
+        "smpte 2110",
+        "ip video transport"
+      ],
+      "children": [],
+      "parents": [
+        "audio_video",
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "tr_07",
+      "aliases": [
+        "tr-07",
+        "tr07"
+      ],
+      "children": [],
+      "parents": [
+        "audio_video",
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "video_encoder",
+      "aliases": [
+        "encoder",
+        "video encoding"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "video_decoder",
+      "aliases": [
+        "decoder",
+        "video decoding"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "h264",
+      "aliases": [
+        "h.264",
+        "avc"
+      ],
+      "children": [],
+      "parents": [
+        "video_encoder",
+        "video_decoder"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "hevc",
+      "aliases": [
+        "h.265",
+        "hevc"
+      ],
+      "children": [],
+      "parents": [
+        "video_encoder",
+        "video_decoder"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "av1",
+      "aliases": [
+        "av1"
+      ],
+      "children": [],
+      "parents": [
+        "video_encoder",
+        "video_decoder"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "vp9",
+      "aliases": [
+        "vp9"
+      ],
+      "children": [],
+      "parents": [
+        "video_encoder",
+        "video_decoder"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "ffmpeg",
+      "aliases": [
+        "ffmpeg"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering",
+        "audio_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "vmaf",
+      "aliases": [
+        "vmaf"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "psnr",
+      "aliases": [
+        "psnr"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "ssim",
+      "aliases": [
+        "ssim"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "video_quality_metrics",
+      "aliases": [
+        "video quality",
+        "quality metrics",
+        "objective video quality"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "video_capture",
+      "aliases": [
+        "capture",
+        "video capture",
+        "frame capture",
+        "capture card"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "av_sync",
+      "aliases": [
+        "a/v sync",
+        "av sync",
+        "lip sync",
+        "sync failure"
+      ],
+      "children": [],
+      "parents": [
+        "audio_video"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "android_tv",
+      "aliases": [
+        "android tv"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering",
+        "platform_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "dolby_digital",
+      "aliases": [
+        "dolby",
+        "dolby digital",
+        "ac3",
+        "eac3"
+      ],
+      "children": [],
+      "parents": [
+        "audio_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "dvr",
+      "aliases": [
+        "dvr",
+        "digital video recorder"
+      ],
+      "children": [],
+      "parents": [
+        "video_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "av_test_automation",
+      "aliases": [
+        "av automation",
+        "a/v test automation",
+        "av test",
+        "audio video test automation"
+      ],
+      "children": [],
+      "parents": [
+        "audio_video",
+        "test_automation"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "hardware_in_the_loop",
+      "aliases": [
+        "hilt",
+        "hardware in the loop",
+        "hardware-in-the-loop"
+      ],
+      "children": [],
+      "parents": [
+        "test_automation",
+        "audio_video"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "certification_testing",
+      "aliases": [
+        "certification",
+        "certification testing",
+        "logo certification",
+        "fcc",
+        "ul certification"
+      ],
+      "children": [],
+      "parents": [
+        "test_automation",
+        "audio_video"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "odm_management",
+      "aliases": [
+        "odm",
+        "odm management",
+        "soC partners",
+        "external vendor management"
+      ],
+      "children": [],
+      "parents": [
+        "software_engineering",
+        "project_management"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "gpu_metric_pipeline",
+      "aliases": [
+        "gpu pipeline",
+        "metric pipeline",
+        "telemetry pipeline"
+      ],
+      "children": [],
+      "parents": [
+        "data_engineering",
+        "platform_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "whisper_asr",
+      "aliases": [
+        "whisper",
+        "asr",
+        "automatic speech recognition"
+      ],
+      "children": [],
+      "parents": [
+        "machine_learning",
+        "audio_engineering"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "embedding_clustering",
+      "aliases": [
+        "embeddings",
+        "clustering",
+        "vector embeddings"
+      ],
+      "children": [],
+      "parents": [
+        "machine_learning"
+      ],
+      "timeless": true
+    },
+    {
+      "canonical": "shipping_products",
+      "aliases": [
+        "shipping products",
+        "shipped products",
+        "product delivery",
+        "shipping"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "vendor",
+      "aliases": [
+        "vendor",
+        "vendors",
+        "external vendor",
+        "external vendors",
+        "vendor management",
+        "external vendor management"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "test_automation",
+      "aliases": [
+        "test automation",
+        "automation",
+        "automated testing",
+        "automated test"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "stakeholder",
+      "aliases": [
+        "stakeholder",
+        "stakeholders",
+        "internal stakeholder",
+        "internal stakeholders"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "software_framework",
+      "aliases": [
+        "framework",
+        "software framework",
+        "frameworks"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "component",
+      "aliases": [
+        "component",
+        "components"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "service",
+      "aliases": [
+        "service",
+        "services",
+        "microservice",
+        "microservices"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "system_reliability",
+      "aliases": [
+        "system reliability",
+        "reliability",
+        "reliability engineering"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "cross_functional",
+      "aliases": [
+        "cross functional",
+        "cross-functional",
+        "cross-functional team"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "experimentation",
+      "aliases": [
+        "experimentation",
+        "iterative experimentation",
+        "experiment",
+        "rapid experimentation"
+      ],
+      "children": [],
+      "parents": [],
+      "timeless": false
+    },
+    {
+      "canonical": "shipping_software",
+      "aliases": [
+        "shipping software",
+        "shipping products",
+        "shipped products"
+      ],
+      "children": [],
       "parents": [],
       "timeless": false
     }

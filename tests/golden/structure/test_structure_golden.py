@@ -11,8 +11,9 @@ from resume_ranker.models.resume import DateValue
 from resume_ranker.models.run import RunContext
 from resume_ranker.models.source import ExtractedText, ExtractionMetadata
 from resume_ranker.protocols import LLMClient
-from resume_ranker.structure import HeuristicStructurer, HybridStructurer
+from resume_ranker.structure import HeuristicStructurer
 from resume_ranker.structure.llm_parse import (
+    HybridStructurer,
     _LLMEducationEntry,
     _LLMExperienceEntry,
     _LLMResponse,

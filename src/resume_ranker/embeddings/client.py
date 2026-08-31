@@ -60,6 +60,11 @@ class LocalEmbeddingClient:
             if "qwen" in self._model_name.lower():
                 kwargs.setdefault("trust_remote_code", True)
                 kwargs.setdefault("device", self._resolve_device())
+            # Use only the locally cached model files to avoid contacting the
+            # Hugging Face Hub on every run. The first download must still
+            # happen online (or via a pre-populated HF cache), but afterwards
+            # startup is fully offline.
+            kwargs.setdefault("local_files_only", True)
             self._model = SentenceTransformer(self._model_name, **kwargs)
             if hasattr(self._model, "get_embedding_dimension"):
                 self.dimensions = cast(int, self._model.get_embedding_dimension())

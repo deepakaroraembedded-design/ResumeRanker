@@ -144,3 +144,4 @@ class PoolStatistics(BaseModel):
     anchor_low: float = 0.25
     anchor_high: float = 0.70
     size: int = 0
+    jd_vectors: list[list[float]] | None = None  # Cached JD chunk embeddings

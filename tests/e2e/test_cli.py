@@ -341,7 +341,8 @@ def test_run_command_rejects_existing_output_directory_without_force(tmp_path: P
     assert result.exit_code == 7, result.output
 
 
-def test_run_command_rejects_hybrid_mode_without_provider(tmp_path: Path) -> None:
+def test_run_command_hybrid_mode_treated_as_offline(tmp_path: Path) -> None:
+    """Hybrid mode is no longer supported; the CLI falls back to offline/local logic."""
     resumes_dir = tmp_path / "resumes"
     resumes_dir.mkdir()
     (resumes_dir / "r1.txt").write_text("Alice Python 5 years", encoding="utf-8")
@@ -363,8 +364,8 @@ def test_run_command_rejects_hybrid_mode_without_provider(tmp_path: Path) -> Non
             "hybrid",
         ],
     )
-    assert result.exit_code == 6, result.output
-    assert "llm.provider" in result.output
+    assert result.exit_code == 0, result.output
+    assert "llm.provider" not in result.output
 
 
 def test_run_command_review_jobspec_flag(tmp_path: Path) -> None:

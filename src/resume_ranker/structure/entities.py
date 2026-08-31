@@ -164,10 +164,13 @@ _REQUIRED_SECTIONS: Final[frozenset[str]] = frozenset(
 )
 
 
-def _now_from_iso(now_str: str | None) -> date:
-    """Convert an ISO-8601 date string (e.g. from RunContext.now) to a date."""
+def _now_from_iso(now_str: str) -> date:
+    """Convert an ISO-8601 date string (e.g. from RunContext.now) to a date.
+
+    Requires a non-empty string; callers must pass ctx.now from RunContext.
+    """
     if not now_str:
-        return date.today()
+        raise ValueError("now_str is required; pass ctx.now from RunContext")
     try:
         return date.fromisoformat(now_str)
     except ValueError:

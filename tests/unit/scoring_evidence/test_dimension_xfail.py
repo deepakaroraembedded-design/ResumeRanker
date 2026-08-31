@@ -80,10 +80,16 @@ def scoring_context() -> ScoringContext:
 def test_s1_required_skills(
     minimal_resume: CanonicalResume, minimal_spec: JobSpec, scoring_context: ScoringContext
 ) -> None:
-    """TRD §5.3.1 — required skills coverage with deterministic fakes."""
+    """TRD §5.3.1 — required skills coverage with deterministic fakes.
+
+    Expected: python (w=5) m=0.80, apache-spark (w=5) m=0.80, dbt (w=2) m=0.0
+    Weighted sum = 5*0.80 + 5*0.80 + 2*0.0 = 8.0
+    Weight sum = 5+5+2 = 12 (unmatched skills contribute weight per TRD §5.3.1)
+    Score = 100 * 8.0 / 12 = 66.67
+    """
     score = S1RequiredSkills().score(minimal_resume, minimal_spec, scoring_context)
     assert isinstance(score, SubScore)
-    assert score.value == pytest.approx(80.0, abs=0.1)
+    assert score.value == pytest.approx(66.67, abs=0.1)
 
 
 def test_s2_preferred_skills(

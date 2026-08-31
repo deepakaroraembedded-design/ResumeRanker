@@ -228,7 +228,7 @@ class HeuristicStructurer(Structurer):
     """
 
     def structure(self, text: ExtractedText, ctx: RunContext) -> StageResult[CanonicalResume]:
-        now = _now_from_iso(ctx.now)
+        now = _now_from_iso(ctx.now or "")
         sections = segment_sections(text.text, text.blocks)
         fields = structure_from_sections(text, sections, now)
         multi_resume = detect_multi_resume(sections)

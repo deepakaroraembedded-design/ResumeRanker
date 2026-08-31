@@ -28,10 +28,10 @@ class ScoringContext(BaseModel):
     This is deliberately narrow: dimensions reach shared services only through it.
     """
 
-    ontology: object  # OntologyIndex protocol, resolved at runtime
-    titles: object  # TitleTaxonomy protocol
-    embeddings: object | None = None  # EmbeddingClient protocol
-    llm: object | None = None  # LLMClient protocol
+    ontology: object
+    titles: object
+    embeddings: object | None = None
+    llm: object | None = None
     config: ScoringConfig
     pool: PoolStatistics = Field(default_factory=PoolStatistics)
     now: str  # ISO-8601 date; recency scoring takes time from here

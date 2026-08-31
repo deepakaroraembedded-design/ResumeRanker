@@ -22,6 +22,7 @@ from resume_ranker.models.resume import (
     DateValue,
     SkillMention,
 )
+from resume_ranker.models.run import ScoringContext
 from resume_ranker.models.scoring import Evidence, GapDetail, MatchDetail, MatchRoute
 from resume_ranker.protocols import EmbeddingClient, OntologyIndex
 
@@ -317,7 +318,7 @@ def _has_semantic_overlap(a: str, b: str) -> bool:
 
 
 def _semantic_skill_evidence(
-    resume: CanonicalResume, target: str, ctx: Any
+    resume: CanonicalResume, target: str, ctx: ScoringContext
 ) -> tuple[SkillEvidence, ...]:
     """Embeddings-based semantic fallback for skill coverage (S1/S2/S8).
 
@@ -550,34 +551,71 @@ def _keyword_skill_evidence(resume: CanonicalResume, target: str) -> tuple[Skill
     return tuple(found)
 
 
-def collect_skill_evidence(
-    resume: CanonicalResume, target: str, ontology: OntologyIndex, ctx: Any | None = None
-) -> tuple[SkillEvidence, ...]:
-    """Gather all evidence that could support a required/preferred skill.
+def _build_skill_index(
+    resume: CanonicalResume, ontology: OntologyIndex
+) -> dict[str, list[SkillEvidence]]:
+    """Build an inverted index mapping canonical skill -> list of evidence.
 
-    Sources are the deterministic ontology cascade, the structured ``skills``
-    list, the ``skills_evidenced`` tuples on experience and project entries, and
-    (if no evidence is found) keyword and semantic fallbacks for partial credit.
+    This avoids re-scanning the resume for each target skill.
     """
-    found: list[SkillEvidence] = []
+    index: dict[str, list[SkillEvidence]] = {}
+    # Skills section
     for skill in resume.skills:
-        ev = _evidence_from_mention(target, skill, ontology)
+        canonical = skill.canonical
+        if canonical is None:
+            continue
+        ev = _evidence_from_mention(canonical, skill, ontology)
         if ev is not None:
-            found.append(ev)
+            index.setdefault(canonical, []).append(ev)
+    # Experience entries
     for exp in resume.experience:
         for raw_skill in exp.skills_evidenced:
-            ev = _evidence_from_entry(target, exp, raw_skill, ontology)
-            if ev is not None:
-                found.append(ev)
+            ev = _evidence_from_entry(raw_skill, exp, raw_skill, ontology)
+            if ev is not None and ev.canonical is not None:
+                index.setdefault(ev.canonical, []).append(ev)
+    # Project entries
     for project in resume.projects:
         for raw_skill in project.skills_evidenced:
-            ev = _evidence_from_entry(target, project, raw_skill, ontology)
-            if ev is not None:
-                found.append(ev)
+            ev = _evidence_from_entry(raw_skill, project, raw_skill, ontology)
+            if ev is not None and ev.canonical is not None:
+                index.setdefault(ev.canonical, []).append(ev)
+    return index
+
+
+def _collect_from_index(
+    target: str,
+    index: dict[str, list[SkillEvidence]],
+    ontology: OntologyIndex,
+    resume: CanonicalResume,
+    ctx: ScoringContext | None,
+) -> tuple[SkillEvidence, ...]:
+    """Collect evidence for a target skill using the pre-built index."""
+    found: list[SkillEvidence] = []
+    # Direct canonical match
+    if target in index:
+        found.extend(index[target])
+    # Keyword fallback (still needs full scan for substring/token matches)
     found.extend(_keyword_skill_evidence(resume, target))
+    # Semantic fallback
     if not found and ctx is not None:
         found.extend(_semantic_skill_evidence(resume, target, ctx))
     return tuple(found)
+
+
+def collect_skill_evidence(
+    resume: CanonicalResume, target: str, ontology: OntologyIndex, ctx: ScoringContext | None = None
+) -> tuple[SkillEvidence, ...]:
+    """Gather all evidence that could support a required/preferred skill.
+
+    Uses a pre-built index for exact canonical matches, falls back to keyword
+    and semantic matching when needed.
+    """
+    # Build index once per resume (cached by caller in score_skill_coverage)
+    index = getattr(resume, "_skill_index", None)
+    if index is None:
+        index = _build_skill_index(resume, ontology)
+        resume._skill_index = index  # type: ignore[attr-defined]
+    return _collect_from_index(target, index, ontology, resume, ctx)
 
 
 def _best_match_value(
@@ -617,7 +655,7 @@ def _to_evidence(ev: SkillEvidence | None) -> tuple[Evidence, ...]:
 def score_skill_coverage(
     resume: CanonicalResume,
     skills: tuple[RequiredSkill | PreferredSkill, ...],
-    ctx: Any,
+    ctx: ScoringContext,
 ) -> tuple[float, tuple[Evidence, ...], tuple[MatchDetail, ...], tuple[GapDetail, ...]]:
     """Score a weighted list of skills (S1 or S2).
 
@@ -626,9 +664,11 @@ def score_skill_coverage(
     evidence match; unmatched skills contribute a gap entry and their weight
     is excluded from the denominator (TRD §5.3.1 worked example).
     """
+    from resume_ranker.protocols import OntologyIndex
+
     ontology = cast(OntologyIndex, ctx.ontology)
     now = parse_iso_date(ctx.now)
-    config = cast(ScoringConfig, ctx.config)
+    config = ctx.config
 
     evidence_out: list[Evidence] = []
     match_details: list[MatchDetail] = []
@@ -649,6 +689,7 @@ def score_skill_coverage(
                     note="no evidence found",
                 )
             )
+            weight_sum += skill.weight  # unmatched skills still contribute weight to denominator
             continue
 
         best_m, best_ev = _best_match_value(evidence, now, config, ontology)

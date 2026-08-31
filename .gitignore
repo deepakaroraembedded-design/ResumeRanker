@@ -30,6 +30,11 @@ htmlcov/
 # Local environment
 .env
 .python-version
+.config
+
+# Review / cache artifacts
+*.review
+.resume-ranker-cache-*/
 
 # Build outputs
 build/

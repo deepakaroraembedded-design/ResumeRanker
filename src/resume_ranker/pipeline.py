@@ -15,7 +15,6 @@ from resume_ranker.fairness import BlindRedactor
 from resume_ranker.fairness.impact import compute_adverse_impact_report
 from resume_ranker.integrity import HiddenTextDetector, InjectionDetector, KeywordStuffingDetector
 from resume_ranker.jobspec import JobSpecCompiler
-from resume_ranker.llm import create_llm_adapter
 from resume_ranker.models.common import Diagnostic, IntegrityFinding, StageResult
 from resume_ranker.models.config import FairnessConfig, IntegrityConfig, RootConfig
 from resume_ranker.models.jobspec import JobSpec
@@ -33,7 +32,6 @@ from resume_ranker.ontology import from_config as ontology_from_config
 from resume_ranker.protocols import (
     EmbeddingClient,
     IntegrityDetector,
-    LLMClient,
     OntologyIndex,
     Redactor,
     ReportWriter,
@@ -58,7 +56,7 @@ from resume_ranker.scoring.confidence import confidence
 from resume_ranker.scoring.filters import evaluate_knockouts
 from resume_ranker.scoring.selection import select
 from resume_ranker.scoring.tiebreak import rank
-from resume_ranker.structure import HeuristicStructurer, HybridStructurer
+from resume_ranker.structure import HeuristicStructurer
 
 ScoreFn = Callable[[CanonicalResume, JobSpec, ScoringContext], ScoreCard]
 ScoreFnWithFindings = Callable[
@@ -106,7 +104,6 @@ class Pipeline:
         report_writers: Sequence[ReportWriter],
         score_fn: ScoreFn,
         embeddings: EmbeddingClient | None = None,
-        llm: LLMClient | None = None,
     ) -> None:
         """Create a fully wired pipeline.
 
@@ -122,7 +119,6 @@ class Pipeline:
             score_fn: Callable that produces a ScoreCard from a resume, spec and
                 scoring context. This is the integration point for C-10..C-13.
             embeddings: Optional embedding client for semantic scoring.
-            llm: Optional LLM client for hybrid mode.
         """
         self.extractors = extractors
         self.structurer = structurer
@@ -135,7 +131,6 @@ class Pipeline:
         self.score_fn = score_fn
         self._score_accepts_findings: bool | None = None
         self.embeddings = embeddings
-        self.llm = llm
 
     def _make_run_context(self, settings: RunSettings) -> RunContext:
         """Create a protocol-grade RunContext from pipeline settings."""
@@ -143,6 +138,7 @@ class Pipeline:
             run_id=settings.run_id,
             config=settings.config.ingest,
             output_dir=settings.output_dir,
+            now=settings.now,
         )
 
     def _pick_extractor(self, doc: SourceDocument) -> TextExtractor | None:
@@ -215,7 +211,7 @@ class Pipeline:
             ontology=self.ontology,
             titles=self.titles,
             embeddings=self.embeddings,
-            llm=self.llm,
+            llm=None,
             config=settings.config.scoring,
             now=settings.now,
         )
@@ -333,7 +329,7 @@ class Pipeline:
             documents_failed=failed,
             model_identifiers={
                 "embedding": settings.config.embeddings.model or "Qwen/Qwen3-Embedding-8B",
-                "llm": settings.config.llm.model,
+                "llm": None,
                 "ontology": self.ontology.version,
             },
             calibration_anchors={
@@ -395,7 +391,7 @@ class Pipeline:
                 dict[str, str | None],
                 {
                     "embedding": embedding_id,
-                    "llm": settings.config.llm.model,
+                    "llm": None,
                     "ontology": self.ontology.version,
                 },
             ),
@@ -421,9 +417,8 @@ class Pipeline:
         """Return a concise human-readable explanation of a ScoreCard.
 
         TRD §6.1 — G-EXPL produces a recruiter-facing summary of at most 120
-        words. In this wiring implementation the explanation is templated from
-        the scorecard fields; a real LLM-based explanation would be supplied by
-        the ``llm`` service and called here.
+        words. The explanation is templated locally from the scorecard fields;
+        no LLM is used.
         """
         composite = scorecard.composite
         band = scorecard.band or "unknown"
@@ -536,26 +531,17 @@ def build_pipeline(config: RootConfig, mode: str) -> Pipeline:
 
     This is the integrator hook (C-15) called by the CLI for every command that
     needs the real engine. It imports the configured extractors, structurer,
-    JobSpec compiler, ontology/title taxonomy, embedding client, LLM client,
-    redactor, integrity detectors, report writers, and the scoring dimension
-    registry, then returns a ready-to-run Pipeline.
+    JobSpec compiler, ontology/title taxonomy, embedding client, redactor,
+    integrity detectors, report writers, and the scoring dimension registry,
+    then returns a ready-to-run Pipeline.
+
+    LLM support has been removed; only the local deterministic path remains.
     """
+    del mode  # mode is now always offline; kept for CLI compatibility
     ontology, titles = ontology_from_config(config.ontology)
     extractors = load_extractors()
 
-    # Build the LLM adapter once. In hybrid mode it is used by the structurer and
-    # by S3's LLM rubric; in offline mode it is left as None so dimensions degrade.
-    llm: LLMClient | None = None
-    if mode == "hybrid":
-        placeholder_ctx = RunContext(
-            run_id="pipeline-build", cache_dir=Path(".resume-ranker-cache")
-        )
-        llm = create_llm_adapter(placeholder_ctx, config.llm)
-
     structurer: Structurer = HeuristicStructurer()
-    if mode == "hybrid" and llm is not None:
-        structurer = HybridStructurer(llm=llm)
-
     jobspec_compiler = JobSpecCompiler()
     redactor = BlindRedactor(blind=config.fairness.blind)
     integrity_detectors = cast(
@@ -579,7 +565,7 @@ def build_pipeline(config: RootConfig, mode: str) -> Pipeline:
         integrity_cfg=config.integrity,
         selection_cfg=config.selection,
         fairness_cfg=config.fairness,
-        mode=mode,
+        mode="offline",
     )
 
     return Pipeline(
@@ -593,7 +579,6 @@ def build_pipeline(config: RootConfig, mode: str) -> Pipeline:
         report_writers=report_writers,
         score_fn=score_fn,
         embeddings=embeddings,
-        llm=llm,
     )
 
 

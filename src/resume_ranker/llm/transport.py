@@ -44,7 +44,7 @@ class Transport(Protocol):
         ...
 
 
-class RecordedTransport:
+class RecordedTransport(Transport):
     """Transport that replays canned responses for tests.
 
     This transport never makes a network call.  Recordings are keyed by the
@@ -81,7 +81,7 @@ class RecordedTransport:
         return self._recordings[trace]
 
 
-class OpenAIHTTPTransport:
+class OpenAIHTTPTransport(Transport):
     """OpenAI-compatible HTTP transport using only the Python stdlib.
 
     The provider SDK is imported lazily inside the call method; at module scope
@@ -160,3 +160,26 @@ class OpenAIHTTPTransport:
             }
 
         return await asyncio.to_thread(_sync_call)
+
+
+class FireworksAIHTTPTransport(OpenAIHTTPTransport):
+    """Fireworks AI HTTP transport (OpenAI-compatible).
+
+    Uses Fireworks AI's inference endpoint. Defaults to the Fireworks AI
+    base URL and reads the API key from the FIREWORKS_API_KEY environment
+    variable if not provided explicitly.
+    """
+
+    def __init__(
+        self,
+        *,
+        model: str,
+        api_key: str | None = None,
+        base_url: str = "https://api.fireworks.ai/inference/v1",
+        timeout: float = 90.0,
+    ) -> None:
+        import os
+
+        if api_key is None:
+            api_key = os.environ.get("FIREWORKS_API_KEY")
+        super().__init__(model=model, api_key=api_key, base_url=base_url, timeout=timeout)

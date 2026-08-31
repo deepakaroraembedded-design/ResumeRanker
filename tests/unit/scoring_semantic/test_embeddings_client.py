@@ -17,7 +17,7 @@ from resume_ranker.protocols import EmbeddingClient
 class FakeSentenceTransformer:
     """Minimal stand-in for ``sentence_transformers.SentenceTransformer``."""
 
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, model_name: str, **_kwargs: object) -> None:
         self.model_name = model_name
         self.call_count = 0
         self.last_batch: list[str] | None = None
@@ -36,7 +36,7 @@ def patch_transformer(monkeypatch: pytest.MonkeyPatch) -> FakeSentenceTransforme
     fake = FakeSentenceTransformer("all-MiniLM-L6-v2")
     monkeypatch.setattr(
         "resume_ranker.embeddings.client.SentenceTransformer",
-        lambda model_name: fake,
+        lambda model_name, **_kwargs: fake,
     )
     return fake
 

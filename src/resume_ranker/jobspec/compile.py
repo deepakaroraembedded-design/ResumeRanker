@@ -136,6 +136,7 @@ class JobSpecCompiler:
         "responsibilities": "responsibilities",
         "what you'll do": "responsibilities",
         "what you will do": "responsibilities",
+        "what you will/may do": "responsibilities",
         "role expectations": "responsibilities",
         "key responsibilities": "responsibilities",
         "job responsibilities": "responsibilities",
@@ -685,6 +686,19 @@ _SKILL_NOISE_PHRASES: tuple[str, ...] = (
     "positioning",
     "automate predictive threat detection",
     "intelligent data path analysis models",
+    # Behavioral/soft skill descriptors - not technical skills
+    "flexible",
+    "selfless",
+    "maker",
+    "passion",
+    "curious",
+    "heart",
+    "outstanding communicator",
+    "maker at heart",
+    "passion for",
+    "automation and system reliability",
+    "system reliability",
+    "automation",
 )
 
 

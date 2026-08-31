@@ -563,8 +563,8 @@ def test_s3_evidence_from_best_match() -> None:
     assert evidence[0].span == (0, 18)
 
 
-def test_s3_llm_rubric_score() -> None:
-    """The LLM rubric helper must aggregate structured samples deterministically."""
+def test_s3_llm_rubric_score_disabled() -> None:
+    """The LLM rubric helper is disabled; it always returns None with zero stdev."""
     jd_chunk = s3_from_skill(RequiredSkill(canonical="python", weight=5), "required")
     resume_chunk = S3Chunk(text="Python", source="resume", weight=1, span=(0, 6), origin_id="r1")
     ctx = ScoringContext(
@@ -576,7 +576,7 @@ def test_s3_llm_rubric_score() -> None:
         now="2026-08-29",
     )
     mean, stdev = s3_llm_rubric_score([jd_chunk], [resume_chunk], ctx)
-    assert mean == pytest.approx(80.0, abs=1e-6)
+    assert mean is None
     assert stdev == pytest.approx(0.0, abs=1e-6)
 
 
@@ -669,8 +669,8 @@ def test_s3_llm_rubric_score_guard_branches(llm: Any, expected: tuple[float | No
     assert s3_llm_rubric_score([jd_chunk], [resume_chunk], ctx) == expected
 
 
-def test_s3_llm_rubric_score_stdev() -> None:
-    """Two samples with different scores must produce a non-zero standard deviation."""
+def test_s3_llm_rubric_score_stdev_disabled() -> None:
+    """The LLM rubric is disabled; no sample spread is computed."""
     ctx = ScoringContext(
         ontology=FakeOntology(),
         titles=FakeTitleTaxonomy(),
@@ -682,12 +682,12 @@ def test_s3_llm_rubric_score_stdev() -> None:
     jd_chunk = s3_from_skill(RequiredSkill(canonical="python", weight=5), "required")
     resume_chunk = S3Chunk(text="Python", source="resume", weight=1, span=(0, 6), origin_id="r1")
     mean, stdev = s3_llm_rubric_score([jd_chunk], [resume_chunk], ctx)
-    assert mean == pytest.approx(85.0, abs=1e-6)
-    assert stdev > 0.0
+    assert mean is None
+    assert stdev == pytest.approx(0.0, abs=1e-6)
 
 
-def test_s3_llm_rubric_score_call_shape() -> None:
-    """The LLM rubric helper must pass the expected R-SEM template and chunk data."""
+def test_s3_llm_rubric_score_call_shape_disabled() -> None:
+    """The LLM rubric is disabled and must not issue any LLM call."""
     llm = _RecordingLLM()
     ctx = ScoringContext(
         ontology=FakeOntology(),
@@ -699,18 +699,10 @@ def test_s3_llm_rubric_score_call_shape() -> None:
     )
     jd_chunk = s3_from_skill(RequiredSkill(canonical="python", weight=5), "required")
     resume_chunk = S3Chunk(text="Python", source="resume", weight=1, span=(0, 6), origin_id="r1")
-    s3_llm_rubric_score([jd_chunk], [resume_chunk], ctx)
-    assert llm.call is not None
-    assert llm.call["template"] == "R-SEM"
-    assert llm.call["samples"] == 2
-    assert llm.call["trace"] == "S3"
-    assert llm.call["schema"] is SemanticRubricOutput
-    variables = llm.call["variables"]
-    assert variables is not None
-    assert len(variables["job_chunks"]) == 1
-    assert variables["job_chunks"][0]["text"] == "python"
-    assert variables["job_chunks"][0]["weight"] == 5
-    assert variables["resume_chunks"][0]["text"] == "Python"
+    mean, stdev = s3_llm_rubric_score([jd_chunk], [resume_chunk], ctx)
+    assert llm.call is None
+    assert mean is None
+    assert stdev == pytest.approx(0.0, abs=1e-6)
 
 
 # --- Evidence helpers -------------------------------------------------------
@@ -1430,7 +1422,12 @@ def test_confidence_modes() -> None:
 
 
 def test_score_skill_coverage_more() -> None:
-    """Skill coverage must handle mixed matches, aliases and zero weights."""
+    """Skill coverage must handle mixed matches, aliases and zero weights.
+
+    The LLM transferable-skill adjudicator has been removed, so ``tensorflow``
+    (which does not appear in the resume) contributes no match. Only the
+    explicit ``python`` evidence is counted.
+    """
     ctx = _context()
     resume = _full_resume()
 
@@ -1439,7 +1436,7 @@ def test_score_skill_coverage_more() -> None:
         RequiredSkill(canonical="tensorflow", weight=3),
     )
     score, _, _, _ = score_skill_coverage(resume, partial, ctx)
-    assert score == pytest.approx(80.0, abs=1e-6)
+    assert score == pytest.approx(50.0, abs=1e-6)
 
     alias_skill = (RequiredSkill(canonical="python", weight=5),)
     alias_resume = _full_resume().model_copy(

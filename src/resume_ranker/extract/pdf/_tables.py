@@ -16,7 +16,11 @@ from resume_ranker.extract.pdf._tokens import (
 
 def _table_visual_upper(table: Any) -> float:
     """Return the upper (visually higher) y-coordinate of *table*."""
-    first_cell = table.rows[0].cells[0] if table.rows else (0.0, 0.0, 0.0, 0.0)
+    if not table.rows or not table.rows[0].cells:
+        return 0.0
+    first_cell = table.rows[0].cells[0]
+    if first_cell is None:
+        return 0.0
     bbox = cast(tuple[float, float, float, float], first_cell)
     return max(bbox[1], bbox[3])
 
@@ -38,6 +42,8 @@ def find_table_cells(
         rows.reverse()
         for row_index, row in enumerate(rows):
             for col_index, cell in enumerate(row.cells):
+                if cell is None:
+                    continue
                 cells.append((cast(tuple[float, float, float, float], cell), row_index, col_index))
     return cells
 

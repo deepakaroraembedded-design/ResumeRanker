@@ -48,6 +48,8 @@ class S4Experience:
         otherwise. The four-branch piecewise maps relevant years to a 0..100
         score; over-qualification decay is off by default.
         """
+        from resume_ranker.protocols import TitleTaxonomy
+
         titles = cast(TitleTaxonomy, ctx.titles)
         now = date.fromisoformat(ctx.now)
         req = spec.experience or ExperienceRequirement(min_years=0, target_years=0)
@@ -109,19 +111,28 @@ def _build_intervals(
 
 
 def _relevant_years(intervals: tuple[_Interval, ...]) -> float:
-    """Calendar-union coverage with the maximum relevance per covered month."""
+    """Calendar-union coverage with the maximum relevance per covered month.
+
+    Internships count at half duration (factor=0.5) per TRD §5.3.4.
+    The duration factor reduces months counted, not relevance per month.
+    """
     if not intervals:
         return 0.0
 
     month_relevance: dict[int, float] = {}
+    month_weight: dict[int, float] = {}
     for interval in intervals:
         key_start = interval.start_year * 12 + interval.start_month
         key_end = interval.end_year * 12 + interval.end_month
         for key in range(key_start, key_end + 1):
-            weighted = interval.relevance * interval.internship_factor
-            month_relevance[key] = max(month_relevance.get(key, 0.0), weighted)
+            # Take maximum relevance across concurrent roles
+            month_relevance[key] = max(month_relevance.get(key, 0.0), interval.relevance)
+            # Duration factor: 1.0 for full-time, 0.5 for internship
+            month_weight[key] = max(month_weight.get(key, 0.0), interval.internship_factor)
 
-    return sum(month_relevance.values()) / 12.0
+    # Sum of (relevance * weight) over all covered months
+    total = sum(month_relevance[k] * month_weight[k] for k in month_relevance)
+    return total / 12.0
 
 
 def _raw_years(intervals: tuple[_Interval, ...]) -> float:

@@ -41,6 +41,8 @@ _MEDIA_TYPE_BY_SUFFIX: dict[str, str] = {
     ".html": "text/html",
 }
 
+_RESUME_SUFFIXES: frozenset[str] = frozenset(_MEDIA_TYPE_BY_SUFFIX)
+
 
 def _media_type_for(path: Path) -> str:
     """Return a media type for *path* based on its extension.
@@ -51,10 +53,28 @@ def _media_type_for(path: Path) -> str:
     return _MEDIA_TYPE_BY_SUFFIX.get(path.suffix.lower(), "application/octet-stream")
 
 
+_JOB_DESCRIPTION_NAMES: frozenset[str] = frozenset({"jd", "job_description", "job-description"})
+
+
+def _is_output_directory(directory: Path) -> bool:
+    """Return True if *directory* looks like a previous run output directory."""
+    return (directory / "run_manifest.json").is_file()
+
+
+def _is_likely_job_description(path: Path) -> bool:
+    """Return True if *path* looks like a job-description file, not a resume."""
+    return path.stem.lower() in _JOB_DESCRIPTION_NAMES
+
+
 def _load_source_documents(path: Path) -> list[SourceDocument]:
     """Create a simple source-document list from a directory scan.
 
-    This is a minimal wiring helper used by the ``parse`` and ``run`` commands.
+    Only files with known resume extensions are included. Hidden files and
+    directories, as well as directories that contain a previous run's
+    ``run_manifest.json``, are skipped. This prevents output directories and
+    other artefacts inside the input tree from being treated as candidate
+    documents.
+
     Full ingestion (magic-byte detection, hashing, duplicate clustering) is
     delegated to the ingest component in the integrated build.
     """
@@ -62,18 +82,26 @@ def _load_source_documents(path: Path) -> list[SourceDocument]:
         raise ConfigurationError(f"input path is not a directory: {path}")
     docs: list[SourceDocument] = []
     for item in sorted(path.rglob("*")):
-        if item.is_file():
-            stat = item.stat()
-            docs.append(
-                SourceDocument(
-                    path=str(item.resolve()),
-                    content_sha256="",
-                    bytes=stat.st_size,
-                    pages=None,
-                    mtime="",
-                    media_type=_media_type_for(item),
-                )
+        if not item.is_file() or item.suffix.lower() not in _RESUME_SUFFIXES:
+            continue
+        if _is_likely_job_description(item):
+            continue
+        rel_parts = item.relative_to(path).parts
+        if any(part.startswith(".") for part in rel_parts):
+            continue
+        if any(_is_output_directory(item.parents[i]) for i in range(len(rel_parts) - 1)):
+            continue
+        stat = item.stat()
+        docs.append(
+            SourceDocument(
+                path=str(item.resolve()),
+                content_sha256="",
+                bytes=stat.st_size,
+                pages=None,
+                mtime="",
+                media_type=_media_type_for(item),
             )
+        )
     return docs
 
 
@@ -83,12 +111,11 @@ def run(
     jd: Annotated[Path, typer.Option(..., help="Job description or pre-compiled JobSpec file")],
     out: Annotated[Path, typer.Option(help="Output directory")] = Path("./resume-ranker-out"),
     config: Annotated[Path | None, typer.Option(help="YAML configuration file")] = None,
-    mode: Annotated[str, typer.Option(help="hybrid | offline")] = "hybrid",
+    mode: Annotated[str, typer.Option(help="offline only")] = "offline",
     threshold: Annotated[float, typer.Option(help="Minimum composite score for selection")] = 70.0,
     top_n: Annotated[int | None, typer.Option(help="Select at most N candidates")] = None,
     blind: Annotated[bool, typer.Option(help="Redact identity attributes before scoring")] = True,
     workers: Annotated[int | None, typer.Option(help="Process-pool size")] = None,
-    llm_concurrency: Annotated[int, typer.Option(help="Maximum in-flight LLM requests")] = 16,
     cache: Annotated[Path | None, typer.Option(help="Content-addressed cache directory")] = None,
     no_cache: Annotated[bool, typer.Option(help="Disable the cache")] = False,
     review_jobspec: Annotated[
@@ -127,13 +154,6 @@ def run(
             raise typer.Exit(4)
         typer.echo(f"Would score {len(_load_source_documents(resumes))} document(s).")
         raise typer.Exit(0)
-
-    if mode == "hybrid" and cfg.llm.provider is None:
-        typer.echo(
-            "Hybrid mode requires an LLM provider; set --mode offline or configure llm.provider",
-            err=True,
-        )
-        raise typer.Exit(6)
 
     docs = _load_source_documents(resumes)
     if not docs:
@@ -338,9 +358,6 @@ def _cli_overrides(params: dict[str, Any]) -> dict[str, Any]:
         overrides["fairness"] = {"blind": params["blind"]}
     if params.get("workers") is not None:
         overrides["workers"] = params["workers"]
-    if params.get("llm_concurrency") is not None:
-        overrides["llm"] = overrides.get("llm", {})
-        overrides["llm"]["concurrency"] = params["llm_concurrency"]
     return overrides
 
 

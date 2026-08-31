@@ -152,6 +152,86 @@
         "software engineering",
         "engineer"
       ]
+    },
+    "video_engineering": {
+      "adjacent": [
+        "software_engineering",
+        "platform_engineering",
+        "hardware_engineering"
+      ],
+      "keywords": [
+        "video engineer",
+        "av engineer",
+        "audio video engineer",
+        "video software engineer",
+        "multimedia engineer"
+      ]
+    },
+    "audio_engineering": {
+      "adjacent": [
+        "software_engineering",
+        "platform_engineering",
+        "hardware_engineering"
+      ],
+      "keywords": [
+        "audio engineer",
+        "sound engineer",
+        "audio software engineer",
+        "acoustic engineer"
+      ]
+    },
+    "av_test_engineering": {
+      "adjacent": [
+        "video_engineering",
+        "audio_engineering",
+        "software_engineering",
+        "test_automation"
+      ],
+      "keywords": [
+        "av test engineer",
+        "audio video test engineer",
+        "av automation engineer",
+        "test automation engineer"
+      ]
+    },
+    "hardware_engineering": {
+      "adjacent": [
+        "platform_engineering",
+        "video_engineering",
+        "audio_engineering",
+        "embedded_engineering"
+      ],
+      "keywords": [
+        "hardware engineer",
+        "firmware engineer",
+        "embedded engineer",
+        "hardware software engineer"
+      ]
+    },
+    "test_automation": {
+      "adjacent": [
+        "software_engineering",
+        "devops",
+        "av_test_engineering"
+      ],
+      "keywords": [
+        "test automation engineer",
+        "qa engineer",
+        "qa automation",
+        "test engineer"
+      ]
+    },
+    "embedded_engineering": {
+      "adjacent": [
+        "hardware_engineering",
+        "platform_engineering"
+      ],
+      "keywords": [
+        "embedded engineer",
+        "firmware engineer",
+        "embedded software engineer",
+        "iot engineer"
+      ]
     }
   },
   "inflation": {
@@ -163,7 +243,11 @@
     "rockstar": "software_engineering",
     "superstar": "software_engineering",
     "unicorn": "product_management",
-    "wizard": "software_engineering"
+    "wizard": "software_engineering",
+    "av guru": "video_engineering",
+    "video guru": "video_engineering",
+    "av ninja": "av_test_engineering",
+    "video rockstar": "video_engineering"
   },
   "patterns": {
     "associate director": {
@@ -325,6 +409,78 @@
     "vice president": {
       "family": "management",
       "seniority": "vp"
+    },
+    "av engineer": {
+      "family": "video_engineering",
+      "seniority": "mid"
+    },
+    "av test engineer": {
+      "family": "av_test_engineering",
+      "seniority": "mid"
+    },
+    "audio video engineer": {
+      "family": "video_engineering",
+      "seniority": "mid"
+    },
+    "video software engineer": {
+      "family": "video_engineering",
+      "seniority": "mid"
+    },
+    "multimedia engineer": {
+      "family": "video_engineering",
+      "seniority": "mid"
+    },
+    "senior av engineer": {
+      "family": "video_engineering",
+      "seniority": "senior"
+    },
+    "senior av test engineer": {
+      "family": "av_test_engineering",
+      "seniority": "senior"
+    },
+    "lead av engineer": {
+      "family": "video_engineering",
+      "seniority": "lead"
+    },
+    "principal av engineer": {
+      "family": "video_engineering",
+      "seniority": "principal"
+    },
+    "av architect": {
+      "family": "video_engineering",
+      "seniority": "principal"
+    },
+    "video architect": {
+      "family": "video_engineering",
+      "seniority": "principal"
+    },
+    "test automation engineer": {
+      "family": "test_automation",
+      "seniority": "mid"
+    },
+    "senior test automation engineer": {
+      "family": "test_automation",
+      "seniority": "senior"
+    },
+    "qa automation engineer": {
+      "family": "test_automation",
+      "seniority": "mid"
+    },
+    "embedded engineer": {
+      "family": "embedded_engineering",
+      "seniority": "mid"
+    },
+    "senior embedded engineer": {
+      "family": "embedded_engineering",
+      "seniority": "senior"
+    },
+    "firmware engineer": {
+      "family": "embedded_engineering",
+      "seniority": "mid"
+    },
+    "hardware engineer": {
+      "family": "hardware_engineering",
+      "seniority": "mid"
     }
   },
   "seniority_levels": [

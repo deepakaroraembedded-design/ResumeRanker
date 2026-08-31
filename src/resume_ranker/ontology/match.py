@@ -197,7 +197,7 @@ class SkillOntology:
         return None
 
     def _ensure_embedding_vectors(self) -> dict[str, np.ndarray]:
-        """Lazy, one-time build of the canonical-skill embedding index."""
+        """Lazy, one-time build of the canonical-skill embedding index and classifier."""
         if self._embedding_vectors is not None:
             return self._embedding_vectors
         self._embedding_vectors = {}
@@ -206,24 +206,24 @@ class SkillOntology:
         vectors = self._embed_sync(list(self._canonicals))
         for canonical, vector in zip(self._canonicals, vectors, strict=True):
             self._embedding_vectors[canonical] = np.asarray(vector, dtype=np.float64)
+        # Build classifier once alongside vectors
+        if self._embedding_vectors and self._embedding_classifier is None:
+            labels = list(self._embedding_vectors.keys())
+            features = np.asarray(
+                [self._embedding_vectors[label] for label in labels], dtype=np.float64
+            )
+            self._embedding_classifier = KnnClassifier(
+                features,
+                labels,
+                n_neighbors=5,
+                weights="distance",
+                metric="cosine",
+            )
         return self._embedding_vectors
 
     def _ensure_embedding_classifier(self) -> KnnClassifier[str] | None:
-        """Lazy, one-time build of the canonical-skill KNN classifier."""
-        if self._embedding_classifier is not None:
-            return self._embedding_classifier
-        vectors = self._ensure_embedding_vectors()
-        if not vectors or self._embedding_client is None:
-            return None
-        labels = list(vectors.keys())
-        features = np.asarray([vectors[label] for label in labels], dtype=np.float64)
-        self._embedding_classifier = KnnClassifier(
-            features,
-            labels,
-            n_neighbors=5,
-            weights="distance",
-            metric="cosine",
-        )
+        """Return the cached KNN classifier, building vectors first if needed."""
+        self._ensure_embedding_vectors()  # ensures both vectors and classifier are built
         return self._embedding_classifier
 
     def _embed_sync(self, texts: list[str]) -> list[tuple[float, ...]]:

@@ -60,7 +60,7 @@ def test_s3_no_jd_chunks(
     assert "S3_NO_JD_CHUNKS" in score.notes
 
 
-def test_s3_hybrid_formula(
+def test_s3_offline_formula(
     s3: S3Semantic,
     resume: CanonicalResume,
     spec: JobSpec,
@@ -68,6 +68,7 @@ def test_s3_hybrid_formula(
     scoring_config: ScoringConfig,
     rubric_llm: Any,
 ) -> None:
+    """S3 uses only local embeddings; the LLM rubric term is disabled."""
     ctx = ScoringContext(
         ontology=None,  # type: ignore[arg-type]
         titles=None,  # type: ignore[arg-type]
@@ -78,11 +79,11 @@ def test_s3_hybrid_formula(
     )
     score = s3.score(resume, spec, ctx)
     assert score.value is not None
-    assert score.detail["rubric_mean"] == 85.0
-    assert score.detail["rubric_stdev"] == pytest.approx(7.071, abs=0.001)
-    expected = 0.6 * (100.0 * score.detail["calibrated"]) + 0.4 * 85.0
+    assert score.detail["rubric_mean"] is None
+    assert score.detail["rubric_stdev"] == pytest.approx(0.0, abs=0.001)
+    expected = 100.0 * score.detail["calibrated"]
     assert score.value == pytest.approx(expected, abs=0.001)
-    assert score.detail["mode"] == "hybrid"
+    assert score.detail["mode"] == "offline"
 
 
 def test_s3_llm_degrade(
