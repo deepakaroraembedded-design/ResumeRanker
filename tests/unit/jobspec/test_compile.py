@@ -459,6 +459,55 @@ def test_prose_required_skills_from_minimum_qualifications(
 
 
 @pytest.mark.covers("FR-401")
+def test_prose_required_skills_reject_responsibility_fragments(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """Requirement sentences must not leak responsibility fragments as skills.
+
+    A real-world JD ("7+ years of experience in a software development role,
+    shipping products") splits on the comma and would previously emit
+    "shipping products" as a required skill.  Phrases like that are prose, not
+    skills, and must be filtered out.
+    """
+    source = (
+        "Role\n\n"
+        "What We’re Looking for:\n"
+        "7+ years of experience in a software development role, shipping products\n"
+        "Strong in Python/Javascript or C/C++\n"
+        "Ability to work closely with internal stakeholders and external vendors "
+        "to understand and leverage their software framework/components/service to build solutions\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    required = {s.canonical for s in result.value.required_skills}
+    assert "python/javascript" in required
+    assert "c/c++" in required
+    for noise in ("shipping products", "external vendors", "software framework", "build solutions"):
+        assert noise not in required
+
+
+@pytest.mark.covers("FR-401")
+def test_certification_extraction_rejects_sentence_fragments(
+    compiler: JobSpecCompiler, run_context: RunContext
+) -> None:
+    """A sentence that merely mentions "certification" is not a certification.
+
+    "Scaling Netflix Certification tells you how we approach some of these
+    challenges" previously produced the bogus certification name "tells you how
+    we approach of these challenges)".  It must be rejected.
+    """
+    source = (
+        "Role\n\nWhat you will do:\n"
+        "Develop and maintain AV automated tests to objectively measure and validate "
+        "device AV capabilities for the Netflix TV application "
+        "(HDMI - Scaling Netflix Certification tells you how we approach some of these challenges)\n"
+    )
+    result = compiler.compile(source, run_context)
+    assert result.ok
+    assert result.value.certifications == ()
+
+
+@pytest.mark.covers("FR-401")
 def test_prose_preferred_skills_from_preferred_qualifications(
     compiler: JobSpecCompiler, run_context: RunContext
 ) -> None:

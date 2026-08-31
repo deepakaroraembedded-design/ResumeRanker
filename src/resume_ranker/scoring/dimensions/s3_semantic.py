@@ -245,31 +245,31 @@ def _raw_similarity(
     jd_vectors: Sequence[Vector],
     resume_vectors: Sequence[Vector],
 ) -> float:
-    """TRD §5.3.3 — classifier-based asymmetric similarity, JD-weighted mean.
+    """TRD §5.3.3 — asymmetric max-cosine similarity, JD-weighted mean.
 
-    Instead of a raw cosine matrix, a K-nearest-neighbour classifier is fit on
-    the resume chunks and each JD chunk is classified against them.  The maximum
-    predicted probability for a JD chunk is used as its relevance score.
+    ``sim(r_j) = max_k cos(emb(r_j), emb(e_k))`` over the resume evidence
+    chunks, then a weighted mean over the JD chunks using their declared
+    weights.  Max-cosine is used (not a classifier) so the raw score keeps the
+    full [0, 1] cosine range that the calibration anchors in TRD §5.3.3 assume.
     """
     if not jd_chunks or not resume_chunks or not jd_vectors or not resume_vectors:
         return 0.0
-    resume_features = np.asarray(resume_vectors, dtype=np.float64)
-    resume_labels = list(range(len(resume_chunks)))
-    classifier = KnnClassifier(
-        resume_features,
-        resume_labels,
-        n_neighbors=5,
-        weights="distance",
-        metric="cosine",
-    )
     jd_features = np.asarray(jd_vectors, dtype=np.float64)
-    proba = classifier.predict_proba(jd_features)
-    max_proba = np.max(proba, axis=1)
+    resume_features = np.asarray(resume_vectors, dtype=np.float64)
+    jd_norms = np.linalg.norm(jd_features, axis=1, keepdims=True)
+    resume_norms = np.linalg.norm(resume_features, axis=1, keepdims=True)
+    # Guard against zero-norm vectors so a degenerate embedding never produces NaN.
+    jd_features = np.divide(jd_features, jd_norms, out=jd_features, where=jd_norms > 0)
+    resume_features = np.divide(
+        resume_features, resume_norms, out=resume_features, where=resume_norms > 0
+    )
+    cos_matrix = jd_features @ resume_features.T
+    max_sim = np.max(cos_matrix, axis=1)
     weights = np.asarray([chunk.weight for chunk in jd_chunks], dtype=np.float64)
     total = np.sum(weights)
     if total <= 0.0:
         return 0.0
-    return float(np.sum(weights * max_proba) / total)
+    return float(np.sum(weights * max_sim) / total)
 
 
 def _calibrate(raw: float, pool: PoolStatistics) -> float:

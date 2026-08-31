@@ -483,6 +483,12 @@ class JobSpecCompiler:
         licence, or the word "certified" are treated as certification
         requirements.  This prevents every bullet under a general
         "qualifications" section from being modelled as a certification.
+
+        A certification name must be a short noun phrase (at most
+        ``_MAX_CERT_WORDS`` words) and must not continue into a full clause.
+        Sentence fragments such as "tells you how we approach ..." are rejected
+        so prose sentences that merely mention the word "certification" are not
+        turned into certification requirements.
         """
         certs: list[dict[str, object]] = []
         cert_keywords = re.compile(r"(?i)\b(certification|certificate|licence|license|certified)\b")
@@ -497,14 +503,15 @@ class JobSpecCompiler:
             )
             name = (match.group(1).strip() if match else cleaned).lower()
             name = re.sub(r"^(?:in|for)\s+", "", name, flags=re.IGNORECASE).strip()
-            if name and len(name) > 1:
-                certs.append(
-                    {
-                        "canonical": name,
-                        "weight": 2,
-                        "required": "required" in raw.lower(),
-                    }
-                )
+            if not _is_plausible_cert_name(name):
+                continue
+            certs.append(
+                {
+                    "canonical": name,
+                    "weight": 2,
+                    "required": "required" in raw.lower(),
+                }
+            )
         return certs
 
     def _extract_domain(self, text: str) -> DomainRequirement | None:
@@ -545,6 +552,46 @@ class JobSpecCompiler:
             if phrase in lower:
                 warnings.append(f"Proxy language detected: '{phrase}'")
         return warnings
+
+
+_CERT_MAX_WORDS = 6
+
+_CERT_SENTENCE_FRAGMENT_WORDS: frozenset[str] = frozenset(
+    {
+        "how",
+        "tells",
+        "told",
+        "approach",
+        "some",
+        "these",
+        "those",
+        "our",
+        "you",
+        "we",
+        "which",
+        "challenges",
+    }
+)
+
+
+def _is_plausible_cert_name(name: str) -> bool:
+    """Return True if *name* looks like a certification name, not a sentence.
+
+    A real certification name is a short noun phrase (``AWS Certified
+    Solutions Architect``, ``CISSP``).  A sentence that merely mentions the
+    word "certification" (``Scaling Netflix Certification tells you how we
+    approach ...``) produces a long clause that contains pronouns, verbs and
+    conjunction words; those are rejected so they do not pollute the JobSpec.
+    """
+    name = name.strip().rstrip(")").strip()
+    if not name or len(name) <= 1:
+        return False
+    words = name.split()
+    if len(words) > _CERT_MAX_WORDS:
+        return False
+    if re.search(r"\b(?:how|tells|told|approach|some|these|those|our|you|we|which)\b", name):
+        return False
+    return not re.search(r"[A-Za-z]\)", name)
 
 
 def _strip_bullet(line: str) -> str:
@@ -699,6 +746,24 @@ _SKILL_NOISE_PHRASES: tuple[str, ...] = (
     "automation and system reliability",
     "system reliability",
     "automation",
+    # Prose fragments from requirement sentences - responsibilities, not skills
+    "shipping products",
+    "shipping product",
+    "external vendors",
+    "vendors understand",
+    "understand and leverage",
+    "leverage their",
+    "framework/components/service",
+    "build solutions",
+    "build solution",
+    "work closely with",
+    "internal stakeholders",
+    "software development role",
+    "solutions to",
+    "ability to work",
+    "learn from",
+    "drive multiple teams",
+    "achieve common quality goals",
 )
 
 

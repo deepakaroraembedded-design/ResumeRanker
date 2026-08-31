@@ -12,7 +12,7 @@ from resume_ranker.models.jobspec import JobSpec, ResponsibilityChunk
 from resume_ranker.models.resume import CanonicalResume
 from resume_ranker.models.run import ScoringContext
 from resume_ranker.models.scoring import SubScore
-from resume_ranker.scoring.dimensions.s3_semantic import S3Semantic
+from resume_ranker.scoring.dimensions.s3_semantic import S3Semantic, _Chunk, _raw_similarity
 
 
 def test_s3_returns_subscore_offline(
@@ -219,3 +219,38 @@ def test_s3_prepare_with_no_embeddings(
     assert pool.size == 1
     assert pool.p10 is None
     assert pool.p90 is None
+
+
+def test_s3_raw_similarity_is_max_cosine(
+    s3: S3Semantic,
+    resume: CanonicalResume,
+    spec: JobSpec,
+    embedding_client: FakeEmbeddingClient,
+    scoring_context: ScoringContext,
+) -> None:
+    """S3 raw similarity must use max-cosine per TRD §5.3.3, not a classifier.
+
+    A JD chunk that is most similar to a low-weight resume chunk must score at
+    that cosine value.  Using classifier probabilities would compress the score
+    towards 1/N and collapse the calibration range.
+    """
+    v_a = embedding_client._vector("alpha")
+    v_b = embedding_client._vector("beta")
+
+    def norm(v: tuple[float, ...]) -> float:
+        return sum(x * x for x in v) ** 0.5
+
+    cos_ab = sum(x * y for x, y in zip(v_a, v_b, strict=True)) / (norm(v_a) * norm(v_b))
+
+    jd = [_Chunk(text="alpha", source="jobspec", weight=1, origin_id="j1")]
+    resume_chunks = [
+        _Chunk(text="alpha", source="resume", weight=1, origin_id="r1", span=(0, 5)),
+        _Chunk(text="beta", source="resume", weight=1, origin_id="r2", span=(0, 4)),
+    ]
+    raw = _raw_similarity(jd, resume_chunks, (v_a,), (v_a, v_b))
+    # alpha is identical to itself; max-cosine picks 1.0, not a probability.
+    assert raw == pytest.approx(1.0, abs=1e-6)
+    # A mid-range cosine maps to the same value when only one chunk matches.
+    jd_mid = [_Chunk(text="alpha", source="jobspec", weight=1, origin_id="j1")]
+    raw_mid = _raw_similarity(jd_mid, resume_chunks[1:], (v_a,), (v_b,))
+    assert raw_mid == pytest.approx(cos_ab, abs=1e-6)
